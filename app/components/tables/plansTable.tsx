@@ -1,0 +1,134 @@
+import { IPlan } from "@/app/types/api";
+import { apiUrls } from "@/app/utils/api/apiUrls";
+import axios from "axios";
+import { useEffect, useMemo, useState } from "react";
+import { BiSolidEdit } from "react-icons/bi";
+import { FiTrash } from "react-icons/fi";
+
+import {
+  Column,
+  ColumnDef,
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import StatusSpan from "../ui/statusSpan";
+
+interface PlansTableProps {
+  dataTable: IPlan[];
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
+}
+const PlansTable: React.FC<PlansTableProps> = ({
+  dataTable,
+  onEdit,
+  onDelete,
+}) => {
+  const data: IPlan[] = dataTable;
+  const [filter, setFilter] = useState("");
+  const [filteredData, setFilteredData] = useState<IPlan[]>([]);
+
+  // colums
+  const columns: ColumnDef<IPlan, any>[] = [
+    {
+      accessorKey: "id",
+      header: "ID",
+      // cell: (info) => info.getValue(),
+    },
+    {
+      accessorKey: "name",
+      header: "Plan",
+    },
+    {
+      accessorKey: "price",
+      header: "Precio",
+      cell: (info) => `S/${info.getValue()}`,
+    },
+    {
+      accessorKey: "featured_products",
+      header: "N.º  Productos destacados",
+    },
+    {
+      accessorKey: "products_limit",
+      header: "N.º  de productos",
+    },
+    {
+      accessorKey: "events_limit",
+      header: "N.º  de eventos",
+    },
+    {
+      accessorKey: "news_limit",
+      header: "N.º  de noticias",
+    },
+    {
+      accessorKey: "actions",
+      header: "Acciones",
+      cell: (info) => (
+        <div className="flex justify-center items-center gap-2">
+          <button
+            onClick={() => onEdit(Number(info.row.original.id))}
+            className="bg-teal-400 hover:bg-teal-500 text-white p-1 aspect-square rounded transition-all duration-500"
+          >
+            <BiSolidEdit className="text-lg" />
+          </button>
+          <button
+            onClick={() => onDelete(Number(info.row.original.id))}
+            className="bg-red-400 hover:bg-red-500 text-white  p-1 rounded aspect-square transition-all duration-500"
+          >
+            <FiTrash className="text-lg" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  // table
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+  return (
+    <table className="min-w-full border-collapse text-zinc-700 border-t border-t-gray-100">
+      <thead className=" ">
+        {table.getHeaderGroups().map((headerGroup, index) => (
+          <tr key={index} className="border-b border-b-gray-200">
+            {headerGroup.headers.map((header, hIndex) => (
+              <th
+                key={hIndex}
+                className="px-2 py-2 text-start text-sm font-semibold"
+              >
+                {header.isPlaceholder
+                  ? null
+                  : flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+              </th>
+            ))}
+          </tr>
+        ))}
+      </thead>
+
+      <tbody>
+        {table.getRowModel().rows.map((row, index) => (
+          <tr
+            key={index}
+            className={`border-b border-b-gray-200 ${
+              index % 2 === 0 ? "bg-gray-100" : "bg-white"
+            }`}
+          >
+            {row.getVisibleCells().map((cell, cIndex) => (
+              <td key={cIndex} className=" px-2 py-1 text-sm">
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+export default PlansTable;

@@ -1,0 +1,332 @@
+[
+    {
+        "id": 1,
+        "name": "Agroquímicos",
+        "created_at": "2024-09-20T15:26:24.000000Z",
+        "updated_at": "2024-09-20T15:26:24.000000Z",
+        "background_color": "#f8e0e0",
+        "text_color": "#0b0b0b",
+        "status": "approved",
+        "icon": null,
+        "type": "Principal",
+        "filters": [],
+        "labels": [
+            {
+                "id": 1,
+                "name": "Cultivo",
+                "category_id": 1,
+                "created_at": "2024-09-20T15:26:25.000000Z",
+                "updated_at": "2024-09-20T15:26:25.000000Z",
+                "status": "approved"
+            },
+            {
+                "id": 2,
+                "name": "Plaga",
+                "category_id": 1,
+                "created_at": "2024-09-20T15:26:25.000000Z",
+                "updated_at": "2024-09-20T15:26:25.000000Z",
+                "status": "approved"
+            }
+        ],
+        "files": [
+            {
+                "id": 1,
+                "file_type": "Fichatécnica",
+                "category_id": 1,
+                "created_at": "2024-09-20T15:26:25.000000Z",
+                "updated_at": "2024-09-20T15:26:25.000000Z",
+                "label": "Ficha técnica"
+            },
+            {
+                "id": 2,
+                "file_type": "Hojadeseguridad",
+                "category_id": 1,
+                "created_at": "2024-09-20T15:26:25.000000Z",
+                "updated_at": "2024-09-20T15:26:25.000000Z",
+                "label": "Hoja de seguridad"
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "name": "Biológicos",
+        "created_at": "2024-09-20T15:27:44.000000Z",
+        "updated_at": "2024-09-20T15:27:44.000000Z",
+        "background_color": "#ee7621",
+        "text_color": "#ffffff",
+        "status": "approved",
+        "icon": null,
+        "type": "Principal",
+        "filters": [],
+        "labels": [
+            {
+                "id": 3,
+                "name": "Cultivo",
+                "category_id": 2,
+                "created_at": "2024-09-20T15:27:44.000000Z",
+                "updated_at": "2024-09-20T15:27:44.000000Z",
+                "status": "approved"
+            },
+            {
+                "id": 4,
+                "name": "Plaga",
+                "category_id": 2,
+                "created_at": "2024-09-20T15:27:44.000000Z",
+                "updated_at": "2024-09-20T15:27:44.000000Z",
+                "status": "approved"
+            }
+        ],
+        "files": [
+            {
+                "id": 3,
+                "file_type": "Fichatécnica",
+                "category_id": 2,
+                "created_at": "2024-09-20T15:27:44.000000Z",
+                "updated_at": "2024-09-20T15:27:44.000000Z",
+                "label": "Ficha técnica"
+            },
+            {
+                "id": 4,
+                "file_type": "Hojadeseguridad",
+                "category_id": 2,
+                "created_at": "2024-09-20T15:27:44.000000Z",
+                "updated_at": "2024-09-20T15:27:44.000000Z",
+                "label": "Hoja de seguridad"
+            },
+            {
+                "id": 5,
+                "file_type": "Certificadoorgánico",
+                "category_id": 2,
+                "created_at": "2024-09-20T15:27:44.000000Z",
+                "updated_at": "2024-09-20T15:27:44.000000Z",
+                "label": "Certificado orgánico"
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "name": "Nutrición",
+        "created_at": "2024-09-20T15:29:49.000000Z",
+        "updated_at": "2024-09-20T15:29:49.000000Z",
+        "background_color": "#f7de4d",
+        "text_color": "#2d2d2d",
+        "status": "approved",
+        "icon": null,
+        "type": "Principal",
+        "filters": [],
+        "labels": [
+            {
+                "id": 5,
+                "name": "Sistema",
+                "category_id": 3,
+                "created_at": "2024-09-20T15:29:49.000000Z",
+                "updated_at": "2024-09-20T15:29:49.000000Z",
+                "status": "approved"
+            },
+            {
+                "id": 6,
+                "name": "Foliar",
+                "category_id": 3,
+                "created_at": "2024-09-20T15:29:49.000000Z",
+                "updated_at": "2024-09-20T15:29:49.000000Z",
+                "status": "approved"
+            }
+        ],
+        "files": [
+            {
+                "id": 6,
+                "file_type": "Fichatécnica",
+                "category_id": 3,
+                "created_at": "2024-09-20T15:29:49.000000Z",
+                "updated_at": "2024-09-20T15:29:49.000000Z",
+                "label": "Ficha técnica"
+            },
+            {
+                "id": 7,
+                "file_type": "Hojadeseguridad",
+                "category_id": 3,
+                "created_at": "2024-09-20T15:29:49.000000Z",
+                "updated_at": "2024-09-20T15:29:49.000000Z",
+                "label": "Hoja de seguridad"
+            },
+            {
+                "id": 8,
+                "file_type": "Certificadoorgánico",
+                "category_id": 3,
+                "created_at": "2024-09-20T15:29:49.000000Z",
+                "updated_at": "2024-09-20T15:29:49.000000Z",
+                "label": "Certificado orgánico"
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "name": "Bioestimulantes",
+        "created_at": "2024-09-20T15:34:12.000000Z",
+        "updated_at": "2024-09-20T15:34:12.000000Z",
+        "background_color": "#6fff48",
+        "text_color": "#2a2a2a",
+        "status": "approved",
+        "icon": null,
+        "type": "Principal",
+        "filters": [],
+        "labels": [],
+        "files": []
+    },
+    {
+        "id": 5,
+        "name": "Reguladores de crecimiento",
+        "created_at": "2024-09-20T15:36:26.000000Z",
+        "updated_at": "2024-09-20T15:36:26.000000Z",
+        "background_color": "#5ee9b8",
+        "text_color": "#2d2d2d",
+        "status": "approved",
+        "icon": null,
+        "type": "Otro",
+        "filters": [],
+        "labels": [],
+        "files": [
+            {
+                "id": 9,
+                "file_type": "Fichatécnica",
+                "category_id": 5,
+                "created_at": "2024-09-20T15:36:26.000000Z",
+                "updated_at": "2024-09-20T15:36:26.000000Z",
+                "label": "Ficha técnica"
+            },
+            {
+                "id": 10,
+                "file_type": "Hojadeseguridad",
+                "category_id": 5,
+                "created_at": "2024-09-20T15:36:26.000000Z",
+                "updated_at": "2024-09-20T15:36:26.000000Z",
+                "label": "Hoja de seguridad"
+            },
+            {
+                "id": 11,
+                "file_type": "Certificadoorgánico",
+                "category_id": 5,
+                "created_at": "2024-09-20T15:36:26.000000Z",
+                "updated_at": "2024-09-20T15:36:26.000000Z",
+                "label": "Certificado orgánico"
+            }
+        ]
+    },
+    {
+        "id": 6,
+        "name": "Semillas",
+        "created_at": "2024-09-20T15:37:06.000000Z",
+        "updated_at": "2024-09-20T15:37:06.000000Z",
+        "background_color": "#5d3917",
+        "text_color": "#ffffff",
+        "status": "approved",
+        "icon": null,
+        "type": "Otro",
+        "filters": [],
+        "labels": [],
+        "files": [
+            {
+                "id": 12,
+                "file_type": "Fichatécnica",
+                "category_id": 6,
+                "created_at": "2024-09-20T15:37:06.000000Z",
+                "updated_at": "2024-09-20T15:37:06.000000Z",
+                "label": "Ficha técnica"
+            }
+        ]
+    },
+    {
+        "id": 7,
+        "name": "Maquinarias",
+        "created_at": "2024-09-20T15:37:37.000000Z",
+        "updated_at": "2024-09-20T15:37:37.000000Z",
+        "background_color": "#ee0d0d",
+        "text_color": "#ffffff",
+        "status": "approved",
+        "icon": null,
+        "type": "Otro",
+        "filters": [],
+        "labels": [],
+        "files": [
+            {
+                "id": 13,
+                "file_type": "Fichatécnica",
+                "category_id": 7,
+                "created_at": "2024-09-20T15:37:37.000000Z",
+                "updated_at": "2024-09-20T15:37:37.000000Z",
+                "label": "Ficha técnica"
+            }
+        ]
+    },
+    {
+        "id": 8,
+        "name": "Herramientas",
+        "created_at": "2024-09-20T15:38:07.000000Z",
+        "updated_at": "2024-09-20T15:38:07.000000Z",
+        "background_color": "#2140ce",
+        "text_color": "#ffffff",
+        "status": "approved",
+        "icon": null,
+        "type": "Otro",
+        "filters": [],
+        "labels": [],
+        "files": [
+            {
+                "id": 14,
+                "file_type": "Fichatécnica",
+                "category_id": 8,
+                "created_at": "2024-09-20T15:38:07.000000Z",
+                "updated_at": "2024-09-20T15:38:07.000000Z",
+                "label": "Ficha técnica"
+            }
+        ]
+    }
+],
+{
+    "category": {
+        "background_color": "#f8e0e0",
+        "created_at": "2024-09-20T15:26:24.000000Z",
+        "icon": "/storage/icons/vaRPB2op7Zw18rvyfO9T5rxf3MAORxp9IgHzpcZP.png",
+        "id": 1,
+        "name": "Agroquímicos",
+        "status": "approved",
+        "text_color": "#0b0b0b",
+        "type": "Principal",
+        "updated_at": "2024-09-23T13:45:14.000000Z"
+    },
+    "category_id": 1,
+    "created_at": "2024-09-23T16:42:04.000000Z",
+    "created_by": 1,
+    "data_sheet_url": null,
+    "data_sheet_url_1": null,
+    "description": "<div>Fertilizante foliar de rápida absorción que promueve el crecimiento vigoroso de las plantas, mejorando la producción y calidad de los cultivos. Ideal para hortalizas y frutas.</div><div><br></div>",
+    "featured_product": false,
+    "files": [],
+    "id": 2,
+    "labels": [
+        [Object
+        ]
+    ],
+    "name": "Fertilizante Foliar UltraGrow 500",
+    "organic_sheet_url": null,
+    "photo_urls": null,
+    "photos": [
+        [Object
+        ]
+    ],
+    "registration_senasa_url": null,
+    "specifications": [
+        [Object
+        ],
+        [Object
+        ],
+        [Object
+        ],
+        [Object
+        ],
+        [Object
+        ]
+    ],
+    "status": "approved",
+    "updated_at": "2024-09-23T16:42:04.000000Z"
+},
