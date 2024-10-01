@@ -83,8 +83,16 @@ export const eventSaveSchema = z.object({
   content: z.string().min(1, "El contenido es requerido"),
   date: z.string().min(1, "La fecha es requerida"),
   location: z.string().nullable(),
-  mainImage: z.any().nullable(),
-  secondImage: z.any().nullable(),
+  mainImage: z
+    .custom<FileList>((files) => files?.length > 0, {
+      message: "La imagen es requerida",
+    })
+    .nullable(),
+  secondImage: z
+    .custom<FileList>((files) => files?.length > 0, {
+      message: "La imagen es requerida",
+    })
+    .nullable(),
   link: z.string().nullable(),
 });
 export const newsSaveSchema = z.object({
@@ -127,7 +135,11 @@ export const filterSaveSchema = z.object({
 });
 export const categorySaveSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
-  icon_url: z.any().nullable(),
+  icon_url: z
+    .custom<FileList>((files) => files?.length > 0, {
+      message: "La imagen es requerida",
+    })
+    .nullable(),
   labelBgColor: z.string().min(1, "El color de fondo es requerido"),
   textColor: z.string().min(1, "El color del texto es requerido"),
   labels: z
@@ -138,7 +150,7 @@ export const categorySaveSchema = z.object({
     )
     .nullable(),
   type: z.string().min(1, "El tipo es requerido"),
-  filter_ids: z.array(z.number().nullable()).nullable(),
+  // filter_ids: z.array(z.number().nullable()).nullable(),
   files: z
     .array(
       z.object({
@@ -168,24 +180,41 @@ export const productSaveSchema = z.object({
       })
     )
     .min(1, "Las especificaciones son requeridas"),
-  img1: z.any().nullable(),
-  img2: z.any().nullable(),
-  img3: z.any().nullable(),
-  img4: z.any().nullable(),
-  files: z
-    .array(
-      z.object({
-        file_type: z.any().nullable(),
-        file_url: z.any().nullable(),
-      })
-    )
+  img1: z
+    .custom<FileList>((files) => files?.length > 0, {
+      message: "La imagen es requerida",
+    })
     .nullable(),
+  img2: z
+    .custom<FileList>((files) => files?.length > 0, {
+      message: "La imagen es requerida",
+    })
+    .nullable(),
+  img3: z
+    .custom<FileList>((files) => files?.length > 0, {
+      message: "La imagen es requerida",
+    })
+    .nullable(),
+  img4: z
+    .custom<FileList>((files) => files?.length > 0, {
+      message: "La imagen es requerida",
+    })
+    .nullable(),
+  files: z.array(
+    z.object({
+      file_type: z.any().nullable(),
+      file_url: z.custom<FileList>((files) => files?.length > 0, {
+        message: "La imagen es requerida",
+      })
+      .nullable(),
+    })
+  ),
   status: z.string().min(1, "El estado es requerido"),
 });
 
 export const rejectedMessage = z.object({
   message: z
     .string()
-    .min(1, "El mensaje es requerido")
-    .max(255, "El mensaje no puede tener más de 255 caracteres"),
+    .min(1, "El motivo es requerido")
+    .max(255, "El motivo no puede tener más de 255 caracteres"),
 });

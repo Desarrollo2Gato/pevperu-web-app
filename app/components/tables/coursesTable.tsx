@@ -1,20 +1,14 @@
 import { ICourse } from "@/app/types/api";
-import { apiUrls } from "@/app/utils/api/apiUrls";
-import axios from "axios";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { BiSolidEdit } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";
 
 import {
-  Column,
   ColumnDef,
-  createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import StatusSpan from "../ui/statusSpan";
-import useFormatDate from "@/app/utils/formateDate";
 
 interface CoursesTableProps {
   dataTable: ICourse[];
@@ -27,15 +21,12 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
   onDelete,
 }) => {
   const data: ICourse[] = dataTable;
-  const [filter, setFilter] = useState("");
-  const [filteredData, setFilteredData] = useState<ICourse[]>([]);
 
   // colums
   const columns: ColumnDef<ICourse, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
-      // cell: (info) => info.getValue(),
     },
     {
       accessorKey: "title",
@@ -55,7 +46,8 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
     {
       accessorKey: "link",
       header: "Ultima actualización",
-      cell: (info) => new Date(info.row.original.updated_at).toLocaleDateString(),
+      cell: (info) =>
+        new Date(info.row.original.updated_at).toLocaleDateString(),
     },
 
     {
@@ -71,7 +63,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
           </button>
           <button
             onClick={() => onDelete(Number(info.row.original.id))}
-            className="bg-red-400 hover:bg-red-500 text-white  p-1 rounded aspect-square transition-all duration-500"
+            className="bg-yellow-400 hover:bg-yellow-500 text-white  p-1 rounded aspect-square transition-all duration-500"
           >
             <FiTrash className="text-lg" />
           </button>
@@ -109,20 +101,31 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
       </thead>
 
       <tbody>
-        {table.getRowModel().rows.map((row, index) => (
-          <tr
-            key={index}
-            className={`border-b border-b-gray-200 ${
-              index % 2 === 0 ? "bg-gray-100" : "bg-white"
-            }`}
-          >
-            {row.getVisibleCells().map((cell, cIndex) => (
-              <td key={cIndex} className=" px-2 py-1 text-sm">
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </td>
-            ))}
+        {table.getRowModel().rows.length > 0 ? (
+          table.getRowModel().rows.map((row, index) => (
+            <tr
+              key={index}
+              className={`border-b border-b-gray-200 ${
+                index % 2 === 0 ? "bg-gray-100" : "bg-white"
+              }`}
+            >
+              {row.getVisibleCells().map((cell, cIndex) => (
+                <td key={cIndex} className="px-2 py-1 text-sm">
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          ))
+        ) : (
+          <tr>
+            <td
+              colSpan={table.getAllColumns().length}
+              className="px-2 py-1 text-center text-zinc-600 text-sm"
+            >
+              No se encontraron registros
+            </td>
           </tr>
-        ))}
+        )}
       </tbody>
     </table>
   );

@@ -5,21 +5,23 @@ import {
   SafeAreaContainer,
 } from "@/app/components/ui/containers";
 import SearchInput from "@/app/components/ui/searchInput";
-import { ICategory, ICourse } from "@/app/types/api";
+import { ICompany, INews } from "@/app/types/api";
 import { apiUrls, pagination } from "@/app/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/app/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import CourseForm from "@/app/components/forms/courseForm";
-import CoursesTable from "@/app/components/tables/coursesTable";
+import NewsForm from "@/app/components/forms/newsForm";
+import NewsTable from "@/app/components/tables/newsTable";
 import SelectRows from "@/app/components/ui/selectRows";
-import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
 import { toast } from "sonner";
+import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
 import SelectComponent from "@/app/components/ui/select";
+import { useAuthContext } from "@/app/context/authContext";
 
 const Content = () => {
   const [token, setToken] = useState("");
+  const { user } = useAuthContext();
 
   // pagination
   const [total, setTotal] = useState(0);
@@ -28,23 +30,29 @@ const Content = () => {
   const [pageCount, setPageCount] = useState(0);
 
   // data
-  const [data, setData] = useState<ICourse[]>([]);
+  const [data, setData] = useState<INews[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
 
-  // modal
-  const [openModal, setOpenModal] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
-
   // search
   const [searchQuery, setSearchQuery] = useState<string>("");
+  // filters
+
+  const [statusFilter, setStatusFilter] = useState<
+    "pending" | "approved" | "rejected" | "all"
+  >("all");
+
+  // modal
+  const [openModal, setOpenModal] = useState(false);
+  const [statusModal, setStatusModal] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<"delete">("delete");
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
 
   const [selectedAction, setSelectedAction] = useState<
-    "data" | "search" | "date"
+    "data" | "search" | "status"
   >("data");
 
   useEffect(() => {
@@ -71,9 +79,17 @@ const Content = () => {
     setOpenModal(true);
     setSelectedType("create");
   };
-  const handleDelete = (id: number) => {
-    setDeleteModal(true);
+
+  const handleStatus = (id: number, status: "delete") => {
     setSelectedId(id);
+    setSelectedStatus(status);
+    setStatusModal(true);
+  };
+  const handleChangeStatus = () => {
+    if (!selectedId) return;
+    if (selectedStatus === "delete") {
+      onDelete();
+    }
   };
   const handleEdit = (id: number) => {
     setOpenModal(true);
@@ -84,39 +100,52 @@ const Content = () => {
     setOpenModal(false);
   };
 
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newStatus = e.target.value as "pending" | "approved" | "rejected";
+    newStatus;
+    setStatusFilter(newStatus);
+    setSelectedAction("status");
+  };
+
   const onDelete = () => {
     if (!selectedId) return;
     const promise = new Promise(async (resolve, reject) => {
       try {
-        await axios.delete(apiUrls.courses.delete(selectedId?.toString()), {
+        await axios.delete(apiUrls.news.delete(selectedId?.toString()), {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        resolve({ message: "Curso eliminado" });
+        resolve({ message: "Noticia eliminado" });
       } catch (error) {
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
-        reject({ message: "No se pudo eliminar el curso" });
+        reject({ message: "No se pudo eliminar la noticia" });
       } finally {
         getData();
-        setDeleteModal(false);
+        setStatusModal(false);
       }
     });
 
     toast.promise(promise, {
-      loading: "Eliminando curso...",
+      loading: "Eliminando noticia...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
   };
 
   const getData = async () => {
+    if (!user) {
+      toast.error("No se ha podido obtener el id de la empresa");
+      return;
+    }
     setLoading(true);
     try {
       const response = await axios.get(
-        apiUrls.courses.pagination(pageIndex, pageSize),
+        apiUrls.news.myNews(user.company_id.toString()) +
+          "?" +
+          pagination(pageIndex, pageSize),
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -132,13 +161,18 @@ const Content = () => {
       setLoading(false);
     }
   };
-  const getCoursesBySearch = (query: string) => {
+
+  const getNewsBySearch = (query: string) => {
+    if (!user) {
+      toast.error("No se ha podido obtener el id de la empresa");
+      return;
+    }
     setSearchQuery(query);
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
         const res = await axios.get(
-          apiUrls.courses.getAll +
+          apiUrls.news.myNews(user.company_id.toString()) +
             "?like=" +
             query +
             "&" +
@@ -157,19 +191,64 @@ const Content = () => {
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
-        reject({ message: "Error al buscar cursos" });
+        reject({ message: "Error al buscar noticias" });
       } finally {
         setLoading(false);
       }
     });
 
     toast.promise(promise, {
-      loading: "Buscando cursos...",
+      loading: "Buscando noticias...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
   };
-
+  const getNewsByStatus = (
+    status: "pending" | "approved" | "rejected" | "all"
+  ) => {
+    if (status === "all") {
+      setSelectedAction("data");
+      return;
+    }
+    setLoading(true);
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        if (!user) {
+          toast.error("No se ha podido obtener el id de la empresa");
+          return;
+        }
+        const res = await axios.get(
+          apiUrls.news.myNews(user?.company_id.toString()) +
+            "?status=" +
+            status +
+            "&" +
+            pagination(pageIndex, pageSize),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log(res.data.data);
+        setData(res.data.data);
+        setPageCount(res.data.last_page);
+        setTotal(res.data.total);
+        resolve({ message: "Noticias filtrados" });
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+        }
+        reject({ message: "Error al filtrar noticias por estado" });
+      } finally {
+        setLoading(false);
+      }
+    });
+    toast.promise(promise, {
+      loading: "Filtrando noticias...",
+      success: (data: any) => `${data.message}`,
+      error: (error: any) => `${error.message}`,
+    });
+  };
   useEffect(() => {
     setData([]);
   }, [selectedAction]);
@@ -180,43 +259,64 @@ const Content = () => {
   }, [token, selectedAction, pageIndex]);
   useEffect(() => {
     if (token && selectedAction === "search") {
-      getCoursesBySearch(searchQuery);
+      getNewsBySearch(searchQuery);
     }
   }, [token, selectedAction, pageIndex]);
+  useEffect(() => {
+    if (token && selectedAction === "status") {
+      getNewsByStatus(statusFilter);
+    }
+  }, [token, selectedAction, statusFilter, pageIndex]);
+
   return (
     <>
       <SafeAreaContainer isTable>
         <div className="mb-4">
           <MainContainer title="Filtros">
             <div className="flex gap-1 flex-wrap justify-between mb-4 flex-row w-full">
-              <p>filtrar x fecha</p>
+              <SelectComponent
+                label="Estado"
+                id="statusFilter"
+                options={[
+                  { value: "all", label: "Todos" },
+                  { value: "pending", label: "Pendientes" },
+                  { value: "approved", label: "Aprobados" },
+                  { value: "rejected", label: "Rechazados" },
+                ]}
+                onChange={handleStatusChange}
+                defaultValue={statusFilter}
+              />
             </div>
           </MainContainer>
         </div>
         <MainContainer>
+          {/* header */}
           <div className="flex flex-row justify-between pb-4 border-b border-b-gray-50">
             <h2>Registros: {total}</h2>{" "}
-            <AddButton text="Agregar Curso" onClick={handleAdd} />
+            <AddButton text="Agregar Noticia" onClick={handleAdd} />
           </div>
           <div className="flex justify-between mb-4 pt-4">
+            {/* select items per page */}
             <SelectRows
               pageSize={pageSize.toString()}
               handlePageSizeChange={handlePageSizeChange}
             />
+            {/* buscador */}
             <div className="flex flex-row self-end">
               <SearchInput
-                placeholder="Buscar curso"
-                onClick={(query) => getCoursesBySearch(query)}
+                placeholder="Buscar noticias"
+                onClick={(query) => getNewsBySearch(query)}
               />
             </div>
           </div>
           <div className=" overflow-x-auto">
-            <CoursesTable
+            <NewsTable
               dataTable={data}
-              onDelete={(id: number) => handleDelete(id)}
+              onDelete={(id: number) => handleStatus(id, "delete")}
               onEdit={(id: number) => handleEdit(id)}
             />
           </div>
+          {/* pagination */}
           <div className="mt-4 justify-center flex">
             <Pagination
               count={pageCount}
@@ -229,11 +329,11 @@ const Content = () => {
       </SafeAreaContainer>
       {/* form modal */}
       <FormModal
-        title={`${selectedType === "edit" ? "Editar" : "Crear"} curso`}
+        title={`${selectedType === "edit" ? "Editar" : "Crear"} noticia`}
         openModal={openModal}
         setOpenModal={() => setOpenModal(false)}
       >
-        <CourseForm
+        <NewsForm
           closeModal={handleCloseModal}
           type={selectedType}
           id={selectedId}
@@ -241,12 +341,19 @@ const Content = () => {
           getData={getData}
         />
       </FormModal>
-      {/* delete modal */}
       <ConfirmModal
-        openModal={deleteModal}
-        setOpenModal={() => setDeleteModal(false)}
-        onAction={onDelete}
-        title="Eliminar Curso"
+        openModal={statusModal}
+        setOpenModal={() => setStatusModal(false)}
+        onAction={handleChangeStatus}
+        title={
+          selectedStatus === "delete" ? "Eliminar Noticia" : "Aprobar Noticia"
+        }
+        text={
+          selectedStatus === "delete"
+            ? "¿Está seguro que desea eliminar esta noticia?"
+            : "¿Está seguro que desea rechazar esta noticia?"
+        }
+        textButton={selectedStatus === "delete" ? "Eliminar" : "Aprobar"}
       />
     </>
   );

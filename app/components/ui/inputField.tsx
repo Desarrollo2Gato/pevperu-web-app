@@ -1,9 +1,10 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa";
-import { FieldError } from "react-hook-form";
+import { FieldError, UseFormSetValue } from "react-hook-form";
 import { FaTrash } from "react-icons/fa";
+import { watch } from "fs";
 
 type InputProps = {
   name: string;
@@ -155,6 +156,7 @@ type InputFileProps = {
   placeholder?: string;
   error?: FieldError;
   register: any;
+  setValue: UseFormSetValue<any>;
 };
 
 export const InputFileZod: React.FC<InputFileProps> = ({
@@ -163,24 +165,33 @@ export const InputFileZod: React.FC<InputFileProps> = ({
   placeholder,
   register,
   error,
+  setValue,
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    console.log(id)
+    setValue("files.0.file_url", selectedFile, { shouldValidate: true });
+  }, [selectedFile]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
+      // setValue(id, e.target.files, { shouldValidate: true });
     }
   };
 
   const handleRemoveFile = () => {
-    console.log;
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
     setSelectedFile(null);
+    // setValue(id, null, { shouldValidate: true });
   };
+
+  
 
   return (
     <div className="w-full relative">
@@ -195,8 +206,9 @@ export const InputFileZod: React.FC<InputFileProps> = ({
           id={id}
           className={`hidden`}
           placeholder={placeholder}
+          ref={fileInputRef}
           {...register}
-          onChange={handleFileChange}
+          // onChange={handleFileChange}
           accept=".pdf"
         />
       </label>
@@ -204,13 +216,13 @@ export const InputFileZod: React.FC<InputFileProps> = ({
       {selectedFile && (
         <div className="mt-2 flex items-center justify-between bg-gray-100 border border-gray-300 rounded-lg p-2">
           <span className="text-sm text-zinc-600">{selectedFile.name}</span>
-          <button
+          {/* <button
             type="button"
             onClick={handleRemoveFile}
             className="text-red-500 text-lg"
           >
             <FaTrash />
-          </button>
+          </button> */}
         </div>
       )}
       {error && <p className="mt-1 text-sm text-red-600">{error.message}</p>}
@@ -225,15 +237,23 @@ export const InputColorZodField: React.FC<InputZodProps> = ({
   error,
 }) => {
   return (
-    <div className={`mt-1 w-full bg-transparent rounded-lg border-[0.5px]  text-zinc-600 px-3 py-2 placeholder-zinc-300 outline-none focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-opacity-50 text-sm transition-all duration-500 transform flex justify-between items-center  ${
-      error
-        ? "border-red-500 focus:ring-red-500"
-        : "border-zinc-300 focus:ring-green-800"
-    }`}>
+    <div
+      className={`mt-1 w-full bg-transparent rounded-lg border-[0.5px]  text-zinc-600 px-3 py-2 placeholder-zinc-300 outline-none focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-opacity-50 text-sm transition-all duration-500 transform flex justify-between items-center  ${
+        error
+          ? "border-red-500 focus:ring-red-500"
+          : "border-zinc-300 focus:ring-green-800"
+      }`}
+    >
       <label htmlFor={id} className="text-green-800  text-sm font-medium  ">
         {name}
       </label>
-      <input type="color" id={id} className={`rounded-md h-8 w-16  outline-none`} required {...register} />
+      <input
+        type="color"
+        id={id}
+        className={`rounded-md h-8 w-16  outline-none`}
+        required
+        {...register}
+      />
       {error && <p className="mt-1 text-sm text-red-600">{error.message}</p>}
     </div>
   );

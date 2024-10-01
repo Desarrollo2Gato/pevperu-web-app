@@ -1,31 +1,29 @@
 import { useFieldArray, useForm } from "react-hook-form";
-import {
-  InputField,
-  InputFileZod,
-  InputZodField,
-  TextAreaZodField,
-} from "../ui/inputField";
+import { InputZodField, TextAreaZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  productSaveSchema,
-  subscriptionSaveSchema,
-} from "@/app/utils/shcemas/Admin";
+import { productSaveSchema } from "@/app/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
-import { ICompany, IPlan, IProduct, ISubscription } from "@/app/types/api";
+import { IProduct } from "@/app/types/api";
 import { apiUrls } from "@/app/utils/api/apiUrls";
 import axios from "axios";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import { SelectZodField } from "../ui/selectField";
 import ButtonForm from "../ui/buttonForm";
 import { imgUrl } from "@/app/utils/img/imgUrl";
 import ButtonArrayForm from "../ui/buttonArrayFrom";
 import EditorHtml from "../ui/editotrHtml";
 
+import Select from "react-select";
+import makeAnimated from "react-select/animated";
+import { useAuthContext } from "@/app/context/authContext";
+import { ImgField } from "../ui/imgField";
+
 type ProdcutFormProps = {
   type: "create" | "edit";
   id?: number | null;
   token: string;
   closeModal: () => void;
+  getData: () => void;
 };
 
 type TFile = {
@@ -34,36 +32,36 @@ type TFile = {
   file_type: string;
 };
 
+const animatedComponents = makeAnimated();
+
 const ProductForm: React.FC<ProdcutFormProps> = ({
   type,
   id,
   token,
   closeModal,
+  getData,
 }) => {
-  const [data, setData] = useState<IProduct>();
+  const { user } = useAuthContext();
+
+  const [product, setProduct] = useState<IProduct>();
   const [categoriesData, setCategoriesData] = useState<any[]>([]);
 
-  const [image, setImage] = useState<any | string>("");
+  const [image, setImage] = useState<any | string>(null);
   const [image2, setImage2] = useState<any | null>(null);
   const [image3, setImage3] = useState<any | null>(null);
   const [image4, setImage4] = useState<any | null>(null);
-  const [selectedImg, setSelectedImg] = useState<string | null>(null);
 
   // files
   const [filesInitialData, setFilesInitialData] = useState<TFile[]>([]);
   // const [fileDownload, setFileDownload] = useState<string>("");
 
   const [filesData, setFilesData] = useState<any[]>([]);
-  const [selectedFile, setSelectedFile] = useState<TFile>({
-    id: 0,
-    file_type: "",
-    file_url: "",
-  });
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [gettingCategories, setGettingCategories] = useState(false);
-
+  const [SelectedLabels, setSelectedLabels] = useState<any[]>([]);
+  const [labelsData, setLabelsData] = useState<any[]>([]);
   const {
     control,
     register,
@@ -76,17 +74,17 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   } = useForm({
     resolver: zodResolver(productSaveSchema),
     defaultValues: {
-      status: "pending",
+      status: user?.type === "admin" ? "approved" : "pending",
       name: "",
       description: "",
       category_id: "",
       labels: [] as any[],
       specifications: [{ title: "", description: "" }],
-      img1: "",
+      img1: null,
       img2: null,
       img3: null,
       img4: null,
-      files: [{ file_type: "", file_url: "" }],
+      files: [{ file_type: "", file_url: null }],
       featured_product: "false",
     },
   });
@@ -115,19 +113,19 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   }, [type, id]);
 
   useEffect(() => {
-    getCategories();
-  }, []);
+    if (token) getCategories();
+  }, [token]);
 
   useEffect(() => {
-    if (data) {
-      if (data?.photos && data?.photos.length > 0) {
-        setImage(data.photos[0] && data?.photos[0].photo_url);
-        setImage2(data.photos[1] && data?.photos[1].photo_url);
-        setImage3(data.photos[2] && data?.photos[2].photo_url);
-        setImage4(data.photos[3] && data?.photos[3].photo_url);
+    if (product) {
+      if (product?.photos && product?.photos.length > 0) {
+        setImage(product.photos[0] && imgUrl(product?.photos[0].photo_url));
+        setImage2(product.photos[1] && imgUrl(product?.photos[1].photo_url));
+        setImage3(product.photos[2] && imgUrl(product?.photos[2].photo_url));
+        setImage4(product.photos[3] && imgUrl(product?.photos[3].photo_url));
       }
-      if (data.files && data.files.length > 0) {
-        const FilesToDownload = data.files.map((file, index) => ({
+      if (product.files && product.files.length > 0) {
+        const FilesToDownload = product.files.map((file, index) => ({
           id: index,
           file_url: imgUrl(file.file_url) || "",
           file_type: file.file_label || "",
@@ -135,49 +133,43 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         setFilesInitialData(FilesToDownload);
       }
       reset({
-        name: data.name || "",
-        description: data.description || "",
-        category_id: data.category.id.toString() || "",
-        featured_product: data.featured_product.toString() || "",
+        name: product.name || "",
+        description: product.description || "",
+        category_id: product.category.id.toString() || "",
+        featured_product: product.featured_product.toString() || "false",
         specifications:
-          data.specifications.length > 0
-            ? data.specifications
+          product.specifications.length > 0
+            ? product.specifications
             : [{ title: "", description: "" }],
-        files: [],
-        img1: "",
+        img1: null,
         img2: null,
         img3: null,
         img4: null,
-        status: data.status || "",
+        status:
+          product.status || user?.type === "admin" ? "approved" : "pending",
       });
     }
-  }, [data]);
+  }, [product]);
 
   useEffect(() => {
     if (watch("category_id")) {
       getFiles(watch("category_id"));
-      // getLabels(watch("category_id"));
+      getLabels(watch("category_id"));
     }
   }, [categoriesData, watch("category_id")]);
 
   // get labels
-  // const getLabels = (categoryId: string) => {
-  //   const category = categoriesData.find(
-  //     (item) => item.id === Number(categoryId)
-  //   );
-  //   setSelectedLabels([]);
-  //   return setLabelsData(category?.labels || []);
-  // };
-
-  // const filteredItems =
-  //   labelsData.length > 0
-  //     ? labelsData.filter((item) =>
-  //         item.name.toLowerCase().includes(query.toLowerCase())
-  //       )
-  //     : [];
+  const getLabels = (categoryId: string) => {
+    const category = categoriesData.find(
+      (item) => item.id === Number(categoryId)
+    );
+    setSelectedLabels([]);
+    console.log("labels :", category?.labels);
+    return setSelectedLabels(category?.labels || []);
+  };
 
   // obtener archivos segun la categoria
-  const getFiles = async (categoryId: string) => {
+  const getFiles = (categoryId: string) => {
     // extraer files de categoryData
     const category = categoriesData.find(
       (item) => item.id === Number(categoryId)
@@ -188,12 +180,29 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       const filesInput = category.files.map((file: any, index: number) => ({
         id: index,
         file_url: null,
-        file_type: file.file_label || file.file_type,
+        file_type: file.file_type,
       }));
       setValue("files", filesInput);
-      console.log("files", filesInput);
     }
   };
+
+  const handleChange = (selected: any) => {
+    // onli save id of labels
+    const labels = selected.map((item: any) => item.value);
+    setValue("labels", labels || []);
+  };
+
+  useEffect(() => {
+    console.log("watch files", watch("files"));
+    console.log("file 0", watch("files.0.file_url"));
+  }, [watch("files")]);
+
+  // const getLabels = (categoryId:string) => {
+  //   const category = categoriesData.find(
+  //     (item) => item.id = Number(categoryId)
+  //   );
+
+  // }
 
   const getCategories = async () => {
     setGettingCategories(true);
@@ -206,7 +215,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       setCategoriesData(res.data);
     } catch (error) {
       console.error(error);
-      alert("Error al obtener las categorías");
+      toast.error("Error al obtener las categorías");
     } finally {
       setGettingCategories(false);
     }
@@ -220,55 +229,90 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           Authorization: `Bearer ${token}`,
         },
       });
-      setData(res.data);
+
+      setProduct(res.data);
     } catch (error) {
       console.error(error);
-      alert("Error al obtener los datos");
+      toast.error("Error al obtener los datos del producto");
     } finally {
       setLoading(false);
     }
   };
 
   const onSubmit = async (data: any) => {
+    console.log(data);
     setSubmitting(true);
-    const dataSend = {
-      company_id: data.companyId,
-      plan_id: data.plan,
-      start_date: formatDateToISO(data.startDate),
-      end_date: formatDateToISO(data.endDate),
-      is_active: Boolean(data.status),
-    };
+    const dataSend = new FormData();
+    if (!user?.company_id) {
+      toast.error("No se ha podido obtener su id, recargue la página ");
+      return;
+    }
+    if (product) {
+      dataSend.append("company_id", product?.companies[0].id.toString());
+    } else {
+      dataSend.append("company_id", user?.company_id.toString());
+    }
+    dataSend.append("status", data.status);
+    dataSend.append("name", data.name);
+    dataSend.append("description", data.description);
+    dataSend.append("category_id", data.category_id);
+    dataSend.append(
+      "featured_product",
+      data.featured_product === "true" ? "1" : "0"
+    );
+    data.labels.forEach((label: number) => {
+      dataSend.append("labels[]", label.toString());
+    });
+    data.specifications.map((spec: any, index: number) => {
+      dataSend.append(`specifications[${index}][title]`, spec.title);
+      dataSend.append(
+        `specifications[${index}][description]`,
+        spec.description
+      );
+    });
+
+    if (data.img1) {
+      dataSend.append("photos[]", data.img1[0]);
+    }
+    if (data.img2) {
+      dataSend.append("photos[]", data.img2[0]);
+    }
+    if (data.img3) {
+      dataSend.append("photos[]", data.img3[0]);
+    }
+    if (data.img4) {
+      dataSend.append("photos[]", data.img4[0]);
+    }
+
+    // files
+    data.files.forEach((file: any, index: number) => {
+      if (file.file_url) {
+        dataSend.append(`${file.file_type}`, file.file_url[0]);
+      }
+    });
 
     const promise = new Promise(async (resolve, reject) => {
-      console.log(dataSend);
       try {
         if (type === "create") {
-          console.log("create");
-          await axios.post(apiUrls.subscription.create, dataSend, {
+          await axios.post(apiUrls.product.create, dataSend, {
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
             },
           });
-          console.log("creado");
-          resolve({ message: "Suscripción creada exitosamente" });
+          resolve({ message: "Producto creado exitosamente" });
         }
         if (type === "edit") {
-          console.log("edit");
           if (id) {
-            console.log("id", id);
-            await axios.put(
-              apiUrls.subscription.update(id?.toString()),
-              dataSend,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-            console.log("editado");
-            resolve({ message: "Suscripción actualizada exitosamente" });
+            await axios.post(apiUrls.product.update(id?.toString()), dataSend, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data",
+              },
+            });
+            resolve({ message: "Producto actualizado exitosamente" });
           } else {
-            reject("No se ha podido obtener el id de la suscripción");
+            reject({ message: "No se pudo actualizar el producto" });
           }
         }
       } catch (error) {
@@ -276,24 +320,60 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
-        reject(error);
+        reject({ message: "Error al guardar los datos" });
       } finally {
+        getData();
         setSubmitting(false);
       }
     });
     toast.promise(promise, {
       loading: "Guardando datos...",
       success: (data: any) => `${data.message}`,
-      error: "Error al guardar los datos",
+      error: (error: any) => `${error.message}`,
     });
   };
-  const formatDateToISO = (date: any) => {
-    if (!date) return "";
-    return date.toISOString().split("T")[0];
-  };
+
   return (
     <>
       <form className="flex flex-col gap-2 mt-4">
+        <div className="flex flex-row flex-wrap gap-4 w-full justify-center">
+          <ImgField
+            id="img1"
+            imgLogo={image || ""}
+            setImgLogo={setImage}
+            error={errors.img1}
+            register={register("img1")}
+            watch={watch("img1")}
+            isPost
+          />
+          <ImgField
+            id="img2"
+            imgLogo={image2 || ""}
+            setImgLogo={setImage2}
+            error={errors.img2}
+            register={register("img2")}
+            watch={watch("img2")}
+            isPost
+          />
+          <ImgField
+            id="img3"
+            imgLogo={image3 || ""}
+            setImgLogo={setImage3}
+            error={errors.img3}
+            register={register("img3")}
+            watch={watch("img3")}
+            isPost
+          />
+          <ImgField
+            id="img4"
+            imgLogo={image4 || ""}
+            setImgLogo={setImage4}
+            error={errors.img4}
+            register={register("img4")}
+            watch={watch("img4")}
+            isPost
+          />
+        </div>
         <SelectZodField
           id="status"
           name="Estado"
@@ -307,6 +387,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           getOptionLabel={(option) => option.name}
           register={register("status")}
           error={errors.status}
+          isdisabled={user?.type === "admin" ? false : true}
         />
         <SelectZodField
           id="featured_product"
@@ -330,25 +411,26 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           getOptionLabel={(option) => option.name}
           register={register("category_id")}
           error={errors.category_id}
+          onChange={(option) => {
+            const value = option.target.value;
+            getFiles(value);
+            getLabels(value);
+          }}
         />
         <InputZodField
           id="name"
           name="Producto"
-          type="date"
           placeholder="Nombre del producto"
           register={register("name")}
           error={errors.name}
         />
-        {/* description */}
         <EditorHtml
           text="Descripción"
           id="description"
           value={getValues("description")}
-          // register={register("description")}
           setValue={setValue}
           error={errors.description}
         />
-        {/* especification */}
         <div className="flex flex-col gap-2">
           <h2 className=" font-medium text-zinc-500">Especificaciones</h2>
           {SpecificationsField.map((item, index) => (
@@ -372,16 +454,13 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
                 error={errors.specifications?.[index]?.description}
               />
               <div className="flex items-center gap-2">
-                {
-                  // if is not the first element
-                  SpecificationsField.length > 1 && (
-                    <ButtonArrayForm
-                      text="Eliminar"
-                      onClick={() => SpecificationsRemove(index)}
-                      isDelete
-                    />
-                  )
-                }
+                {SpecificationsField.length > 1 && (
+                  <ButtonArrayForm
+                    text="Eliminar"
+                    onClick={() => SpecificationsRemove(index)}
+                    isDelete
+                  />
+                )}
               </div>
             </div>
           ))}
@@ -390,7 +469,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
             onClick={() => SpecificationsAppend({ title: "", description: "" })}
           />
         </div>
-        {/* archivos cargados */}
         {filesInitialData.length > 0 && (
           <div className="flex flex-col gap-2">
             <h2 className=" font-medium text-zinc-500">Archivos cargados</h2>
@@ -418,26 +496,100 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         )}
         {/* files */}
         <div className="flex flex-col gap-2">
-          <h2 className=" font-medium text-zinc-500">Archivos</h2>
-          {filesField.map((item, index) => (
-            <div
-              key={item.id}
-              className="flex flex-col gap-2 border border-zinc-300 rounded-md p-4"
-            >
-              <InputFileZod
-                id={`files.${index}.file_url`}
-                name={item.file_type}
-                placeholder="Seleccione un archivo"
-                register={register(`files.${index}.file_url`)}
-                error={errors.files?.[index]?.file_url}
-              />
-            </div>
-          ))}
+          <label className="text-green-800 text-base font-medium">
+            Archivos
+          </label>
+
+          {filesData.length > 0 ? (
+            filesField.map((item, index) => (
+              <div
+                key={item.id}
+                className="flex flex-col gap-2 border border-zinc-300 rounded-md p-4"
+              >
+                {/* <InputFileZod
+                  id={`files.${index}.file_url`}
+                  name={item.file_type}
+                  placeholder="Seleccione un archivo"
+                  register={register(`files.${index}.file_url`)}
+                  setValue={setValue}
+                  error={errors.files?.[index]?.file_url}
+                /> */}
+                <input
+                  type="file"
+                  id={`files.${index}.file_url`}
+                  className={``}
+                  // onChange={(e) => {
+                  //   const file = e.target.files || null;
+                  //   setValue(`files.${index}.file_url`, file);
+                  // }}
+                  accept="application/pdf"
+                  {...register(`files.${index}.file_url`)}
+                />
+                {errors.files?.[index]?.file_url && (
+                  <p className="text-red-500">
+                    {errors.files[index].file_url.message}
+                  </p>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-zinc-700 text-xs text-center">
+              No se requiere archivos
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="text-green-800 text-base font-medium">
+            Etiquetas
+          </label>
+          <div className="mt-1">
+            <Select
+              isDisabled={SelectedLabels.length === 0}
+              placeholder={
+                SelectedLabels.length === 0
+                  ? "No se requiere etiquetas"
+                  : "Seleccione etiquetas"
+              }
+              components={animatedComponents}
+              isMulti
+              options={SelectedLabels.map((label) => ({
+                value: label.id,
+                label: label.name,
+              }))}
+              classNamePrefix="custom-select"
+              onChange={handleChange}
+              closeMenuOnSelect={false}
+              styles={{
+                control: (provided, state) => ({
+                  ...provided,
+                  backgroundColor: "transparent",
+                  borderColor: state.isFocused ? "#166534" : "#d4d4d8",
+                  boxShadow: state.isFocused ? "none" : "none",
+                  borderRadius: "6px",
+                  paddingBlock: "4px",
+                  paddingInline: "12px",
+                  fontSize: "16px",
+                  color: "#52525b",
+                }),
+                menu: (provided) => ({
+                  ...provided,
+                  zIndex: 9999,
+                  fontSize: "14px",
+                  color: "#52525b",
+                }),
+              }}
+            />
+          </div>
+          {errors.labels && (
+            <p className="mt-1 text-sm text-red-600">{errors.labels.message}</p>
+          )}
         </div>
 
         <div className="gap-8 flex justify-end items-center mt-4">
           <ButtonForm
             text="Cancelar"
+            isdisabled={submitting}
             onClick={() => {
               reset();
               closeModal();
@@ -446,6 +598,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           <ButtonForm
             text="Guardar"
             type="submit"
+            isdisabled={submitting}
             onClick={handleSubmit(onSubmit)}
             primary
           />

@@ -40,6 +40,7 @@ const roboto = localFont({
 
 import AuthContextProvider from "@/app/context/authContext";
 import { Toaster } from "sonner";
+import { NotificationProvider } from "./context/notificationContext";
 
 export const metadata: Metadata = {
   title: {
@@ -64,13 +65,15 @@ export default function RootLayout({
       </head>
       <body className={` ${roboto.className}`}>
         <AuthContextProvider>
-          {children}
-          <Toaster
-            expand={false}
-            position="bottom-right"
-            richColors
-            closeButton
-          />
+          <NotificationProvider>
+            {children}
+            <Toaster
+              expand={false}
+              position="bottom-right"
+              richColors
+              closeButton
+            />
+          </NotificationProvider>
         </AuthContextProvider>
       </body>
     </html>

@@ -15,6 +15,8 @@ import { useEffect, useState } from "react";
 import { Modal, Box, Typography } from "@mui/material";
 
 import UsersTable from "@/app/components/tables/usersTable";
+import { toast } from "sonner";
+import { ConfirmModal } from "@/app/components/ui/modals";
 
 const Content = () => {
   const [token, setToken] = useState("");
@@ -32,13 +34,12 @@ const Content = () => {
   const [loading, setLoading] = useState(false);
 
   // modal
-  const [openModal, setOpenModal] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(false);
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    //obtener token
     const token = getTokenFromCookie();
     if (token) {
       setToken(token);
@@ -67,19 +68,62 @@ const Content = () => {
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
     } catch (error) {
-      console.error(error);
+      toast.error("Error al obtener los datos");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChangeStatus = async (id: number, status: string) => {
-    alert("cambiar estado");
+  const handleConfirmModal = async (id: number, status: string) => {
+    setSelectedId(id);
+    setSelectedStatus(status);
+    setConfirmModal(true);
   };
 
-  const handleCloseModal = () => {
-    setOpenModal(false);
+  const handleChangeStatus = async (id: number, status: string) => {
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        if (status === "suspend") {
+          await axios.post(
+            apiUrls.admin.approve("user", id.toString()),
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          resolve({ message: "Usuario aprobado" });
+        } else {
+          await axios.post(
+            apiUrls.admin.suspend("user", id.toString()),
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          resolve({ message: "Usuario suspendido" });
+        }
+        setConfirmModal(false);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          reject({ message: error.response?.data.message });
+        }
+        reject({ message: "Error al cambiar el estado" });
+      } finally {
+        getData();
+      }
+    });
+
+    toast.promise(promise, {
+      loading: "Cambiando estado",
+      success: (data: any) => data.message,
+      error: (error: any) => error.message,
+    });
   };
+
   return (
     <>
       <SafeAreaContainer isTable>
@@ -98,36 +142,22 @@ const Content = () => {
           <div className=" overflow-x-auto">
             <UsersTable
               dataTable={data}
-              changeStatus={(id, status) => handleChangeStatus(id, status)}
+              onSuspend={(id) => handleConfirmModal(id, "approved")}
+              onUnsuspend={(id) => handleConfirmModal(id, "suspend")}
             />
           </div>
         </MainContainer>
       </SafeAreaContainer>
-      <div>
-        <Modal
-          open={openModal}
-          onClose={() => setOpenModal(false)}
-          aria-labelledby="custom-modal-title"
-          aria-describedby="custom-modal-description"
-        >
-          <Box
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-          bg-white border border-gray-300 shadow-lg rounded-lg
-          p-4 sm:p-6 
-          w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl
-          overflow-y-auto max-h-[90vh]"
-          >
-            <Typography
-              id="custom-modal-title"
-              variant="h6"
-              className="text-2xl text-center font-bold text-zinc-500"
-            >
-              {selectedType === "create" ? "Crear" : "Editar"} Categoría
-            </Typography>
-            cambiar de estdo
-          </Box>
-        </Modal>
-      </div>
+      {selectedId && selectedStatus && (
+        <ConfirmModal
+          openModal={confirmModal}
+          setOpenModal={() => setConfirmModal(false)}
+          onAction={() => handleChangeStatus(selectedId!, selectedStatus!)}
+          title="Cambiar estado"
+          textButton="Confirmar"
+          text={`¿Estás seguro de cambiar el estado del usuario?`}
+        />
+      )}
     </>
   );
 };

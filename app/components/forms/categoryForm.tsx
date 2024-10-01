@@ -1,9 +1,5 @@
 import { useFieldArray, useForm } from "react-hook-form";
-import {
-  InputColorZodField,
-  InputField,
-  InputZodField,
-} from "../ui/inputField";
+import { InputColorZodField, InputZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { categorySaveSchema } from "@/app/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
@@ -14,12 +10,16 @@ import { SelectZodField } from "../ui/selectField";
 import ButtonForm from "../ui/buttonForm";
 import { ICategory } from "@/app/types/api";
 import ButtonArrayForm from "../ui/buttonArrayFrom";
+import { ImgField } from "../ui/imgField";
+import { imgUrl } from "@/app/utils/img/imgUrl";
+import { resolve } from "path";
 
 type CategoryFormProps = {
   type: "create" | "edit";
   id?: number | null;
   token: string;
   closeModal: () => void;
+  getData: () => void;
 };
 
 const CategoryForm: React.FC<CategoryFormProps> = ({
@@ -27,6 +27,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   id,
   token,
   closeModal,
+  getData,
 }) => {
   const [data, setData] = useState<ICategory>();
 
@@ -47,8 +48,8 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     defaultValues: {
       name: "",
       icon_url: null,
-      labelBgColor: "",
-      textColor: "",
+      labelBgColor: "#000000",
+      textColor: "#ffffff",
       labels: [{ name: "" }],
       type: "",
       filter_ids: [],
@@ -74,23 +75,28 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   });
 
   useEffect(() => {
-    if (type === "edit") {
-      if (id) getDataById(id?.toString());
+    if (type === "edit" && id) {
+      getDataById(id?.toString());
     }
-  }, [type, id]);
+  }, [id, type]);
 
   useEffect(() => {
     if (data) {
-      if (icon) {
-        setIcon(data.icon);
+      if (data.icon) {
+        setIcon(imgUrl(data.icon));
+      }
+      let files;
+      if (data.files) {
+        files = data.files.map((file: any) => ({ file_type: file.label }));
       }
       reset({
         name: data.name,
         icon_url: null,
-        labelBgColor: data.background_color,
-        textColor: data.text_color,
-        labels: data.labels || [{ name: "" }],
+        labelBgColor: data.background_color || "#000000",
+        textColor: data.text_color || "",
+        labels: data.labels || [{ name: "#ffffff" }],
         type: data.type,
+        files: files || [{ file_type: "" }],
       });
     }
   }, [data]);
@@ -103,71 +109,103 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(res.data);
+
       setData(res.data);
     } catch (error) {
       console.error(error);
-      alert("Error al obtener los datos");
+      toast.error("Error al obtener los datos");
     } finally {
       setLoading(false);
     }
   };
 
   const onSubmit = async (data: any) => {
+    console.log(data);
     setSubmitting(true);
-    const dataSend = {
-      // company_id: data.companyId,
-      // plan_id: data.plan,
-    };
+    const dataSend = new FormData();
+    dataSend.append("name", data.name);
+    dataSend.append("background_color", data.labelBgColor);
+    dataSend.append("text_color", data.textColor);
+    dataSend.append("type", data.type);
+    // files
+    if (data.files.length > 0 && data.files[0].file_type) {
+      const filesArray = data.files.map((file: any) => file.file_type);
+      filesArray.forEach((file: any) =>
+        dataSend.append("category_files[]", file)
+      );
+    }
+    // labels
+    if (data.labels.length > 0 && data.labels[0].name) {
+      const labelsArray = data.labels.map((label: any) => label.name);
+      labelsArray.forEach((label: any) => dataSend.append("labels[]", label));
+    }
+    // icon
+    if (data.icon_url) {
+      console.log(data.icon_url[0]);
+      dataSend.append("icon", data.icon_url[0]);
+    }
 
     const promise = new Promise(async (resolve, reject) => {
-      console.log(dataSend);
       try {
         if (type === "create") {
-          console.log("create");
           await axios.post(apiUrls.category.create, dataSend, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
           console.log("creado");
-          resolve({ message: "Suscripción creada exitosamente" });
+          resolve({ message: "Categoría creada exitosamente" });
         }
         if (type === "edit") {
-          console.log("edit");
           if (id) {
             console.log("id", id);
-            await axios.put(apiUrls.category.update(id?.toString()), dataSend, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
+            await axios.post(
+              apiUrls.category.update(id?.toString()),
+              dataSend,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
             console.log("editado");
-            resolve({ message: "Suscripción actualizada exitosamente" });
+            resolve({ message: "Categoría actualizada exitosamente" });
           } else {
-            reject("No se ha podido obtener el id de la suscripción");
+            reject("No se ha podido obtener el id de la categoría");
           }
         }
+        closeModal();
       } catch (error) {
-        console.error(error);
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
-        reject(error);
+        reject({ message: "Error al guardar los datos" });
       } finally {
         setSubmitting(false);
+        getData();
       }
     });
     toast.promise(promise, {
       loading: "Guardando datos...",
       success: (data: any) => `${data.message}`,
-      error: "Error al guardar los datos",
+      error: (error: any) => `${error.message}`,
     });
   };
 
   return (
     <>
       <form className="flex flex-col gap-2 mt-4">
+        <div className="flex justify-center ">
+          <ImgField
+            id="icon_url"
+            imgLogo={icon}
+            register={register("icon_url")}
+            error={errors.icon_url}
+            watch={watch("icon_url")}
+            setImgLogo={setIcon}
+            iscategory
+          />
+        </div>
         <InputZodField
           id="name"
           name="Nombre"
@@ -272,13 +310,18 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
 
         <div className="gap-8 flex justify-end items-center mt-4">
           <ButtonForm
+            isdisabled={submitting}
             text="Cancelar"
             onClick={() => {
               reset();
               closeModal();
             }}
           />
-          <ButtonForm text="Guardar" onClick={handleSubmit(onSubmit)} primary />
+          <ButtonForm
+            text={loading ? "Guardando..." : "Guardar"}
+            onClick={handleSubmit(onSubmit)}
+            primary
+          />
         </div>
       </form>
     </>

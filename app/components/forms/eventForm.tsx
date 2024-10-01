@@ -1,21 +1,25 @@
 import { useForm } from "react-hook-form";
-import { InputField, InputZodField, TextAreaZodField } from "../ui/inputField";
+import { InputZodField, TextAreaZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { eventSaveSchema } from "@/app/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
 import { apiUrls } from "@/app/utils/api/apiUrls";
 import axios from "axios";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import { SelectZodField } from "../ui/selectField";
 import ButtonForm from "../ui/buttonForm";
 import { IEvents } from "@/app/types/api";
 import EditorHtml from "../ui/editotrHtml";
+import { ImgField } from "../ui/imgField";
+import { imgUrl } from "@/app/utils/img/imgUrl";
+import { useAuthContext } from "@/app/context/authContext";
 
 type EventFormProps = {
   type: "create" | "edit";
   id?: number | null;
   token: string;
   closeModal: () => void;
+  getData: () => void;
 };
 
 const EventForm: React.FC<EventFormProps> = ({
@@ -23,14 +27,19 @@ const EventForm: React.FC<EventFormProps> = ({
   id,
   token,
   closeModal,
+  getData,
 }) => {
-  const [data, setData] = useState<IEvents>();
+  const { user } = useAuthContext();
+  const [event, setEvent] = useState<IEvents>();
+
+  // img
+  const [imgMain, setImgMain] = useState<any>(null);
+  const [imgSecond, setImgSecond] = useState<any>(null);
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const {
-    control,
     register,
     handleSubmit,
     formState: { errors },
@@ -43,8 +52,8 @@ const EventForm: React.FC<EventFormProps> = ({
     defaultValues: {
       title: "",
       description: "",
-      type: "",
-      status: "",
+      type: "Nacional",
+      status: user?.type === "admin" ? "approved" : "pending",
       content: "",
       date: "",
       location: "",
@@ -61,21 +70,27 @@ const EventForm: React.FC<EventFormProps> = ({
   }, [type, id]);
 
   useEffect(() => {
-    if (data) {
+    if (event) {
+      if (event.photos && event.photos.length > 0) {
+        setImgMain(imgUrl(event.photos[0].photo_url));
+        if (event.photos.length > 1) {
+          setImgSecond(imgUrl(event.photos[1].photo_url));
+        }
+      }
       reset({
-        title: data.name || "",
-        description: data.description || "",
-        type: data.type || "",
-        status: data.status || "pending",
-        content: data.content || "",
-        date: data.date || "",
-        location: data.location || "",
+        title: event.name || "",
+        description: event.description || "",
+        type: event.type || "National",
+        status: event.status || user?.type === "admin" ? "approved" : "pending",
+        content: event.content || "",
+        date: event.date || "",
+        location: event.location || "",
         mainImage: null,
         secondImage: null,
-        link: data.link || "",
+        link: event.link || "",
       });
     }
-  }, [data]);
+  }, [event]);
 
   const getDataById = async (id: string) => {
     setLoading(true);
@@ -85,10 +100,9 @@ const EventForm: React.FC<EventFormProps> = ({
           Authorization: `Bearer ${token}`,
         },
       });
-      setData(res.data);
+      setEvent(res.data);
     } catch (error) {
-      console.error(error);
-      alert("Error al obtener los datos");
+      toast.error("Error al obtener los datos");
     } finally {
       setLoading(false);
     }
@@ -96,46 +110,66 @@ const EventForm: React.FC<EventFormProps> = ({
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
-    const dataSend = {};
+    const dataSend = new FormData();
+    if (!user?.company_id) {
+      toast.error("No se ha podido obtener su id, recargue la página ");
+      return;
+    }
+    if (event) {
+      dataSend.append("company_id", event?.company_id.toString());
+    } else {
+      dataSend.append("company_id", user?.company_id.toString());
+    }
+
+    dataSend.append("name", data.title);
+    dataSend.append("description", data.description);
+    dataSend.append("content", data.content);
+    dataSend.append("date", data.date);
+    dataSend.append("status", data.status);
+    dataSend.append("location", data.location);
+    dataSend.append("type", data.type);
+    dataSend.append("link", data.link);
+
+    if (data.mainImage) {
+      dataSend.append("photos[]", data.mainImage[0]);
+    }
+
+    if (data.secondImage) {
+      dataSend.append("photos[]", data.secondImage[0]);
+    }
 
     const promise = new Promise(async (resolve, reject) => {
-      console.log(dataSend);
       try {
         if (type === "create") {
-          console.log("create");
           await axios.post(apiUrls.event.create, dataSend, {
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
             },
           });
-          console.log("creado");
-          resolve({ message: "Suscripción creada exitosamente" });
+          resolve({ message: "Evento creado exitosamente" });
         }
         if (type === "edit") {
-          console.log("edit");
           if (id) {
-            console.log("id", id);
-            await axios.put(
-              apiUrls.subscription.update(id?.toString()),
-              dataSend,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-            console.log("editado");
-            resolve({ message: "Suscripción actualizada exitosamente" });
+            await axios.post(apiUrls.event.update(id?.toString()), dataSend, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data",
+              },
+            });
+            resolve({ message: "Evento actualizada exitosamente" });
           } else {
-            reject("No se ha podido obtener el id de la suscripción");
+            reject({ message: "No se ha podido obtener el id del evento" });
           }
         }
+        closeModal();
+        getData();
       } catch (error) {
         console.error(error);
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
-        reject(error);
+        reject({ message: "Error al guardar los datos" });
       } finally {
         setSubmitting(false);
       }
@@ -143,13 +177,46 @@ const EventForm: React.FC<EventFormProps> = ({
     toast.promise(promise, {
       loading: "Guardando datos...",
       success: (data: any) => `${data.message}`,
-      error: "Error al guardar los datos",
+      error: (error: any) => `${error.message}`,
     });
   };
 
   return (
     <>
       <form className="flex flex-col gap-2 mt-4">
+        {type === "edit" && (
+          <div className="w-full rounded-md bg-yellow-50 border border-zinc-100 p-2 mb-4">
+            <p className="text-zinc-500 text-xs">
+              Nota: Al subir nuevas imágenes, las anteriores serán eliminadas,{" "}
+              <strong>
+                le recomendamos subir las dos imágenes a la vez o descargarla
+                antes de editar.
+              </strong>
+            </p>
+          </div>
+        )}
+
+        <div className="flex flex-row flex-wrap gap-4 w-full justify-center">
+          <ImgField
+            id="mainImage"
+            imgLogo={imgMain || ""}
+            setImgLogo={setImgMain}
+            error={errors.mainImage}
+            register={register("mainImage")}
+            watch={watch("mainImage")}
+            isPost
+          />
+          <ImgField
+            id="secondImage"
+            imgLogo={imgSecond || ""}
+            setImgLogo={setImgSecond}
+            error={errors.secondImage}
+            register={register("secondImage")}
+            watch={watch("secondImage")}
+            isPost
+          />
+        </div>
+
         <SelectZodField
           id="status"
           name="Estado"
@@ -163,6 +230,7 @@ const EventForm: React.FC<EventFormProps> = ({
           getOptionLabel={(option) => option.name}
           register={register("status")}
           error={errors.status}
+          isdisabled={user?.type === "admin" ? false : true}
         />
         <SelectZodField
           id="type"
@@ -226,8 +294,14 @@ const EventForm: React.FC<EventFormProps> = ({
               reset();
               closeModal();
             }}
+            isdisabled={submitting}
           />
-          <ButtonForm text="Guardar" onClick={handleSubmit(onSubmit)} primary />
+          <ButtonForm
+            isdisabled={submitting}
+            text={loading ? "Guardando..." : "Guardar"}
+            onClick={handleSubmit(onSubmit)}
+            primary
+          />
         </div>
       </form>
     </>

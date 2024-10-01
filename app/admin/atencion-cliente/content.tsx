@@ -5,16 +5,15 @@ import {
   SafeAreaContainer,
 } from "@/app/components/ui/containers";
 import { InputZodField } from "@/app/components/ui/inputField";
-import { useAuthContext } from "@/app/context/authContext";
 import { IHelpCompany } from "@/app/types/api";
 import { apiUrls } from "@/app/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/app/utils/api/getToken";
 import { helpUpdateSchema } from "@/app/utils/shcemas/Admin";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const Content = () => {
   const [token, setToken] = useState<string | null>(null);
@@ -30,7 +29,6 @@ const Content = () => {
   }, []);
 
   const {
-    control,
     register,
     handleSubmit,
     formState: { errors },
@@ -67,7 +65,7 @@ const Content = () => {
         address: dataHelp.help_address || "",
       });
     }
-  },[dataHelp]);
+  }, [dataHelp]);
 
   const getData = async () => {
     setLoading(true);
@@ -85,7 +83,47 @@ const Content = () => {
     }
   };
 
-  const onSubmit = async (data: any) => {};
+  const onSubmit = async (data: any) => {
+    setLoading(true);
+    console.log(data);
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        const res = await axios.put(
+          apiUrls.help.update("1"),
+          {
+            whatsapp_link: data.ws_link,
+            help_phone_number: data.phone,
+            help_landline_number: data.telephone,
+            help_email_contact: data.email,
+            help_email_suscriptions: data.emailSuscription,
+            help_email_courses: data.emailCourse,
+            help_email_support: data.emailSupport,
+            help_address: data.address,
+            company_id: 1,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setDataHelp(res.data);
+        resolve({ message: "Cambios guardados" });
+      } catch (error) {
+        if(axios.isAxiosError(error)){
+          console.log(error.response?.data);
+        }
+        reject({ message: "Error al guardar cambios" });
+      } finally {
+        setLoading(false);
+      }
+    });
+    toast.promise(promise, {
+      loading: "Guardando cambios...",
+      success: (data: any) => `${data.message}`,
+      error: (error: any) => `${error.message}`,
+    });
+  };
 
   return (
     <SafeAreaContainer>
@@ -157,8 +195,12 @@ const Content = () => {
           </div>
         </MainContainer>
         <div className="flex justify-end">
-
-        <ButtonForm text="Guardar" onClick={handleSubmit(onSubmit)} primary />
+          <ButtonForm
+            text="Guardar"
+            onClick={handleSubmit(onSubmit)}
+            primary
+            isdisabled={loading}
+          />
         </div>
       </form>
     </SafeAreaContainer>

@@ -1,25 +1,22 @@
 import { useForm } from "react-hook-form";
-import { InputField, InputZodField, TextAreaZodField } from "../ui/inputField";
+import { InputZodField, TextAreaZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  courseSaveSchema,
-  helpUpdateSchema,
-  subscriptionSaveSchema,
-} from "@/app/utils/shcemas/Admin";
+import { courseSaveSchema } from "@/app/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
 import { apiUrls } from "@/app/utils/api/apiUrls";
 import axios from "axios";
-import { Toaster, toast } from "sonner";
-import { SelectZodField } from "../ui/selectField";
+import { toast } from "sonner";
 import ButtonForm from "../ui/buttonForm";
 import { ICourse } from "@/app/types/api";
 import EditorHtml from "../ui/editotrHtml";
+import { useAuthContext } from "@/app/context/authContext";
 
 type CourseFormProps = {
   type: "create" | "edit";
   id?: number | null;
   token: string;
   closeModal: () => void;
+  getData: () => void;
 };
 
 const CourseForm: React.FC<CourseFormProps> = ({
@@ -27,21 +24,23 @@ const CourseForm: React.FC<CourseFormProps> = ({
   id,
   token,
   closeModal,
+  getData,
 }) => {
-  const [data, setData] = useState<ICourse>();
+  const { user } = useAuthContext();
+
+  const [course, setCourse] = useState<ICourse>();
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const {
-    control,
     register,
     handleSubmit,
     formState: { errors },
     reset,
     watch,
     getValues,
-    setValue
+    setValue,
   } = useForm({
     resolver: zodResolver(courseSaveSchema),
     defaultValues: {
@@ -62,18 +61,18 @@ const CourseForm: React.FC<CourseFormProps> = ({
   }, [type, id]);
 
   useEffect(() => {
-    if (data) {
+    if (course) {
       reset({
-        title: data.title || "",
-        language: data.language || "",
-        description: data.description || "",
-        content: data.content || "",
+        title: course.title || "",
+        language: course.language || "",
+        description: course.description || "",
+        content: course.content || "",
         main_img: null,
         second_img: null,
-        link: data.link || "",
+        link: course.link || "",
       });
     }
-  }, [data]);
+  }, [course]);
 
   const getDataById = async (id: string) => {
     setLoading(true);
@@ -83,7 +82,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
           Authorization: `Bearer ${token}`,
         },
       });
-      setData(res.data);
+      setCourse(res.data);
     } catch (error) {
       console.error(error);
       alert("Error al obtener los datos");
@@ -94,42 +93,57 @@ const CourseForm: React.FC<CourseFormProps> = ({
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
-    const dataSend = {};
+    const dataSend = new FormData();
+    if (!user?.company_id) {
+      toast.error("No se ha podido obtener su id, recargue la página ");
+      return;
+    }
+
+    if (course) {
+      dataSend.append("company_id", course?.company.id.toString());
+    } else {
+      dataSend.append("company_id", user?.company_id.toString());
+    }
+
+    dataSend.append("title", data.title);
+    dataSend.append("language", data.language);
+    dataSend.append("description", data.description);
+    dataSend.append("content", data.content);
+    dataSend.append("link", data.link);
+    dataSend.append("published_at", new Date().toISOString());
 
     const promise = new Promise(async (resolve, reject) => {
-      console.log(dataSend);
       try {
         if (type === "create") {
-          console.log("create");
           await axios.post(apiUrls.courses.create, dataSend, {
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
             },
           });
-          console.log("creado");
-          resolve({ message: "Suscripción creada exitosamente" });
+          resolve({ message: "Curso creado exitosamente" });
         }
         if (type === "edit") {
-          console.log("edit");
           if (id) {
-            console.log("id", id);
-            await axios.put(apiUrls.courses.update(id?.toString()), dataSend, {
+            await axios.post(apiUrls.courses.update(id?.toString()), dataSend, {
               headers: {
                 Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data",
               },
             });
-            console.log("editado");
-            resolve({ message: "Suscripción actualizada exitosamente" });
+            resolve({ message: "Curso actualizado exitosamente" });
           } else {
-            reject("No se ha podido obtener el id de la suscripción");
+            reject({ message: "No se ha podido obtener el id" });
           }
         }
+        closeModal();
+        getData();
       } catch (error) {
         console.error(error);
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
-        reject(error);
+        reject({ message: "Error al guardar los datos" });
       } finally {
         setSubmitting(false);
       }
@@ -137,7 +151,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
     toast.promise(promise, {
       loading: "Guardando datos...",
       success: (data: any) => `${data.message}`,
-      error: "Error al guardar los datos",
+      error: (error: any) => `${error.message}`,
     });
   };
 
@@ -162,7 +176,6 @@ const CourseForm: React.FC<CourseFormProps> = ({
           text="Contenido"
           id="content"
           value={getValues("content")}
-          // register={register("content")}
           setValue={setValue}
           error={errors.content}
         />
@@ -184,12 +197,18 @@ const CourseForm: React.FC<CourseFormProps> = ({
         <div className="gap-8 flex justify-end items-center mt-4">
           <ButtonForm
             text="Cancelar"
+            isdisabled={submitting}
             onClick={() => {
               reset();
               closeModal();
             }}
           />
-          <ButtonForm text="Guardar" onClick={handleSubmit(onSubmit)} primary />
+          <ButtonForm
+            text="Guardar"
+            isdisabled={submitting}
+            onClick={handleSubmit(onSubmit)}
+            primary
+          />
         </div>
       </form>
     </>

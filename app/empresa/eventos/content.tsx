@@ -5,7 +5,7 @@ import {
   SafeAreaContainer,
 } from "@/app/components/ui/containers";
 import SearchInput from "@/app/components/ui/searchInput";
-import { ICompany, IEvents } from "@/app/types/api";
+import { IEvents } from "@/app/types/api";
 import { apiUrls, pagination } from "@/app/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/app/utils/api/getToken";
 import axios from "axios";
@@ -18,10 +18,12 @@ import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
 import { toast } from "sonner";
 import RejectForm from "@/app/components/forms/rejectedForm";
 import SelectComponent from "@/app/components/ui/select";
+import { useAuthContext } from "@/app/context/authContext";
 
 const Content = () => {
   // token
   const [token, setToken] = useState("");
+  const { user } = useAuthContext();
 
   // pagination
   const [total, setTotal] = useState(0);
@@ -31,7 +33,6 @@ const Content = () => {
 
   // data
   const [data, setData] = useState<IEvents[]>([]);
-  const [providers, setProviders] = useState<ICompany[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
@@ -39,7 +40,7 @@ const Content = () => {
   // modal
   const [openModal, setOpenModal] = useState(false);
   const [rejectedModal, setRejectedModal] = useState(false);
-  const [statusModal, setStatusModal] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
 
   // search
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -47,7 +48,6 @@ const Content = () => {
   const [typeFilter, setTypeFilter] = useState<
     "all" | "Nacional" | "Internacional"
   >("all");
-  const [providerFilter, setProviderFilter] = useState<"all" | string>("all");
   const [statusFilter, setStatusFilter] = useState<
     "pending" | "approved" | "rejected" | "all"
   >("all");
@@ -59,7 +59,7 @@ const Content = () => {
   );
 
   const [selectedAction, setSelectedAction] = useState<
-    "data" | "search" | "status" | "type" | "provider"
+    "data" | "search" | "status" | "type"
   >("data");
 
   useEffect(() => {
@@ -68,12 +68,6 @@ const Content = () => {
       setToken(token);
     }
   }, []);
-
-  useEffect(() => {
-    if (token) {
-      getProviders();
-    }
-  }, [token]);
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -92,14 +86,10 @@ const Content = () => {
     setOpenModal(true);
     setSelectedType("create");
   };
-  const handleRejected = (id: number) => {
-    setSelectedId(id);
-    setRejectedModal(true);
-  };
   const handleStatus = (id: number, status: "delete" | "approved") => {
     setSelectedId(id);
     setSelectedStatus(status);
-    setStatusModal(true);
+    setDeleteModal(true);
   };
   const handleEdit = (id: number) => {
     setOpenModal(true);
@@ -109,61 +99,17 @@ const Content = () => {
   const handleCloseModal = () => {
     setOpenModal(false);
   };
-  const handleChangeStatus = () => {
-    if (!selectedId) return;
-    if (selectedStatus === "delete") {
-      onDelete();
-    } else {
-      onApprove(selectedId.toString());
-    }
-  };
-  const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newProvider = e.target.value as "all" | string;
-    newProvider;
-    setProviderFilter(newProvider);
-    setSelectedAction("provider");
-  };
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStatus = e.target.value as "pending" | "approved" | "rejected";
-    newStatus;
-    setStatusFilter(newStatus);
-    setSelectedAction("status");
-  };
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newType = e.target.value as "Nacional" | "Internacional";
     newType;
     setTypeFilter(newType);
     setSelectedAction("type");
   };
-
-  const onApprove = async (id: string) => {
-    const promise = new Promise(async (resolve, rejects) => {
-      try {
-        await axios.post(
-          apiUrls.admin.approve("event", id),
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        resolve({ message: "Evento aprobado" });
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
-        rejects({ message: "No se pudo aprobar el evento" });
-      } finally {
-        getData();
-        setStatusModal(false);
-      }
-    });
-    toast.promise(promise, {
-      loading: "Aprobando evento...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newStatus = e.target.value as "pending" | "approved" | "rejected";
+    newStatus;
+    setStatusFilter(newStatus);
+    setSelectedAction("status");
   };
   const onDelete = () => {
     if (!selectedId) return;
@@ -182,7 +128,7 @@ const Content = () => {
         reject({ message: "No se pudo eliminar el evento" });
       } finally {
         getData();
-        setStatusModal(false);
+        setDeleteModal(false);
       }
     });
 
@@ -193,24 +139,17 @@ const Content = () => {
     });
   };
 
-  const getProviders = async () => {
-    try {
-      const response = await axios.get(apiUrls.company.getAll, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setProviders(response.data);
-    } catch (error) {
-      toast.error("Error al obtener proveedores");
-      console.error(error);
-    }
-  };
   const getData = async () => {
+    if (!user) {
+      toast.error("No se ha podido obtener el id de la empresa");
+      return;
+    }
     setLoading(true);
     try {
       const response = await axios.get(
-        apiUrls.event.pagination(pageIndex, pageSize),
+        apiUrls.event.myEvents(user.company_id.toString()) +
+          "?" +
+          pagination(pageIndex, pageSize),
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -229,10 +168,14 @@ const Content = () => {
   const getEventsBySearch = (query: string) => {
     setSearchQuery(query);
     setLoading(true);
+    if (!user) {
+      toast.error("No se ha podido obtener el id de la empresa");
+      return;
+    }
     const promise = new Promise(async (resolve, reject) => {
       try {
         const res = await axios.get(
-          apiUrls.event.getAll +
+          apiUrls.event.myEvents(user?.company_id.toString()) +
             "?like=" +
             query +
             "&" +
@@ -271,10 +214,14 @@ const Content = () => {
       return;
     }
     setLoading(true);
+    if (!user) {
+      toast.error("No se ha podido obtener el id de la empresa");
+      return;
+    }
     const promise = new Promise(async (resolve, reject) => {
       try {
         const res = await axios.get(
-          apiUrls.event.getAll +
+          apiUrls.event.myEvents(user.company_id.toString()) +
             "?status=" +
             status +
             "&" +
@@ -309,11 +256,15 @@ const Content = () => {
       setSelectedAction("data");
       return;
     }
+    if (!user) {
+      toast.error("No se ha podido obtener el id de la empresa");
+      return;
+    }
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
         const res = await axios.get(
-          apiUrls.event.getAll +
+          apiUrls.event.myEvents(user.company_id.toString()) +
             "?type=" +
             type +
             "&" +
@@ -333,45 +284,6 @@ const Content = () => {
           console.log(error.response?.data);
         }
         reject({ message: "Error al filtrar eventos por tipo" });
-      } finally {
-        setLoading(false);
-      }
-    });
-    toast.promise(promise, {
-      loading: "Filtrando eventos...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
-  };
-  const getEventsByProvider = async (provider: "all" | string) => {
-    if (provider === "all") {
-      setSelectedAction("data");
-      return;
-    }
-    console.log(provider);
-    setLoading(true);
-    const promise = new Promise(async (resolve, reject) => {
-      try {
-        const res = await axios.get(
-          apiUrls.event.myEvents(provider.toString()) +
-            "?" +
-            pagination(pageIndex, pageSize),
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log(res.data.data);
-        setData(res.data.data);
-        setPageCount(res.data.last_page);
-        setTotal(res.data.total);
-        resolve({ message: "Eventos filtrados" });
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
-        reject({ message: "Error al filtrar eventos por proveedor" });
       } finally {
         setLoading(false);
       }
@@ -407,11 +319,6 @@ const Content = () => {
       getEventsByType(typeFilter);
     }
   }, [token, selectedAction, typeFilter, pageIndex]);
-  useEffect(() => {
-    if (token && selectedAction === "provider") {
-      getEventsByProvider(providerFilter);
-    }
-  }, [token, selectedAction, providerFilter, pageIndex]);
 
   return (
     <>
@@ -442,19 +349,6 @@ const Content = () => {
                 onChange={handleTypeChange}
                 defaultValue={typeFilter}
               />
-              <SelectComponent
-                label="Proveedor"
-                id="providerFilter"
-                options={[
-                  { value: "all", label: "Todos" },
-                  ...providers.map((provider) => ({
-                    value: provider.id,
-                    label: `${provider.ruc} | ${provider.name}`,
-                  })),
-                ]}
-                onChange={handleProviderChange}
-                defaultValue={providerFilter}
-              />
             </div>
           </MainContainer>
         </div>
@@ -483,8 +377,6 @@ const Content = () => {
                 dataTable={data}
                 onDelete={(id: number) => handleStatus(id, "delete")}
                 onEdit={(id: number) => handleEdit(id)}
-                onApprove={(id: number) => handleStatus(id, "approved")}
-                onReject={(id: number) => handleRejected(id)}
               />
             </div>
           )}
@@ -512,9 +404,9 @@ const Content = () => {
         />
       </FormModal>
       <ConfirmModal
-        openModal={statusModal}
-        setOpenModal={() => setStatusModal(false)}
-        onAction={handleChangeStatus}
+        openModal={deleteModal}
+        setOpenModal={() => setDeleteModal(false)}
+        onAction={onDelete}
         title={
           selectedStatus === "delete" ? "Eliminar Evento" : "Aprobar Evento"
         }

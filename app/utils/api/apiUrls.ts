@@ -75,8 +75,8 @@ export const apiUrls = {
     update: (id: string) => `${BASE_URL}/products/${id}?_method=PUT`,
     delete: (id: string) => `${BASE_URL}/products/${id}`,
     pendingProducts: `${BASE_URL}/pending-products`,
-    myProductsPagination: (companyId: string, page: number, per_page: number) =>
-      `${BASE_URL}/companies/${companyId}/product?per_page=${per_page}&page=${page}`,
+    myProducts: (companyId: string) =>
+      `${BASE_URL}/companies/${companyId}/product`,
     pagination: (page: number, per_page: number) =>
       `${BASE_URL}/products?per_page=${per_page}&page=${page}`,
     makeFeatured: (id: string) => `${BASE_URL}/products/${id}/make-featured`,

@@ -30,7 +30,7 @@ const Index = () => {
         return;
       }
 
-      const { access_token, expires_in, user } = res.data;
+      const { access_token, user } = res.data;
 
       const userInfo = {
         name: user.full_name,
@@ -40,20 +40,20 @@ const Index = () => {
         company_id: user.company?.id,
       };
 
-      // const authTokens = {
-      //   token: access_token,
-      //   refreshToken: "",
-      //   expiresIn: expires_in,
-      // };
-
       login(access_token, userInfo);
+      console.log(user.type);
 
-      if (user.type !== "admin") {
-        alert("No tienes permisos de administrador.");
+      if (user.type !== "admin" && user.type !== "company_owner") {
+        alert("No tienes permisos para acceder a esta sección");
         return;
       }
-
-      router.push(user.type === "admin" ? "/admin" : "/");
+      router.push(
+        user.type === "admin"
+          ? "/admin"
+          : user.type === "company_owner"
+          ? "/empresa"
+          : "/"
+      );
     } catch (error) {
       console.error(error);
       alert("Credenciales invalidas");

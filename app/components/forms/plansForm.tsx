@@ -1,12 +1,11 @@
 import { useFieldArray, useForm } from "react-hook-form";
-import { InputField, InputZodField, TextAreaZodField } from "../ui/inputField";
+import { InputZodField, TextAreaZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { categorySaveSchema, planSaveSchema } from "@/app/utils/shcemas/Admin";
+import { planSaveSchema } from "@/app/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
 import { apiUrls } from "@/app/utils/api/apiUrls";
 import axios from "axios";
-import { Toaster, toast } from "sonner";
-import { SelectZodField } from "../ui/selectField";
+import { toast } from "sonner";
 import ButtonForm from "../ui/buttonForm";
 import { IPlan } from "@/app/types/api";
 import ButtonArrayForm from "../ui/buttonArrayFrom";
@@ -17,9 +16,16 @@ type PlanFormProps = {
   id?: number | null;
   token: string;
   closeModal: () => void;
+  getData: () => void;
 };
 
-const PlanForm: React.FC<PlanFormProps> = ({ type, id, token, closeModal }) => {
+const PlanForm: React.FC<PlanFormProps> = ({
+  type,
+  getData,
+  id,
+  token,
+  closeModal,
+}) => {
   const [data, setData] = useState<IPlan>();
 
   const [loading, setLoading] = useState(false);
@@ -98,25 +104,28 @@ const PlanForm: React.FC<PlanFormProps> = ({ type, id, token, closeModal }) => {
   const onSubmit = async (data: any) => {
     setSubmitting(true);
     const dataSend = {
-      // company_id: data.companyId,
-      // plan_id: data.plan,
+      name: data.name,
+      price: Number(data.price),
+      description: data.description,
+      featured_products: Number(data.num_features_products),
+      products_limit: Number(data.num_products),
+      events_limit: Number(data.num_features_events),
+      news_limit: Number(data.num_features_news),
+      benefits: data.benefits,
     };
 
     const promise = new Promise(async (resolve, reject) => {
-      console.log(dataSend);
       try {
         if (type === "create") {
-          console.log("create");
           await axios.post(apiUrls.plan.create, dataSend, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-          console.log("creado");
-          resolve({ message: "Suscripción creada exitosamente" });
+          getData();
+          resolve({ message: "Plan creado exitosamente" });
         }
         if (type === "edit") {
-          console.log("edit");
           if (id) {
             console.log("id", id);
             await axios.put(apiUrls.plan.update(id?.toString()), dataSend, {
@@ -124,10 +133,11 @@ const PlanForm: React.FC<PlanFormProps> = ({ type, id, token, closeModal }) => {
                 Authorization: `Bearer ${token}`,
               },
             });
-            console.log("editado");
-            resolve({ message: "Suscripción actualizada exitosamente" });
+            resolve({ message: "Plan actualizado exitosamente" });
           } else {
-            reject("No se ha podido obtener el id de la suscripción");
+            reject({
+              message: "No se ha podido obtener el id del plan",
+            });
           }
         }
       } catch (error) {
@@ -135,15 +145,17 @@ const PlanForm: React.FC<PlanFormProps> = ({ type, id, token, closeModal }) => {
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
-        reject(error);
+        reject({ message: "No se pudo registrar el plan" });
       } finally {
+        closeModal();
         setSubmitting(false);
+        getData();
       }
     });
     toast.promise(promise, {
       loading: "Guardando datos...",
       success: (data: any) => `${data.message}`,
-      error: "Error al guardar los datos",
+      error: (error: any) => `${error.message}`,
     });
   };
 
@@ -243,12 +255,18 @@ const PlanForm: React.FC<PlanFormProps> = ({ type, id, token, closeModal }) => {
         <div className="gap-8 flex justify-end items-center mt-4">
           <ButtonForm
             text="Cancelar"
+            isdisabled={submitting}
             onClick={() => {
               reset();
               closeModal();
             }}
           />
-          <ButtonForm text="Guardar" onClick={handleSubmit(onSubmit)} primary />
+          <ButtonForm
+            text="Guardar"
+            isdisabled={submitting}
+            onClick={handleSubmit(onSubmit)}
+            primary
+          />
         </div>
       </form>
     </>

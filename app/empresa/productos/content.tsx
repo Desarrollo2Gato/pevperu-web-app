@@ -5,17 +5,16 @@ import {
   SafeAreaContainer,
 } from "@/app/components/ui/containers";
 import SearchInput from "@/app/components/ui/searchInput";
-import { IPlan } from "@/app/types/api";
+import { IProduct } from "@/app/types/api";
 import { apiUrls } from "@/app/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/app/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Pagination } from "@mui/material";
+import { Modal, Box, Typography, Pagination } from "@mui/material";
 
-import PlansTable from "@/app/components/tables/plansTable";
-import PlanForm from "@/app/components/forms/plansForm";
+import ProductForm from "@/app/components/forms/productForm";
+import ProductTable from "@/app/components/tables/productTable";
 import SelectRows from "@/app/components/ui/selectRows";
-import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
 import { toast } from "sonner";
 
 const Content = () => {
@@ -29,14 +28,13 @@ const Content = () => {
   const [pageCount, setPageCount] = useState(0);
 
   // data
-  const [data, setData] = useState<IPlan[]>([]);
+  const [data, setData] = useState<IProduct[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
 
   // modal
   const [openModal, setOpenModal] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
@@ -59,7 +57,7 @@ const Content = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        apiUrls.plan.pagination(pageIndex, pageSize),
+        apiUrls.product.pagination(pageIndex, pageSize),
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -70,14 +68,14 @@ const Content = () => {
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
     } catch (error) {
-      console.error(error);
+      toast.error("Error al obtener los datos");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    getData();
+    if (token) getData();
   }, [pageIndex, pageSize]);
 
   const handlePageChange = (
@@ -101,35 +99,8 @@ const Content = () => {
   };
 
   const handleDelete = (id: number) => {
+    setOpenModal(true);
     setSelectedId(id);
-    setDeleteModal(true);
-  };
-  const onDelete = () => {
-    if (!selectedId) return;
-    const promise = new Promise(async (resolve, reject) => {
-      try {
-        await axios.delete(apiUrls.plan.delete(selectedId?.toString()), {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        resolve({ message: "Plan eliminado" });
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
-        reject({ message: "No se pudo eliminar el plan" });
-      } finally {
-        getData();
-        setDeleteModal(false);
-      }
-    });
-
-    toast.promise(promise, {
-      loading: "Eliminando plan...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
   };
 
   const handleEdit = (id: number) => {
@@ -147,24 +118,31 @@ const Content = () => {
           {/* header */}
           <div className="flex flex-row justify-between pb-4 border-b border-b-gray-50">
             <h2>Registros: {total}</h2>{" "}
-            <AddButton text="Agregar Plan" onClick={handleAdd} />
+            <AddButton text="Agregar Suscripción" onClick={handleAdd} />
           </div>
           <div className="flex justify-between mb-4 pt-4">
+            {/* select items per page */}
             <SelectRows
               pageSize={pageSize.toString()}
               handlePageSizeChange={handlePageSizeChange}
             />
+            {/* buscador */}
             <div className="flex flex-row self-end">
               <SearchInput />
             </div>
           </div>
           <div className=" overflow-x-auto">
-            <PlansTable
-              dataTable={data}
-              onDelete={(id: number) => handleDelete(id)}
-              onEdit={(id: number) => handleEdit(id)}
-            />
+            {loading ? (
+              <div className="w-full h-10 animate-pulse bg-gray-200"></div>
+            ) : (
+              <ProductTable
+                dataTable={data}
+                onDelete={(id: number) => handleDelete(id)}
+                onEdit={(id: number) => handleEdit(id)}
+              />
+            )}
           </div>
+          {/* pagination */}
           <div className="mt-4 justify-center flex">
             <Pagination
               count={pageCount}
@@ -175,27 +153,37 @@ const Content = () => {
           </div>
         </MainContainer>
       </SafeAreaContainer>
-      {/* form modal */}
-      <FormModal
-        title={`${selectedType === "edit" ? "Editar" : "Crear"} plan`}
-        openModal={openModal}
-        setOpenModal={() => setOpenModal(false)}
-      >
-        <PlanForm
-          closeModal={handleCloseModal}
-          type={selectedType}
-          id={selectedId}
-          token={token}
-          getData={getData}
-        />
-      </FormModal>
-      {/* delete modal */}
-      <ConfirmModal
-        openModal={deleteModal}
-        setOpenModal={() => setDeleteModal(false)}
-        onAction={onDelete}
-        title="Eliminar Plan"
-      />
+      <div>
+        <Modal
+          open={openModal}
+          onClose={() => setOpenModal(false)}
+          aria-labelledby="custom-modal-title"
+          aria-describedby="custom-modal-description"
+        >
+          <Box
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+          bg-white border border-gray-300 shadow-lg rounded-lg
+          p-4 sm:p-6 
+          w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl
+          overflow-y-auto max-h-[90vh]"
+          >
+            <Typography
+              id="custom-modal-title"
+              variant="h6"
+              className="text-2xl text-center font-bold text-zinc-500"
+            >
+              Editar suscripción
+            </Typography>
+            <ProductForm
+              closeModal={handleCloseModal}
+              type={selectedType}
+              id={selectedId}
+              token={token}
+              getData={getData}
+            />
+          </Box>
+        </Modal>
+      </div>
     </>
   );
 };

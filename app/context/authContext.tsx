@@ -60,7 +60,7 @@ export default function AuthContextProvider({
 
   const isAdmin = useCallback(
     function () {
-      return user?.type === "admin";
+      return user?.type === "admin" || user?.type === "company_owner";
     },
     [user]
   );

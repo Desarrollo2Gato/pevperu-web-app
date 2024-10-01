@@ -15,9 +15,16 @@ type SubsFormProps = {
   id?: number | null;
   token: string;
   closeModal: () => void;
+  getData: () => void;
 };
 
-const SubsForm: React.FC<SubsFormProps> = ({ type, id, token, closeModal }) => {
+const SubsForm: React.FC<SubsFormProps> = ({
+  type,
+  id,
+  token,
+  closeModal,
+  getData,
+}) => {
   const [data, setData] = useState<ISubscription>();
   const [userData, setUserData] = useState<ICompany[]>([]);
   const [plansData, setPlansData] = useState<IPlan[]>([]);
@@ -41,7 +48,7 @@ const SubsForm: React.FC<SubsFormProps> = ({ type, id, token, closeModal }) => {
       plan: "",
       startDate: "",
       endDate: "",
-      status: "",
+      status: "true",
     },
   });
   useEffect(() => {
@@ -123,30 +130,27 @@ const SubsForm: React.FC<SubsFormProps> = ({ type, id, token, closeModal }) => {
   };
 
   const onSubmit = async (data: any) => {
+    console.log("data", data)
     setSubmitting(true);
     const dataSend = {
       company_id: data.companyId,
       plan_id: data.plan,
       start_date: formatDateToISO(data.startDate),
       end_date: formatDateToISO(data.endDate),
-      is_active: Boolean(data.status),
+      is_active: data.status === "true" ? true : false,
     };
 
     const promise = new Promise(async (resolve, reject) => {
-      console.log(dataSend);
       try {
         if (type === "create") {
-          console.log("create");
           await axios.post(apiUrls.subscription.create, dataSend, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-          console.log("creado");
           resolve({ message: "Suscripción creada exitosamente" });
         }
         if (type === "edit") {
-          console.log("edit");
           if (id) {
             console.log("id", id);
             await axios.put(
@@ -164,13 +168,15 @@ const SubsForm: React.FC<SubsFormProps> = ({ type, id, token, closeModal }) => {
             reject("No se ha podido obtener el id de la suscripción");
           }
         }
+        closeModal();
       } catch (error) {
         console.error(error);
-        if(axios.isAxiosError(error)){
+        if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
         reject(error);
       } finally {
+        getData();
         setSubmitting(false);
       }
     });
@@ -204,8 +210,8 @@ const SubsForm: React.FC<SubsFormProps> = ({ type, id, token, closeModal }) => {
           placeholder="Seleccione una plan"
           getOptionValue={(option) => option.id}
           getOptionLabel={(option) => option.name}
-          register={register("companyId")}
-          error={errors.companyId}
+          register={register("plan")}
+          error={errors.plan}
         />
         <InputZodField
           id="startDate"

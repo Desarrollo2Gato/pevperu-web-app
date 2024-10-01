@@ -5,17 +5,17 @@ import {
   SafeAreaContainer,
 } from "@/app/components/ui/containers";
 import SearchInput from "@/app/components/ui/searchInput";
-import { useAuthContext } from "@/app/context/authContext";
 import { ICategory } from "@/app/types/api";
-import { apiUrls } from "@/app/utils/api/apiUrls";
+import { apiUrls, pagination } from "@/app/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/app/utils/api/getToken";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Modal, Box, Typography, Pagination } from "@mui/material";
+import { Pagination } from "@mui/material";
 import CategoryTable from "@/app/components/tables/categoriesTable";
 import CategoryForm from "@/app/components/forms/categoryForm";
 import SelectRows from "@/app/components/ui/selectRows";
+import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
+import { toast } from "sonner";
 
 const Content = () => {
   const [token, setToken] = useState("");
@@ -31,12 +31,18 @@ const Content = () => {
 
   // loading
   const [loading, setLoading] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
 
   // modal
   const [openModal, setOpenModal] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
+  const [selectedAction, setSelectedAction] = useState<"data" | "search">(
+    "data"
+  );
 
   useEffect(() => {
     //obtener token
@@ -72,9 +78,9 @@ const Content = () => {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    getData();
-  }, [pageIndex, pageSize]);
+  // useEffect(() => {
+  //   getData();
+  // }, [pageIndex, pageSize]);
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -97,8 +103,36 @@ const Content = () => {
   };
 
   const handleDelete = (id: number) => {
-    setOpenModal(true);
     setSelectedId(id);
+    setDeleteModal(true);
+  };
+
+  const onDelete = () => {
+    if (!selectedId) return;
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        await axios.delete(apiUrls.category.delete(selectedId?.toString()), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        resolve({ message: "Categoría eliminado" });
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+        }
+        reject({ message: "No se pudo eliminar la categoría" });
+      } finally {
+        getData();
+        setDeleteModal(false);
+      }
+    });
+
+    toast.promise(promise, {
+      loading: "Eliminando categoría...",
+      success: (data: any) => `${data.message}`,
+      error: (error: any) => `${error.message}`,
+    });
   };
 
   const handleEdit = (id: number) => {
@@ -109,6 +143,63 @@ const Content = () => {
   const handleCloseModal = () => {
     setOpenModal(false);
   };
+
+  const getCategoriesBySearch = (query: string) => {
+    setSearchQuery(query);
+    setLoading(true);
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        const res = await axios.get(
+          apiUrls.category.getAll +
+            "?like=" +
+            query +
+            "&" +
+            pagination(pageIndex, pageSize),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setData(res.data.data);
+        setPageCount(res.data.last_page);
+        setTotal(res.data.total);
+        resolve({ message: "Categorías filtradas" });
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+        }
+        reject({ message: "Error" });
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    toast.promise(promise, {
+      loading: "Filtrando categorías...",
+      success: (data: any) => `${data.message}`,
+      error: (error: any) => `${error.message}`,
+    });
+  };
+
+  useEffect(() => {
+    // limpiar data
+    setData([]);
+    console.log(selectedAction);
+  }, [selectedAction]);
+
+  useEffect(() => {
+    if (token && selectedAction === "data") {
+      getData();
+    }
+  }, [token, selectedAction, pageIndex]);
+
+  // status
+  useEffect(() => {
+    if (token && selectedAction === "search") {
+      getCategoriesBySearch(searchQuery);
+    }
+  }, [token, selectedAction, searchQuery, pageIndex]);
   return (
     <>
       <SafeAreaContainer isTable>
@@ -126,57 +217,55 @@ const Content = () => {
             />
             {/* buscador */}
             <div className="flex flex-row self-end">
-              <SearchInput />
+              <SearchInput
+                placeholder="Buscar categoria"
+                onClick={(query) => getCategoriesBySearch(query)}
+              />
             </div>
           </div>
           <div className=" overflow-x-auto">
-            <CategoryTable
-              dataTable={data}
-              onDelete={(id: number) => handleDelete(id)}
-              onEdit={(id: number) => handleEdit(id)}
-            />
+            {loading ? (
+              <div>Cargando...</div>
+            ) : (
+              <CategoryTable
+                dataTable={data}
+                onDelete={(id: number) => handleDelete(id)}
+                onEdit={(id: number) => handleEdit(id)}
+              />
+            )}
           </div>
           {/* pagination */}
           <div className="mt-4 justify-center flex">
             <Pagination
               count={pageCount}
-              defaultPage={pageIndex}
+              page={pageIndex}
               boundaryCount={2}
               onChange={handlePageChange}
             />
           </div>
         </MainContainer>
       </SafeAreaContainer>
-      <div>
-        <Modal
-          open={openModal}
-          onClose={() => setOpenModal(false)}
-          aria-labelledby="custom-modal-title"
-          aria-describedby="custom-modal-description"
-        >
-          <Box
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-          bg-white border border-gray-300 shadow-lg rounded-lg
-          p-4 sm:p-6 
-          w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl
-          overflow-y-auto max-h-[90vh]"
-          >
-            <Typography
-              id="custom-modal-title"
-              variant="h6"
-              className="text-2xl text-center font-bold text-zinc-500"
-            >
-              {selectedType === "create" ? "Crear" : "Editar"} Categoría
-            </Typography>
-            <CategoryForm
-              closeModal={handleCloseModal}
-              type={selectedType}
-              id={selectedId}
-              token={token}
-            />
-          </Box>
-        </Modal>
-      </div>
+      {/* form modal */}
+      <FormModal
+        title={`${selectedType === "edit" ? "Editar" : "Crear"} categoría`}
+        openModal={openModal}
+        setOpenModal={() => setOpenModal(false)}
+      >
+        <CategoryForm
+          closeModal={handleCloseModal}
+          type={selectedType}
+          id={selectedId}
+          token={token}
+          getData={getData}
+        />
+      </FormModal>
+      {/* delete modal */}
+      <ConfirmModal
+        openModal={deleteModal}
+        setOpenModal={() => setDeleteModal(false)}
+        onAction={onDelete}
+        title="Eliminar Categoría"
+      />
     </>
   );
 };

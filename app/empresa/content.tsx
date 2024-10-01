@@ -18,7 +18,7 @@ import { FaRegImage } from "react-icons/fa6";
 import { toast } from "sonner";
 import { imgUrl } from "../utils/img/imgUrl";
 
-const ContentAdmin = () => {
+const ContentCompany = () => {
   const { user, refreshToken } = useAuthContext();
 
   const [token, setToken] = useState<string | null>(null);
@@ -147,7 +147,7 @@ const ContentAdmin = () => {
       );
       setDataUser(res.data.user);
     } catch (error) {
-      toast.error("Error al obtener los datos del usuario");
+      toast.error("Error al obtener los datos");
     } finally {
       setLoading(false);
     }
@@ -175,7 +175,7 @@ const ContentAdmin = () => {
       });
       setDepartmentsData(res.data);
     } catch (error) {
-      toast.error("Error al obtener departamentos");
+      toast.error("Error al obtener los departamentos");
     } finally {
       setGettingDepartments(false);
     }
@@ -270,7 +270,7 @@ const ContentAdmin = () => {
           reject({ message: "No se pudo obtener id de la empresa" });
         }
       } catch (error) {
-        reject({ message: "Error al actualizar sus datos" });
+        reject({ message: "Error al actualizar la empresa" });
       } finally {
         refreshToken;
         setSending(false);
@@ -538,4 +538,4 @@ const ContentAdmin = () => {
   );
 };
 
-export default ContentAdmin;
+export default ContentCompany;

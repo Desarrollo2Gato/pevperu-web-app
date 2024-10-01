@@ -1,20 +1,15 @@
 import { ICategory } from "@/app/types/api";
-import { apiUrls } from "@/app/utils/api/apiUrls";
-import axios from "axios";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { BiSolidEdit } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";
 import { FaRegImage } from "react-icons/fa6";
 
 import {
-  Column,
   ColumnDef,
-  createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import StatusSpan from "../ui/statusSpan";
 import { imgUrl } from "@/app/utils/img/imgUrl";
 
 interface CategoryTableProps {
@@ -28,15 +23,12 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
   onDelete,
 }) => {
   const data: ICategory[] = dataTable;
-  const [filter, setFilter] = useState("");
-  const [filteredData, setFilteredData] = useState<ICategory[]>([]);
 
   // colums
   const columns: ColumnDef<ICategory, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
-      // cell: (info) => info.getValue(),
     },
     {
       accessorKey: "icon",
@@ -84,7 +76,7 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
           </button>
           <button
             onClick={() => onDelete(Number(info.row.original.id))}
-            className="bg-red-400 hover:bg-red-500 text-white  p-1 rounded aspect-square transition-all duration-500"
+            className="bg-yellow-400 hover:bg-yellow-500 text-white  p-1 rounded aspect-square transition-all duration-500"
           >
             <FiTrash className="text-lg" />
           </button>
@@ -122,20 +114,31 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
       </thead>
 
       <tbody>
-        {table.getRowModel().rows.map((row, index) => (
-          <tr
-            key={index}
-            className={`border-b border-b-gray-200 ${
-              index % 2 === 0 ? "bg-gray-100" : "bg-white"
-            }`}
-          >
-            {row.getVisibleCells().map((cell, cIndex) => (
-              <td key={cIndex} className=" px-2 py-1 text-sm">
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </td>
-            ))}
+        {table.getRowModel().rows.length > 0 ? (
+          table.getRowModel().rows.map((row, index) => (
+            <tr
+              key={index}
+              className={`border-b border-b-gray-200 ${
+                index % 2 === 0 ? "bg-gray-100" : "bg-white"
+              }`}
+            >
+              {row.getVisibleCells().map((cell, cIndex) => (
+                <td key={cIndex} className="px-2 py-1 text-sm">
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          ))
+        ) : (
+          <tr>
+            <td
+              colSpan={table.getAllColumns().length}
+              className="px-2 py-1 text-center text-zinc-600 text-sm"
+            >
+              No se encontraron registros
+            </td>
           </tr>
-        ))}
+        )}
       </tbody>
     </table>
   );
