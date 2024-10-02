@@ -282,8 +282,7 @@ const ContentAdmin = () => {
       error: (error: any) => `${error.message}`,
     });
 
-    // recargar la pagina
-    window.location.reload();
+
   };
   useEffect(() => {
     if (watch("logo")) {
@@ -377,6 +376,8 @@ const ContentAdmin = () => {
               placeholder="RUC"
               register={register("ruc")}
               error={errors.ruc}
+              min={11}
+              max={11}
             />
 
             <SelectZodField
@@ -395,6 +396,7 @@ const ContentAdmin = () => {
               placeholder="Teléfono"
               register={register("phoneNumber")}
               error={errors.phoneNumber}
+              max={9}
             />
             <InputZodField
               id="website"
@@ -483,6 +485,7 @@ const ContentAdmin = () => {
                     id={`branchesInfo.${index}.phone`}
                     name="Teléfono"
                     placeholder="Teléfono"
+                    max={9}
                     register={register(`branchesInfo.${index}.phone`)}
                     error={errors.branchesInfo?.[index]?.phone}
                   />

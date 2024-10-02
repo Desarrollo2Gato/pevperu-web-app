@@ -7,6 +7,7 @@ import axios from "axios";
 import Image from "next/image";
 import { InputField } from "../components/ui/inputField";
 import Link from "next/link";
+import { toast } from "sonner";
 
 const Index = () => {
   const [email, setEmail] = useState("");
@@ -41,10 +42,9 @@ const Index = () => {
       };
 
       login(access_token, userInfo);
-      console.log(user.type);
 
       if (user.type !== "admin" && user.type !== "company_owner") {
-        alert("No tienes permisos para acceder a esta sección");
+        toast.warning("No tienes permisos para acceder");
         return;
       }
       router.push(
@@ -55,8 +55,7 @@ const Index = () => {
           : "/"
       );
     } catch (error) {
-      console.error(error);
-      alert("Credenciales invalidas");
+      toast.error("Credenciales invalidas");
     } finally {
       setLoading(false);
     }

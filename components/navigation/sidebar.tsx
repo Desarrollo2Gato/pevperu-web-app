@@ -540,7 +540,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                 className={`flex flex-row items-center relative ${
                   !active ? "justify-center" : "justify-center md:justify-start"
                 } w-full  hover:opacity-100 ${
-                  pathname === "/admin" || pathname === "/empresa"
+                  pathname === "/admin/contrasenia" || pathname === "/empresa/contrasenia"
                     ? "opacity-100"
                     : " opacity-30"
                 } transition-all duration-500`}

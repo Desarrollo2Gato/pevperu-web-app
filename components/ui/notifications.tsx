@@ -15,7 +15,9 @@ interface NotificationsProps {
   setShowNotification: () => void;
 }
 
-const Notifications: React.FC<NotificationsProps> = ({setShowNotification}) => {
+const Notifications: React.FC<NotificationsProps> = ({
+  setShowNotification,
+}) => {
   const { notifications, fetchNotifications } = useNotifications();
   const [token, setToken] = useState<string | null>(null);
   const { user } = useAuthContext();
@@ -48,12 +50,12 @@ const Notifications: React.FC<NotificationsProps> = ({setShowNotification}) => {
           break;
         case "News":
           router.push(`/admin/noticias`);
-
           break;
         default:
           break;
       }
-    } else {
+    } else{
+      console.log("company_owner");
       switch (type) {
         case "Event":
           router.push(`/empresa/eventos`);
@@ -63,9 +65,6 @@ const Notifications: React.FC<NotificationsProps> = ({setShowNotification}) => {
           break;
         case "News":
           router.push(`/empresa/noticias`);
-          break;
-        case "Subs":
-          router.push(`/empresa/suscripciones`);
           break;
         default:
           break;
@@ -96,8 +95,9 @@ const Notifications: React.FC<NotificationsProps> = ({setShowNotification}) => {
       <div className="p-4 ">
         <h1 className="text text-zinc-500 font-medium">Notificaciones</h1>
         <div className="flex flex-col gap-2 mt-4 overflow-auto max-h-[280px] pr-1">
-          {notifications.map((notifications) => (
+          {notifications.map((notifications, index) => (
             <NotificationCard
+              key={index}
               message={notifications.message}
               type={notifications.type}
               status={notifications.status}

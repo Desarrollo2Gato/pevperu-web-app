@@ -141,12 +141,16 @@ const Content = () => {
               name="Número de celular"
               register={register("phone")}
               error={errors.phone}
+              min={9}
+              max={9}
             />
             <InputZodField
               id="telephone"
               name="Número de teléfono"
               register={register("telephone")}
               error={errors.telephone}
+              min={7}
+              max={7}
             />
             <InputZodField
               id="email"

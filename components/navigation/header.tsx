@@ -39,12 +39,7 @@ const Header: React.FC<HeaderProps> = ({ handleSidebar, active }) => {
     setShowNotification(false);
   };
 
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClick);
-    return () => {
-      document.removeEventListener("mousedown", handleClick);
-    };
-  }, []);
+
 
   return (
     <div

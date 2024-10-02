@@ -71,6 +71,8 @@ type InputZodProps = {
   register: any;
   rows?: number;
   isrequired?: boolean;
+  min?: number;
+  max?: number;
 };
 
 export const InputZodField: React.FC<InputZodProps> = ({
@@ -82,6 +84,8 @@ export const InputZodField: React.FC<InputZodProps> = ({
   error,
   isPassword = false,
   isrequired = true,
+  min,
+  max,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -103,6 +107,7 @@ export const InputZodField: React.FC<InputZodProps> = ({
               ? "border-red-500 focus:ring-red-500"
               : "border-zinc-300 focus:ring-green-800"
           }`}
+          
           placeholder={placeholder}
           {...(isrequired && { required: true })}
           {...register}

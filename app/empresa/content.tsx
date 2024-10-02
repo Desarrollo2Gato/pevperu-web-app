@@ -281,9 +281,6 @@ const ContentCompany = () => {
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
-
-    // recargar la pagina
-    window.location.reload();
   };
   useEffect(() => {
     if (watch("logo")) {
