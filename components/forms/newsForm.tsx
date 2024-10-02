@@ -9,10 +9,10 @@ import { toast } from "sonner";
 import { SelectZodField } from "../ui/selectField";
 import ButtonForm from "../ui/buttonForm";
 import { INews } from "@/types/api";
-import EditorHtml from "../ui/editotrHtml";
 import { useAuthContext } from "@/context/authContext";
 import { imgUrl } from "@/utils/img/imgUrl";
 import { ImgField } from "../ui/imgField";
+import EditorText from "../ui/editorText";
 
 type NewsFormProps = {
   type: "create" | "edit";
@@ -110,7 +110,7 @@ const NewsForm: React.FC<NewsFormProps> = ({
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
-    const date = new Date();
+    const date = data.published_at || news?.updated_at;
     const published_at = date.toISOString().split("T")[0];
     const dataSend = new FormData();
     if (!user?.company_id) {
@@ -246,22 +246,29 @@ const NewsForm: React.FC<NewsFormProps> = ({
           register={register("description")}
           error={errors.description}
         />
-        <EditorHtml
+        {/* <EditorHtml
           text="Contenido"
           id="content"
           value={getValues("content")}
           setValue={setValue}
           error={errors.content}
+        /> */}
+        <EditorText
+          id="content"
+          value={getValues("content")}
+          setValue={setValue}
+          onChange={(value: string) => setValue("content", value)}
+          text="Contenido"
+          error={errors.content}
         />
-
-        <InputZodField
+        {/* <InputZodField
           id="published_at"
           name="Fecha"
           type="date"
           placeholder="Ingrese la fecha de la noticia"
           register={register("published_at")}
           error={errors.published_at}
-        />
+        /> */}
 
         <InputZodField
           id="link"

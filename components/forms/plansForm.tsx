@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import ButtonForm from "../ui/buttonForm";
 import { IPlan } from "@/types/api";
 import ButtonArrayForm from "../ui/buttonArrayFrom";
-import EditorHtml from "../ui/editotrHtml";
+import EditorText from "../ui/editorText";
 
 type PlanFormProps = {
   type: "create" | "edit";
@@ -177,14 +177,22 @@ const PlanForm: React.FC<PlanFormProps> = ({
           error={errors.price}
         />
         {/* description */}
-        <EditorHtml
+        <EditorText
+          id="description"
+          value={getValues("description")}
+          setValue={setValue}
+          onChange={(value: string) => setValue("description", value)}
+          text="Descripción"
+          error={errors.description}
+        />
+        {/* <EditorHtml
           text="Descripción"
           id="description"
           value={getValues("description")}
           // register={register("description")}
           setValue={setValue}
           error={errors.description}
-        />
+        /> */}
         <InputZodField
           id="num_features_products"
           name="Productos destacados"

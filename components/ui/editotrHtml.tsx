@@ -167,7 +167,7 @@ const EditorHtml: React.FC<EditorHtmlProps> = ({
               onChange(newValue);
             }
             setValue(id, newValue);
-            updateActiveButtons(); // Update active buttons on input
+            updateActiveButtons(); 
           }
         }}
       ></div>

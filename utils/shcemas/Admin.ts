@@ -165,10 +165,7 @@ export const categorySaveSchema = z.object({
 
 export const productSaveSchema = z.object({
   name: z.string().min(1, "El nombre del producto es requerido"),
-  description: z
-    .string()
-    .min(1, "La descripción es requerida")
-    .max(255, "La descripción no puede tener más de 255 caracteres"),
+  description: z.string().min(1, "La descripción es requerida"),
   featured_product: z.string({
     required_error: "Por favor, seleccione si es un producto destacado",
   }),

@@ -39,7 +39,6 @@ const Content = () => {
 
   // modal
   const [openModal, setOpenModal] = useState(false);
-  const [rejectedModal, setRejectedModal] = useState(false);
   const [statusModal, setStatusModal] = useState(false);
   //search
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -89,10 +88,6 @@ const Content = () => {
     setOpenModal(true);
     setSelectedId(id);
     setSelectedType("edit");
-  };
-  const handleRejected = (id: number) => {
-    setSelectedId(id);
-    setRejectedModal(true);
   };
   const handleStatus = (id: number, status: "delete" | "approved") => {
     setSelectedId(id);
@@ -322,8 +317,6 @@ const Content = () => {
                 dataTable={data}
                 onDelete={(id: number) => handleStatus(id, "delete")}
                 onEdit={(id: number) => handleEdit(id)}
-                onApprove={(id: number) => handleStatus(id, "approved")}
-                onReject={(id: number) => handleRejected(id)}
               />
             )}
           </div>
@@ -364,21 +357,6 @@ const Content = () => {
         }
         textButton={selectedStatus === "delete" ? "Eliminar" : "Aprobar"}
       />
-      {selectedId && (
-        <FormModal
-          title={`Rechazar producto`}
-          openModal={rejectedModal}
-          setOpenModal={() => setRejectedModal(false)}
-        >
-          <RejectForm
-            closeModal={() => setRejectedModal(false)}
-            type="product"
-            id={selectedId}
-            token={token}
-            getData={getData}
-          />
-        </FormModal>
-      )}
     </>
   );
 };

@@ -23,6 +23,7 @@ import { useAuthContext } from "@/context/authContext";
 import { ImgField } from "../ui/imgField";
 import { BsHandIndexThumb } from "react-icons/bs";
 import { selectClasses } from "@mui/material";
+import EditorText from "../ui/editorText";
 
 type ProdcutFormProps = {
   type: "create" | "edit";
@@ -91,7 +92,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       name: "",
       description: "",
       category_id: "",
-      labels: [] as any[],
+      labels: [] as number[],
       specifications: [{ title: "", description: "" }],
       img1: null,
       img2: null,
@@ -149,6 +150,11 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         }));
         setLabelsData(labels);
       }
+      //obetener solo los ide y pasarlo a labels
+      if (product.labels && product.labels.length > 0) {
+        const labels = product.labels.map((label: any) => Number(label.id));
+        setValue("labels", labels || []);
+      }
       reset({
         name: product.name || "",
         description: product.description || "",
@@ -174,6 +180,9 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       getFiles(watch("category_id"));
       getLabels(watch("category_id"));
     }
+
+    const labelsIds = product?.labels?.map((label) => Number(label.id));
+    setValue("labels", labelsIds || []);
   }, [categoriesData, watch("category_id")]);
 
   // get labels
@@ -182,7 +191,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       (item) => item.id === Number(categoryId)
     );
     setSelectedLabels([]);
-    console.log("labels :", category?.labels);
     return setSelectedLabels(category?.labels || []);
   };
 
@@ -215,7 +223,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       });
       setCategoriesData(res.data);
     } catch (error) {
-      console.error(error);
       toast.error("Error al obtener las categorías");
     } finally {
       setGettingCategories(false);
@@ -233,16 +240,13 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
 
       setProduct(res.data);
     } catch (error) {
-      console.error(error);
       toast.error("Error al obtener los datos del producto");
     } finally {
       setLoading(false);
     }
   };
 
-  console.log(getValues("description"), "getvalue");
   const onSubmit = async (data: any) => {
-    console.log(data);
     setSubmitting(true);
     const dataSend = new FormData();
     if (!user?.company_id) {
@@ -319,7 +323,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         }
         closeModal();
       } catch (error) {
-        console.error(error);
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
@@ -352,13 +355,21 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     }
   };
 
-  useEffect(() => {
-    console.log("description", getValues("description"));
-  }, [watch("description")]);
-
   return (
     <>
       <form className="flex flex-col gap-2 mt-4">
+        {type === "edit" && (
+          <div className="w-full rounded-md bg-yellow-50 border border-zinc-100 p-2 mb-4">
+            <p className="text-zinc-500 text-xs">
+              Nota: Al subir nuevas imágenes, las anteriores serán eliminadas,{" "}
+              <strong>
+                le recomendamos subir las dos imágenes a la vez o descargarla
+                antes de editar.
+              </strong>
+            </p>
+          </div>
+        )}
+
         <div className="flex flex-row flex-wrap gap-4 w-full justify-center">
           <ImgField
             id="img1"
@@ -447,11 +458,19 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           register={register("name")}
           error={errors.name}
         />
-        <EditorHtml
+        {/* <EditorHtml
           text="Descripción"
           id="description"
           value={getValues("description")}
           setValue={setValue}
+          error={errors.description}
+        /> */}
+        <EditorText
+          id="description"
+          value={getValues("description")}
+          setValue={setValue}
+          onChange={(value: string) => setValue("description", value)}
+          text="Descripción"
           error={errors.description}
         />
         <div className="flex flex-col gap-2">

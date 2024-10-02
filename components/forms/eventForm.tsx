@@ -9,10 +9,10 @@ import { toast } from "sonner";
 import { SelectZodField } from "../ui/selectField";
 import ButtonForm from "../ui/buttonForm";
 import { IEvents } from "@/types/api";
-import EditorHtml from "../ui/editotrHtml";
 import { ImgField } from "../ui/imgField";
 import { imgUrl } from "@/utils/img/imgUrl";
 import { useAuthContext } from "@/context/authContext";
+import EditorText from "../ui/editorText";
 
 type EventFormProps = {
   type: "create" | "edit";
@@ -257,13 +257,21 @@ const EventForm: React.FC<EventFormProps> = ({
           register={register("description")}
           error={errors.description}
         />
-        <EditorHtml
+        <EditorText
+          id="content"
+          value={getValues("content")}
+          setValue={setValue}
+          onChange={(value: string) => setValue("content", value)}
+          text="Contenido"
+          error={errors.content}
+        />
+        {/* <EditorHtml
           text="Contenido"
           id="content"
           value={getValues("content")}
           setValue={setValue}
           error={errors.content}
-        />
+        /> */}
         <InputZodField
           id="date"
           name="Fecha"

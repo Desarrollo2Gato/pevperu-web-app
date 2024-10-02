@@ -8,8 +8,8 @@ import axios from "axios";
 import { toast } from "sonner";
 import ButtonForm from "../ui/buttonForm";
 import { ICourse } from "@/types/api";
-import EditorHtml from "../ui/editotrHtml";
 import { useAuthContext } from "@/context/authContext";
+import EditorText from "../ui/editorText";
 
 type CourseFormProps = {
   type: "create" | "edit";
@@ -158,6 +158,18 @@ const CourseForm: React.FC<CourseFormProps> = ({
   return (
     <>
       <form className="flex flex-col gap-2 mt-4">
+        {type === "edit" && (
+          <div className="w-full rounded-md bg-yellow-50 border border-zinc-100 p-2 mb-4">
+            <p className="text-zinc-500 text-xs">
+              Nota: Al subir nuevas imágenes, las anteriores serán eliminadas,{" "}
+              <strong>
+                le recomendamos subir las dos imágenes a la vez o descargarla
+                antes de editar.
+              </strong>
+            </p>
+          </div>
+        )}
+
         <InputZodField
           id="title"
           name="Nombre"
@@ -172,13 +184,21 @@ const CourseForm: React.FC<CourseFormProps> = ({
           register={register("description")}
           error={errors.description}
         />
-        <EditorHtml
+        <EditorText
+          id="content"
+          value={getValues("content")}
+          setValue={setValue}
+          onChange={(value: string) => setValue("content", value)}
+          text="Contenido"
+          error={errors.content}
+        />
+        {/* <EditorHtml
           text="Contenido"
           id="content"
           value={getValues("content")}
           setValue={setValue}
           error={errors.content}
-        />
+        /> */}
         <InputZodField
           id="language"
           name="Idioma"
