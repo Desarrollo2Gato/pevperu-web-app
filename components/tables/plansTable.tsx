@@ -1,5 +1,5 @@
-import { ICourse } from "@/app/types/api";
-import { useState } from "react";
+import { IPlan } from "@/types/api";
+import { useEffect, useMemo, useState } from "react";
 import { BiSolidEdit } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";
 
@@ -10,46 +10,50 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-interface CoursesTableProps {
-  dataTable: ICourse[];
+interface PlansTableProps {
+  dataTable: IPlan[];
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
 }
-const CoursesTable: React.FC<CoursesTableProps> = ({
+const PlansTable: React.FC<PlansTableProps> = ({
   dataTable,
   onEdit,
   onDelete,
 }) => {
-  const data: ICourse[] = dataTable;
+  const data: IPlan[] = dataTable;
 
   // colums
-  const columns: ColumnDef<ICourse, any>[] = [
+  const columns: ColumnDef<IPlan, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
+      // cell: (info) => info.getValue(),
     },
     {
-      accessorKey: "title",
-      header: "Curso",
+      accessorKey: "name",
+      header: "Plan",
     },
     {
-      accessorKey: "company",
-      header: "Empresa",
-      cell: (info) => info.row.original.company.name,
+      accessorKey: "price",
+      header: "Precio",
+      cell: (info) => `S/${info.getValue()}`,
     },
     {
-      accessorKey: "link",
-      header: "Correo de contacto",
-      cell: (info) =>
-        info.row.original.link ? info.row.original.link : "Sin correo",
+      accessorKey: "featured_products",
+      header: "N.º  Productos destacados",
     },
     {
-      accessorKey: "link",
-      header: "Ultima actualización",
-      cell: (info) =>
-        new Date(info.row.original.updated_at).toLocaleDateString(),
+      accessorKey: "products_limit",
+      header: "N.º  de productos",
     },
-
+    {
+      accessorKey: "events_limit",
+      header: "N.º  de eventos",
+    },
+    {
+      accessorKey: "news_limit",
+      header: "N.º  de noticias",
+    },
     {
       accessorKey: "actions",
       header: "Acciones",
@@ -131,4 +135,4 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
   );
 };
 
-export default CoursesTable;
+export default PlansTable;

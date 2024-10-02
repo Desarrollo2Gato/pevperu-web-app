@@ -1,75 +1,73 @@
-import { IUser } from "@/app/types/api";
+import { ICourse } from "@/types/api";
+import { useState } from "react";
+import { BiSolidEdit } from "react-icons/bi";
+import { FiTrash } from "react-icons/fi";
+
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import StatusSpan from "../ui/statusSpan";
-import { FaBan } from "react-icons/fa";
-import { FaCheck } from "react-icons/fa";
 
-interface UsersTableProps {
-  dataTable: IUser[];
-  onSuspend: (id: number) => void;
-  onUnsuspend: (id: number) => void;
+interface CoursesTableProps {
+  dataTable: ICourse[];
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
 }
-const UsersTable: React.FC<UsersTableProps> = ({
+const CoursesTable: React.FC<CoursesTableProps> = ({
   dataTable,
-  onSuspend,
-  onUnsuspend,
+  onEdit,
+  onDelete,
 }) => {
-  const data: IUser[] = dataTable;
+  const data: ICourse[] = dataTable;
 
   // colums
-  const columns: ColumnDef<IUser, any>[] = [
+  const columns: ColumnDef<ICourse, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
     },
     {
-      accessorKey: "full_name",
-      header: "Nombre completo",
+      accessorKey: "title",
+      header: "Curso",
     },
     {
       accessorKey: "company",
       header: "Empresa",
-      cell: (info) =>
-        info.row.original.work_for_company
-          ? info.row.original.work_for_company
-          : "Sin empresa",
+      cell: (info) => info.row.original.company.name,
     },
     {
-      accessorKey: "status",
-      header: "Estado",
+      accessorKey: "link",
+      header: "Correo de contacto",
       cell: (info) =>
-        info.row.original.status === "approved" ? (
-          <StatusSpan text="Activo" bg="bg-green-400" />
-        ) : (
-          <StatusSpan text="Baneado" bg="bg-red-600" />
-        ),
+        info.row.original.link ? info.row.original.link : "Sin correo",
     },
+    {
+      accessorKey: "link",
+      header: "Ultima actualización",
+      cell: (info) =>
+        new Date(info.row.original.updated_at).toLocaleDateString(),
+    },
+
     {
       accessorKey: "actions",
       header: "Acciones",
       cell: (info) => (
-        <>
-          {info.row.original.status === "approved" ? (
-            <button
-              onClick={() => onSuspend(Number(info.row.original.id))}
-              className="bg-red-500 hover:bg-red-600 text-white p-1 aspect-square rounded transition-all duration-500"
-            >
-              <FaBan className="text-lg" />
-            </button>
-          ) : (
-            <button
-              onClick={() => onUnsuspend(Number(info.row.original.id))}
-              className="bg-green-400 hover:bg-green-500 text-white p-1 aspect-square rounded transition-all duration-500"
-            >
-              <FaCheck className="text-lg" />
-            </button>
-          )}
-        </>
+        <div className="flex justify-center items-center gap-2">
+          <button
+            onClick={() => onEdit(Number(info.row.original.id))}
+            className="bg-teal-400 hover:bg-teal-500 text-white p-1 aspect-square rounded transition-all duration-500"
+          >
+            <BiSolidEdit className="text-lg" />
+          </button>
+          <button
+            onClick={() => onDelete(Number(info.row.original.id))}
+            className="bg-yellow-400 hover:bg-yellow-500 text-white  p-1 rounded aspect-square transition-all duration-500"
+          >
+            <FiTrash className="text-lg" />
+          </button>
+        </div>
       ),
     },
   ];
@@ -133,4 +131,4 @@ const UsersTable: React.FC<UsersTableProps> = ({
   );
 };
 
-export default UsersTable;
+export default CoursesTable;

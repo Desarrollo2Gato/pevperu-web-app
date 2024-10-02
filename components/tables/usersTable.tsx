@@ -1,86 +1,75 @@
-import { ICategory } from "@/app/types/api";
-import { useEffect, useState } from "react";
-import { BiSolidEdit } from "react-icons/bi";
-import { FiTrash } from "react-icons/fi";
-import { FaRegImage } from "react-icons/fa6";
-
+import { IUser } from "@/types/api";
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { imgUrl } from "@/app/utils/img/imgUrl";
+import StatusSpan from "../ui/statusSpan";
+import { FaBan } from "react-icons/fa";
+import { FaCheck } from "react-icons/fa";
 
-interface CategoryTableProps {
-  dataTable: ICategory[];
-  onEdit: (id: number) => void;
-  onDelete: (id: number) => void;
+interface UsersTableProps {
+  dataTable: IUser[];
+  onSuspend: (id: number) => void;
+  onUnsuspend: (id: number) => void;
 }
-const CategoryTable: React.FC<CategoryTableProps> = ({
+const UsersTable: React.FC<UsersTableProps> = ({
   dataTable,
-  onEdit,
-  onDelete,
+  onSuspend,
+  onUnsuspend,
 }) => {
-  const data: ICategory[] = dataTable;
+  const data: IUser[] = dataTable;
 
   // colums
-  const columns: ColumnDef<ICategory, any>[] = [
+  const columns: ColumnDef<IUser, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
     },
     {
-      accessorKey: "icon",
-      header: "Ícono",
+      accessorKey: "full_name",
+      header: "Nombre completo",
+    },
+    {
+      accessorKey: "company",
+      header: "Empresa",
       cell: (info) =>
-        info.row.original.icon ? (
-          <img
-            className="w-8 h-8 object-contain"
-            src={imgUrl(info.row.original.icon)}
-            alt="icon"
-          />
+        info.row.original.work_for_company
+          ? info.row.original.work_for_company
+          : "Sin empresa",
+    },
+    {
+      accessorKey: "status",
+      header: "Estado",
+      cell: (info) =>
+        info.row.original.status === "approved" ? (
+          <StatusSpan text="Activo" bg="bg-green-400" />
         ) : (
-          <div className="w-8 h-8 rounded flex justify-center items-center border border-green-800  text-green-800">
-            <FaRegImage />
-          </div>
+          <StatusSpan text="Baneado" bg="bg-red-600" />
         ),
     },
-
-    {
-      accessorKey: "name",
-      header: "Categoría",
-      cell: (info) => (
-        <span
-          style={{
-            backgroundColor: info.row.original.background_color,
-            color: info.row.original.text_color,
-          }}
-          className={`rounded-full px-2 py-0.5 text-xs font-medium `}
-        >
-          {info.row.original.name}
-        </span>
-      ),
-    },
-
     {
       accessorKey: "actions",
       header: "Acciones",
       cell: (info) => (
-        <div className="flex justify-center items-center gap-2">
-          <button
-            onClick={() => onEdit(Number(info.row.original.id))}
-            className="bg-teal-400 hover:bg-teal-500 text-white p-1 aspect-square rounded transition-all duration-500"
-          >
-            <BiSolidEdit className="text-lg" />
-          </button>
-          <button
-            onClick={() => onDelete(Number(info.row.original.id))}
-            className="bg-yellow-400 hover:bg-yellow-500 text-white  p-1 rounded aspect-square transition-all duration-500"
-          >
-            <FiTrash className="text-lg" />
-          </button>
-        </div>
+        <>
+          {info.row.original.status === "approved" ? (
+            <button
+              onClick={() => onSuspend(Number(info.row.original.id))}
+              className="bg-red-500 hover:bg-red-600 text-white p-1 aspect-square rounded transition-all duration-500"
+            >
+              <FaBan className="text-lg" />
+            </button>
+          ) : (
+            <button
+              onClick={() => onUnsuspend(Number(info.row.original.id))}
+              className="bg-green-400 hover:bg-green-500 text-white p-1 aspect-square rounded transition-all duration-500"
+            >
+              <FaCheck className="text-lg" />
+            </button>
+          )}
+        </>
       ),
     },
   ];
@@ -144,4 +133,4 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
   );
 };
 
-export default CategoryTable;
+export default UsersTable;

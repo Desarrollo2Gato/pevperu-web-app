@@ -1,4 +1,4 @@
-import { INews } from "@/app/types/api";
+import { INews } from "@/types/api";
 import { useState } from "react";
 import { BiSolidEdit, BiCheck, BiX } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";

@@ -5,21 +5,21 @@ import {
   TextAreaZodField,
 } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { productSaveSchema } from "@/app/utils/shcemas/Admin";
+import { productSaveSchema } from "@/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
-import { IProduct } from "@/app/types/api";
-import { apiUrls } from "@/app/utils/api/apiUrls";
+import { IProduct } from "@/types/api";
+import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
 import { toast } from "sonner";
 import { SelectZodField } from "../ui/selectField";
 import ButtonForm from "../ui/buttonForm";
-import { imgUrl } from "@/app/utils/img/imgUrl";
+import { imgUrl } from "@/utils/img/imgUrl";
 import ButtonArrayForm from "../ui/buttonArrayFrom";
 import EditorHtml from "../ui/editotrHtml";
 
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
-import { useAuthContext } from "@/app/context/authContext";
+import { useAuthContext } from "@/context/authContext";
 import { ImgField } from "../ui/imgField";
 import { BsHandIndexThumb } from "react-icons/bs";
 import { selectClasses } from "@mui/material";

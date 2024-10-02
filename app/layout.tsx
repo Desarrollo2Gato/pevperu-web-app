@@ -6,41 +6,41 @@ import localFont from "next/font/local";
 const roboto = localFont({
   src: [
     {
-      path: "./assets/fonts/poppins/Poppins-Thin.ttf",
+      path: "../assets/fonts/poppins/Poppins-Thin.ttf",
       weight: "100",
       style: "normal",
     },
     {
-      path: "./assets/fonts/poppins/Poppins-Regular.ttf",
+      path: "../assets/fonts/poppins/Poppins-Regular.ttf",
       weight: "400",
       style: "normal",
     },
     {
-      path: "./assets/fonts/poppins/Poppins-Medium.ttf",
+      path: "../assets/fonts/poppins/Poppins-Medium.ttf",
       weight: "500",
       style: "normal",
     },
     {
-      path: "./assets/fonts/poppins/Poppins-SemiBold.ttf",
+      path: "../assets/fonts/poppins/Poppins-SemiBold.ttf",
       weight: "600",
       style: "normal",
     },
     {
-      path: "./assets/fonts/poppins/Poppins-Bold.ttf",
+      path: "../assets/fonts/poppins/Poppins-Bold.ttf",
       weight: "700",
       style: "normal",
     },
     {
-      path: "./assets/fonts/poppins/Poppins-Black.ttf",
+      path: "../assets/fonts/poppins/Poppins-Black.ttf",
       weight: "900",
       style: "normal",
     },
   ],
 });
 
-import AuthContextProvider from "@/app/context/authContext";
+import AuthContextProvider from "@/context/authContext";
 import { Toaster } from "sonner";
-import { NotificationProvider } from "./context/notificationContext";
+import { NotificationProvider } from "../context/notificationContext";
 
 export const metadata: Metadata = {
   title: {

@@ -1,24 +1,24 @@
 "use client";
-import AddButton from "@/app/components/ui/addBtn";
+import AddButton from "@/components/ui/addBtn";
 import {
   MainContainer,
   SafeAreaContainer,
-} from "@/app/components/ui/containers";
-import SearchInput from "@/app/components/ui/searchInput";
-import { IEvents } from "@/app/types/api";
-import { apiUrls, pagination } from "@/app/utils/api/apiUrls";
-import { getTokenFromCookie } from "@/app/utils/api/getToken";
+} from "@/components/ui/containers";
+import SearchInput from "@/components/ui/searchInput";
+import { IEvents } from "@/types/api";
+import { apiUrls, pagination } from "@/utils/api/apiUrls";
+import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import EventsTable from "@/app/components/tables/eventsTable";
-import SelectRows from "@/app/components/ui/selectRows";
-import EventForm from "@/app/components/forms/eventForm";
-import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
+import EventsTable from "@/components/tables/eventsTable";
+import SelectRows from "@/components/ui/selectRows";
+import EventForm from "@/components/forms/eventForm";
+import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { toast } from "sonner";
-import RejectForm from "@/app/components/forms/rejectedForm";
-import SelectComponent from "@/app/components/ui/select";
-import { useAuthContext } from "@/app/context/authContext";
+import RejectForm from "@/components/forms/rejectedForm";
+import SelectComponent from "@/components/ui/select";
+import { useAuthContext } from "@/context/authContext";
 
 const Content = () => {
   // token
@@ -100,12 +100,14 @@ const Content = () => {
     setOpenModal(false);
   };
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatusFilter("all");
     const newType = e.target.value as "Nacional" | "Internacional";
     newType;
     setTypeFilter(newType);
     setSelectedAction("type");
   };
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTypeFilter("all");
     const newStatus = e.target.value as "pending" | "approved" | "rejected";
     newStatus;
     setStatusFilter(newStatus);
@@ -160,7 +162,7 @@ const Content = () => {
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
     } catch (error) {
-      console.error(error);
+      toast.error("Error al obtener los eventos");
     } finally {
       setLoading(false);
     }
@@ -298,7 +300,12 @@ const Content = () => {
   useEffect(() => {
     // limpiar data
     setData([]);
+    setPageIndex(1);
+    setSearchQuery("");
+    setTypeFilter("all");
+    setStatusFilter("all");
   }, [selectedAction]);
+  
   useEffect(() => {
     if (token && selectedAction === "data") {
       getData();
@@ -353,16 +360,20 @@ const Content = () => {
           </MainContainer>
         </div>
         <MainContainer>
-          <div className="flex flex-row justify-between pb-4 border-b border-b-gray-50">
-            <h2>Registros: {total}</h2>{" "}
-            <AddButton text="Agregar Evento" onClick={handleAdd} />
+          <div className="flex flex-col md:flex-row  md:justify-between pb-4 border-b border-b-gray-50 items-center gap-4">
+            <h2 className="font-medium text-zinc-500 text-lg w-full md:w-auto">
+              Registros ({total})
+            </h2>{" "}
+            <div className="w-full md:w-auto flex justify-end">
+              <AddButton text="Agregar Evento" onClick={handleAdd} />
+            </div>
           </div>
-          <div className="flex justify-between mb-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">
             <SelectRows
               pageSize={pageSize.toString()}
               handlePageSizeChange={handlePageSizeChange}
             />
-            <div className="flex flex-row self-end">
+            <div className="w-full sm:w-auto flex flex-row self-end">
               <SearchInput
                 placeholder="Buscar evento"
                 onClick={(query) => getEventsBySearch(query)}

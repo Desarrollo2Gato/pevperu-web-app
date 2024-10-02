@@ -1,23 +1,23 @@
 "use client";
-import AddButton from "@/app/components/ui/addBtn";
+import AddButton from "@/components/ui/addBtn";
 import {
   MainContainer,
   SafeAreaContainer,
-} from "@/app/components/ui/containers";
-import SearchInput from "@/app/components/ui/searchInput";
-import { ICompany, INews } from "@/app/types/api";
-import { apiUrls, pagination } from "@/app/utils/api/apiUrls";
-import { getTokenFromCookie } from "@/app/utils/api/getToken";
+} from "@/components/ui/containers";
+import SearchInput from "@/components/ui/searchInput";
+import { ICompany, INews } from "@/types/api";
+import { apiUrls, pagination } from "@/utils/api/apiUrls";
+import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import NewsForm from "@/app/components/forms/newsForm";
-import NewsTable from "@/app/components/tables/newsTable";
-import SelectRows from "@/app/components/ui/selectRows";
+import NewsForm from "@/components/forms/newsForm";
+import NewsTable from "@/components/tables/newsTable";
+import SelectRows from "@/components/ui/selectRows";
 import { toast } from "sonner";
-import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
-import RejectForm from "@/app/components/forms/rejectedForm";
-import SelectComponent from "@/app/components/ui/select";
+import { ConfirmModal, FormModal } from "@/components/ui/modals";
+import RejectForm from "@/components/forms/rejectedForm";
+import SelectComponent from "@/components/ui/select";
 
 const Content = () => {
   const [token, setToken] = useState("");

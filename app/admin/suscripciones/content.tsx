@@ -1,22 +1,22 @@
 "use client";
-import SubsTable from "../../components/tables/subsTable";
+import SubsTable from "../../../components/tables/subsTable";
 import {
   MainContainer,
   SafeAreaContainer,
-} from "@/app/components/ui/containers";
+} from "@/components/ui/containers";
 import { useEffect, useState } from "react";
-import { getTokenFromCookie } from "@/app/utils/api/getToken";
+import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
-import { apiUrls, pagination } from "@/app/utils/api/apiUrls";
-import { ICompany, IPlan, ISubscription } from "@/app/types/api";
-import AddButton from "@/app/components/ui/addBtn";
-import SubsForm from "@/app/components/forms/subsForm";
-import SelectRows from "@/app/components/ui/selectRows";
+import { apiUrls, pagination } from "@/utils/api/apiUrls";
+import { ICompany, IPlan, ISubscription } from "@/types/api";
+import AddButton from "@/components/ui/addBtn";
+import SubsForm from "@/components/forms/subsForm";
+import SelectRows from "@/components/ui/selectRows";
 import { toast } from "sonner";
-import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
+import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { Pagination } from "@mui/material";
-import RenewModal from "@/app/components/ui/renewModal";
-import SelectComponent from "@/app/components/ui/select";
+import RenewModal from "@/components/ui/renewModal";
+import SelectComponent from "@/components/ui/select";
 
 const Content = () => {
   // token
@@ -410,14 +410,14 @@ const Content = () => {
               Registros ({total})
             </h2>{" "}
             <div className="w-full md:w-auto flex justify-end">
-            <AddButton text="Agregar Suscripción" onClick={handleAdd} />
+              <AddButton text="Agregar Suscripción" onClick={handleAdd} />
             </div>
           </div>
 
-            <SelectRows
-              pageSize={pageSize.toString()}
-              handlePageSizeChange={handlePageSizeChange}
-            />
+          <SelectRows
+            pageSize={pageSize.toString()}
+            handlePageSizeChange={handlePageSizeChange}
+          />
           <div className=" overflow-x-auto mt-4">
             <SubsTable
               dataTable={data}

@@ -1,102 +1,82 @@
-import { ICompany, IPlan, ISubscription } from "@/app/types/api";
-import { apiUrls } from "@/app/utils/api/apiUrls";
-import axios from "axios";
-import { useEffect, useMemo, useState } from "react";
+import { ICategory } from "@/types/api";
+import { useEffect, useState } from "react";
 import { BiSolidEdit } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";
-import { MdOutlineAutorenew } from "react-icons/md";
+import { FaRegImage } from "react-icons/fa6";
 
 import {
-  Column,
   ColumnDef,
-  createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { getTokenFromCookie } from "@/app/utils/api/getToken";
-import { on } from "events";
-import StatusSpan from "../ui/statusSpan";
-import { Tooltip } from "@mui/material";
-import { BootstrapTooltip } from "../ui/tooltip";
+import { imgUrl } from "@/utils/img/imgUrl";
 
-interface SubsTableProps {
-  dataTable: ISubscription[];
+interface CategoryTableProps {
+  dataTable: ICategory[];
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
-  onRenew?: (id: number) => void;
 }
-const SubsTable: React.FC<SubsTableProps> = ({
+const CategoryTable: React.FC<CategoryTableProps> = ({
   dataTable,
   onEdit,
   onDelete,
-  onRenew,
 }) => {
-  const data: ISubscription[] = dataTable;
+  const data: ICategory[] = dataTable;
 
   // colums
-  const columns: ColumnDef<ISubscription, any>[] = [
+  const columns: ColumnDef<ICategory, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
-      // cell: (info) => info.getValue(),
     },
     {
-      accessorKey: "company",
-      header: "Empresa",
-      cell: (info) => info.row.original.company.name,
-    },
-    {
-      accessorKey: "plan",
-      header: "Plan",
-      cell: (info) => info.row.original.plan.name,
-    },
-    {
-      accessorKey: "is_active",
-      header: "Estado",
+      accessorKey: "icon",
+      header: "Ícono",
       cell: (info) =>
-        info.row.original.is_active ? (
-          <StatusSpan text="Activo" bg="bg-green-400" />
+        info.row.original.icon ? (
+          <img
+            className="w-8 h-8 object-contain"
+            src={imgUrl(info.row.original.icon)}
+            alt="icon"
+          />
         ) : (
-          <StatusSpan text="Inactivo" bg="bg-red-500" />
+          <div className="w-8 h-8 rounded flex justify-center items-center border border-green-800  text-green-800">
+            <FaRegImage />
+          </div>
         ),
     },
+
     {
-      accessorKey: "start_date",
-      header: "Fecha de inicio",
-      cell: (info) =>
-        new Date(info.row.original.start_date).toLocaleDateString(),
+      accessorKey: "name",
+      header: "Categoría",
+      cell: (info) => (
+        <span
+          style={{
+            backgroundColor: info.row.original.background_color,
+            color: info.row.original.text_color,
+          }}
+          className={`rounded-full px-2 py-0.5 text-xs font-medium `}
+        >
+          {info.row.original.name}
+        </span>
+      ),
     },
-    {
-      accessorKey: "end_date",
-      header: "Fecha de fin",
-      cell: (info) => new Date(info.row.original.end_date).toLocaleDateString(),
-    },
+
     {
       accessorKey: "actions",
       header: "Acciones",
       cell: (info) => (
         <div className="flex justify-center items-center gap-2">
-          {onRenew && (
-            <BootstrapTooltip title="Renovar" placement="top">
-              <button
-                onClick={() => onRenew(info.row.original.id)}
-                className="bg-indigo-400 hover:bg-indigo-500 text-white p-1 aspect-square rounded transition-all duration-500"
-              >
-                <MdOutlineAutorenew className="text-lg" />
-              </button>
-            </BootstrapTooltip>
-          )}
-
           <button
-            onClick={() => onEdit(info.row.original.id)}
+            onClick={() => onEdit(Number(info.row.original.id))}
             className="bg-teal-400 hover:bg-teal-500 text-white p-1 aspect-square rounded transition-all duration-500"
           >
             <BiSolidEdit className="text-lg" />
           </button>
           <button
-            onClick={() => onDelete(info.row.original.id)}
-            className="bg-yellow-400 hover:bg-reyellow00 text-white  p-1 rounded aspect-square transition-all duration-500"
+            onClick={() => onDelete(Number(info.row.original.id))}
+            className="bg-yellow-400 hover:bg-yellow-500 text-white  p-1 rounded aspect-square transition-all duration-500"
           >
             <FiTrash className="text-lg" />
           </button>
@@ -164,4 +144,4 @@ const SubsTable: React.FC<SubsTableProps> = ({
   );
 };
 
-export default SubsTable;
+export default CategoryTable;

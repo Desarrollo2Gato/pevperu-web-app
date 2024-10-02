@@ -1,4 +1,4 @@
-import { IEvents } from "@/app/types/api";
+import { IProduct } from "@/types/api";
 import { useState } from "react";
 import { BiSolidEdit, BiCheck, BiX } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";
@@ -12,43 +12,52 @@ import {
 import StatusSpan from "../ui/statusSpan";
 import { BootstrapTooltip } from "../ui/tooltip";
 
-interface EventsTableProps {
-  dataTable: IEvents[];
+interface SubsTableProps {
+  dataTable: IProduct[];
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
   onApprove?: (id: number) => void;
   onReject?: (id: number) => void;
 }
-const EventsTable: React.FC<EventsTableProps> = ({
+const ProductTable: React.FC<SubsTableProps> = ({
   dataTable,
   onEdit,
   onDelete,
   onApprove,
   onReject,
 }) => {
-  const data: IEvents[] = dataTable;
-  const [filter, setFilter] = useState("");
-  const [filteredData, setFilteredData] = useState<IEvents[]>([]);
+  const data: IProduct[] = dataTable;
 
   // colums
-  const columns: ColumnDef<IEvents, any>[] = [
+  const columns: ColumnDef<IProduct, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
-      // cell: (info) => info.getValue(),
     },
     {
       accessorKey: "name",
-      header: "Titulo",
+      header: "Producto",
     },
+
     {
-      accessorKey: "type",
-      header: "Tipo",
+      accessorKey: "category",
+      header: "Categoría",
+      cell: (info) => (
+        <span
+          style={{
+            backgroundColor: info.row.original.category.background_color,
+            color: info.row.original.category.text_color,
+          }}
+          className={`rounded-full px-2 py-0.5 text-xs font-medium `}
+        >
+          {info.row.original.category.name}
+        </span>
+      ),
     },
     {
       accessorKey: "company",
       header: "Empresa",
-      cell: (info) => info.row.original.company.name,
+      cell: (info) => info.row.original.companies[0].name,
     },
     {
       accessorKey: "status",
@@ -59,7 +68,7 @@ const EventsTable: React.FC<EventsTableProps> = ({
         ) : info.row.original.status === "pending" ? (
           <StatusSpan text="Pendiente" bg="bg-blue-600" />
         ) : (
-          <StatusSpan text="Rechazado" bg="bg-red-500" />
+          <StatusSpan text="Rechazado" bg="bg-red-600" />
         ),
     },
     {
@@ -169,4 +178,4 @@ const EventsTable: React.FC<EventsTableProps> = ({
   );
 };
 
-export default EventsTable;
+export default ProductTable;

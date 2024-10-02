@@ -1,20 +1,20 @@
 "use client";
-import AddButton from "@/app/components/ui/addBtn";
+import AddButton from "@/components/ui/addBtn";
 import {
   MainContainer,
   SafeAreaContainer,
-} from "@/app/components/ui/containers";
-import SearchInput from "@/app/components/ui/searchInput";
-import { ICategory } from "@/app/types/api";
-import { apiUrls, pagination } from "@/app/utils/api/apiUrls";
-import { getTokenFromCookie } from "@/app/utils/api/getToken";
+} from "@/components/ui/containers";
+import SearchInput from "@/components/ui/searchInput";
+import { ICategory } from "@/types/api";
+import { apiUrls, pagination } from "@/utils/api/apiUrls";
+import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import CategoryTable from "@/app/components/tables/categoriesTable";
-import CategoryForm from "@/app/components/forms/categoryForm";
-import SelectRows from "@/app/components/ui/selectRows";
-import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
+import CategoryTable from "@/components/tables/categoriesTable";
+import CategoryForm from "@/components/forms/categoryForm";
+import SelectRows from "@/components/ui/selectRows";
+import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { toast } from "sonner";
 
 const Content = () => {
@@ -204,7 +204,7 @@ const Content = () => {
               Registros ({total})
             </h2>{" "}
             <div className="w-full md:w-auto flex justify-end">
-              <AddButton text="Agregar Suscripción" onClick={handleAdd} />
+              <AddButton text="Agregar Categoría" onClick={handleAdd} />
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">

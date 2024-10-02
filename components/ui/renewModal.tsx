@@ -1,12 +1,12 @@
 import { Modal, Box, Typography, duration } from "@mui/material";
 import ButtonForm from "./buttonForm";
 import { useForm } from "react-hook-form";
-import { renewSubscriptionSchema } from "@/app/utils/shcemas/Admin";
+import { renewSubscriptionSchema } from "@/utils/shcemas/Admin";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InputZodField } from "./inputField";
 import { useState } from "react";
 import axios from "axios";
-import { apiUrls } from "@/app/utils/api/apiUrls";
+import { apiUrls } from "@/utils/api/apiUrls";
 import { toast } from "sonner";
 
 type RenewModalProps = {

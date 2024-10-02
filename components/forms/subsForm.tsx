@@ -1,10 +1,10 @@
 import { useForm } from "react-hook-form";
 import { InputField, InputZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { subscriptionSaveSchema } from "@/app/utils/shcemas/Admin";
+import { subscriptionSaveSchema } from "@/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
-import { ICompany, IPlan, ISubscription } from "@/app/types/api";
-import { apiUrls } from "@/app/utils/api/apiUrls";
+import { ICompany, IPlan, ISubscription } from "@/types/api";
+import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
 import { Toaster, toast } from "sonner";
 import { SelectZodField } from "../ui/selectField";

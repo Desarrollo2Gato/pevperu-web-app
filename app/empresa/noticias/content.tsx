@@ -1,23 +1,23 @@
 "use client";
-import AddButton from "@/app/components/ui/addBtn";
+import AddButton from "@/components/ui/addBtn";
 import {
   MainContainer,
   SafeAreaContainer,
-} from "@/app/components/ui/containers";
-import SearchInput from "@/app/components/ui/searchInput";
-import { ICompany, INews } from "@/app/types/api";
-import { apiUrls, pagination } from "@/app/utils/api/apiUrls";
-import { getTokenFromCookie } from "@/app/utils/api/getToken";
+} from "@/components/ui/containers";
+import SearchInput from "@/components/ui/searchInput";
+import { ICompany, INews } from "@/types/api";
+import { apiUrls, pagination } from "@/utils/api/apiUrls";
+import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import NewsForm from "@/app/components/forms/newsForm";
-import NewsTable from "@/app/components/tables/newsTable";
-import SelectRows from "@/app/components/ui/selectRows";
+import NewsForm from "@/components/forms/newsForm";
+import NewsTable from "@/components/tables/newsTable";
+import SelectRows from "@/components/ui/selectRows";
 import { toast } from "sonner";
-import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
-import SelectComponent from "@/app/components/ui/select";
-import { useAuthContext } from "@/app/context/authContext";
+import { ConfirmModal, FormModal } from "@/components/ui/modals";
+import SelectComponent from "@/components/ui/select";
+import { useAuthContext } from "@/context/authContext";
 
 const Content = () => {
   const [token, setToken] = useState("");
@@ -290,19 +290,20 @@ const Content = () => {
           </MainContainer>
         </div>
         <MainContainer>
-          {/* header */}
-          <div className="flex flex-row justify-between pb-4 border-b border-b-gray-50">
-            <h2>Registros: {total}</h2>{" "}
-            <AddButton text="Agregar Noticia" onClick={handleAdd} />
+          <div className="flex flex-col md:flex-row  md:justify-between pb-4 border-b border-b-gray-50 items-center gap-4">
+            <h2 className="font-medium text-zinc-500 text-lg w-full md:w-auto">
+              Registros ({total})
+            </h2>{" "}
+            <div className="w-full md:w-auto flex justify-end">
+              <AddButton text="Agregar Noticia" onClick={handleAdd} />
+            </div>
           </div>
-          <div className="flex justify-between mb-4 pt-4">
-            {/* select items per page */}
+          <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">
             <SelectRows
               pageSize={pageSize.toString()}
               handlePageSizeChange={handlePageSizeChange}
             />
-            {/* buscador */}
-            <div className="flex flex-row self-end">
+            <div className="w-full sm:w-auto flex flex-row self-end">
               <SearchInput
                 placeholder="Buscar noticias"
                 onClick={(query) => getNewsBySearch(query)}
@@ -316,7 +317,6 @@ const Content = () => {
               onEdit={(id: number) => handleEdit(id)}
             />
           </div>
-          {/* pagination */}
           <div className="mt-4 justify-center flex">
             <Pagination
               count={pageCount}
@@ -327,7 +327,6 @@ const Content = () => {
           </div>
         </MainContainer>
       </SafeAreaContainer>
-      {/* form modal */}
       <FormModal
         title={`${selectedType === "edit" ? "Editar" : "Crear"} noticia`}
         openModal={openModal}

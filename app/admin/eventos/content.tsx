@@ -1,23 +1,23 @@
 "use client";
-import AddButton from "@/app/components/ui/addBtn";
+import AddButton from "@/components/ui/addBtn";
 import {
   MainContainer,
   SafeAreaContainer,
-} from "@/app/components/ui/containers";
-import SearchInput from "@/app/components/ui/searchInput";
-import { ICompany, IEvents } from "@/app/types/api";
-import { apiUrls, pagination } from "@/app/utils/api/apiUrls";
-import { getTokenFromCookie } from "@/app/utils/api/getToken";
+} from "@/components/ui/containers";
+import SearchInput from "@/components/ui/searchInput";
+import { ICompany, IEvents } from "@/types/api";
+import { apiUrls, pagination } from "@/utils/api/apiUrls";
+import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import EventsTable from "@/app/components/tables/eventsTable";
-import SelectRows from "@/app/components/ui/selectRows";
-import EventForm from "@/app/components/forms/eventForm";
-import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
+import EventsTable from "@/components/tables/eventsTable";
+import SelectRows from "@/components/ui/selectRows";
+import EventForm from "@/components/forms/eventForm";
+import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { toast } from "sonner";
-import RejectForm from "@/app/components/forms/rejectedForm";
-import SelectComponent from "@/app/components/ui/select";
+import RejectForm from "@/components/forms/rejectedForm";
+import SelectComponent from "@/components/ui/select";
 
 const Content = () => {
   // token
@@ -464,7 +464,7 @@ const Content = () => {
               Registros ({total})
             </h2>{" "}
             <div className="w-full md:w-auto flex justify-end">
-              <AddButton text="Agregar Suscripción" onClick={handleAdd} />
+              <AddButton text="Agregar Evento" onClick={handleAdd} />
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">

@@ -1,13 +1,13 @@
 import { useFieldArray, useForm } from "react-hook-form";
 import { InputZodField, TextAreaZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { planSaveSchema } from "@/app/utils/shcemas/Admin";
+import { planSaveSchema } from "@/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
-import { apiUrls } from "@/app/utils/api/apiUrls";
+import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
 import { toast } from "sonner";
 import ButtonForm from "../ui/buttonForm";
-import { IPlan } from "@/app/types/api";
+import { IPlan } from "@/types/api";
 import ButtonArrayForm from "../ui/buttonArrayFrom";
 import EditorHtml from "../ui/editotrHtml";
 

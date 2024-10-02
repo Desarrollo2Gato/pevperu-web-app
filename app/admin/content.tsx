@@ -1,22 +1,22 @@
 "use client";
-import { useAuthContext } from "@/app/context/authContext";
-import { InputZodField, TextAreaZodField } from "../components/ui/inputField";
+import { useAuthContext } from "@/context/authContext";
+import { InputZodField, TextAreaZodField } from "../../components/ui/inputField";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CompanyUpdateSchema } from "../utils/shcemas/Auth";
+import { CompanyUpdateSchema } from "../../utils/shcemas/Auth";
 import { useEffect, useState } from "react";
-import { apiUrls } from "../utils/api/apiUrls";
+import { apiUrls } from "../../utils/api/apiUrls";
 import axios from "axios";
-import { IUser, TDepartment, TProfession } from "../types/api";
-import { getTokenFromCookie } from "../utils/api/getToken";
-import { SelectZodField } from "../components/ui/selectField";
-import { MainContainer, SafeAreaContainer } from "../components/ui/containers";
-import ButtonArrayForm from "../components/ui/buttonArrayFrom";
+import { IUser, TDepartment, TProfession } from "../../types/api";
+import { getTokenFromCookie } from "../../utils/api/getToken";
+import { SelectZodField } from "../../components/ui/selectField";
+import { MainContainer, SafeAreaContainer } from "../../components/ui/containers";
+import ButtonArrayForm from "../../components/ui/buttonArrayFrom";
 import Image from "next/image";
 
 import { FaRegImage } from "react-icons/fa6";
 import { toast } from "sonner";
-import { imgUrl } from "../utils/img/imgUrl";
+import { imgUrl } from "../../utils/img/imgUrl";
 
 const ContentAdmin = () => {
   const { user, refreshToken } = useAuthContext();

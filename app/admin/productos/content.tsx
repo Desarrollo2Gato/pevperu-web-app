@@ -1,23 +1,23 @@
 "use client";
-import AddButton from "@/app/components/ui/addBtn";
+import AddButton from "@/components/ui/addBtn";
 import {
   MainContainer,
   SafeAreaContainer,
-} from "@/app/components/ui/containers";
-import SearchInput from "@/app/components/ui/searchInput";
-import { ICategory, ICompany, IProduct } from "@/app/types/api";
-import { apiUrls, pagination } from "@/app/utils/api/apiUrls";
-import { getTokenFromCookie } from "@/app/utils/api/getToken";
+} from "@/components/ui/containers";
+import SearchInput from "@/components/ui/searchInput";
+import { ICategory, ICompany, IProduct } from "@/types/api";
+import { apiUrls, pagination } from "@/utils/api/apiUrls";
+import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import ProductForm from "@/app/components/forms/productForm";
-import ProductTable from "@/app/components/tables/productTable";
-import SelectRows from "@/app/components/ui/selectRows";
+import ProductForm from "@/components/forms/productForm";
+import ProductTable from "@/components/tables/productTable";
+import SelectRows from "@/components/ui/selectRows";
 import { toast } from "sonner";
-import RejectForm from "@/app/components/forms/rejectedForm";
-import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
-import SelectComponent from "@/app/components/ui/select";
+import RejectForm from "@/components/forms/rejectedForm";
+import { ConfirmModal, FormModal } from "@/components/ui/modals";
+import SelectComponent from "@/components/ui/select";
 
 const Content = () => {
   // token
@@ -472,7 +472,7 @@ const Content = () => {
               Registros ({total})
             </h2>{" "}
             <div className="w-full md:w-auto flex justify-end">
-              <AddButton text="Agregar Suscripción" onClick={handleAdd} />
+              <AddButton text="Agregar Producto" onClick={handleAdd} />
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">

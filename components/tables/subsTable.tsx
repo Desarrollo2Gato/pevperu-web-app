@@ -1,9 +1,10 @@
-import { IPlan } from "@/app/types/api";
-import { apiUrls } from "@/app/utils/api/apiUrls";
+import { ICompany, IPlan, ISubscription } from "@/types/api";
+import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import { BiSolidEdit } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";
+import { MdOutlineAutorenew } from "react-icons/md";
 
 import {
   Column,
@@ -13,68 +14,89 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { getTokenFromCookie } from "@/utils/api/getToken";
+import { on } from "events";
 import StatusSpan from "../ui/statusSpan";
+import { Tooltip } from "@mui/material";
+import { BootstrapTooltip } from "../ui/tooltip";
 
-interface PlansTableProps {
-  dataTable: IPlan[];
+interface SubsTableProps {
+  dataTable: ISubscription[];
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
+  onRenew?: (id: number) => void;
 }
-const PlansTable: React.FC<PlansTableProps> = ({
+const SubsTable: React.FC<SubsTableProps> = ({
   dataTable,
   onEdit,
   onDelete,
+  onRenew,
 }) => {
-  const data: IPlan[] = dataTable;
-  const [filter, setFilter] = useState("");
-  const [filteredData, setFilteredData] = useState<IPlan[]>([]);
+  const data: ISubscription[] = dataTable;
 
   // colums
-  const columns: ColumnDef<IPlan, any>[] = [
+  const columns: ColumnDef<ISubscription, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
       // cell: (info) => info.getValue(),
     },
     {
-      accessorKey: "name",
+      accessorKey: "company",
+      header: "Empresa",
+      cell: (info) => info.row.original.company.name,
+    },
+    {
+      accessorKey: "plan",
       header: "Plan",
+      cell: (info) => info.row.original.plan.name,
     },
     {
-      accessorKey: "price",
-      header: "Precio",
-      cell: (info) => `S/${info.getValue()}`,
+      accessorKey: "is_active",
+      header: "Estado",
+      cell: (info) =>
+        info.row.original.is_active ? (
+          <StatusSpan text="Activo" bg="bg-green-400" />
+        ) : (
+          <StatusSpan text="Inactivo" bg="bg-red-500" />
+        ),
     },
     {
-      accessorKey: "featured_products",
-      header: "N.º  Productos destacados",
+      accessorKey: "start_date",
+      header: "Fecha de inicio",
+      cell: (info) =>
+        new Date(info.row.original.start_date).toLocaleDateString(),
     },
     {
-      accessorKey: "products_limit",
-      header: "N.º  de productos",
-    },
-    {
-      accessorKey: "events_limit",
-      header: "N.º  de eventos",
-    },
-    {
-      accessorKey: "news_limit",
-      header: "N.º  de noticias",
+      accessorKey: "end_date",
+      header: "Fecha de fin",
+      cell: (info) => new Date(info.row.original.end_date).toLocaleDateString(),
     },
     {
       accessorKey: "actions",
       header: "Acciones",
       cell: (info) => (
         <div className="flex justify-center items-center gap-2">
+          {onRenew && (
+            <BootstrapTooltip title="Renovar" placement="top">
+              <button
+                onClick={() => onRenew(info.row.original.id)}
+                className="bg-indigo-400 hover:bg-indigo-500 text-white p-1 aspect-square rounded transition-all duration-500"
+              >
+                <MdOutlineAutorenew className="text-lg" />
+              </button>
+            </BootstrapTooltip>
+          )}
+
           <button
-            onClick={() => onEdit(Number(info.row.original.id))}
+            onClick={() => onEdit(info.row.original.id)}
             className="bg-teal-400 hover:bg-teal-500 text-white p-1 aspect-square rounded transition-all duration-500"
           >
             <BiSolidEdit className="text-lg" />
           </button>
           <button
-            onClick={() => onDelete(Number(info.row.original.id))}
-            className="bg-yellow-400 hover:bg-yellow-500 text-white  p-1 rounded aspect-square transition-all duration-500"
+            onClick={() => onDelete(info.row.original.id)}
+            className="bg-yellow-400 hover:bg-reyellow00 text-white  p-1 rounded aspect-square transition-all duration-500"
           >
             <FiTrash className="text-lg" />
           </button>
@@ -142,4 +164,4 @@ const PlansTable: React.FC<PlansTableProps> = ({
   );
 };
 
-export default PlansTable;
+export default SubsTable;

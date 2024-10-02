@@ -2,12 +2,12 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { apiUrls } from "../utils/api/apiUrls";
-import { InputZodField } from "../components/ui/inputField";
+import { apiUrls } from "../../utils/api/apiUrls";
+import { InputZodField } from "../../components/ui/inputField";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ResetPasswordSchema } from "../utils/shcemas/Auth";
+import { ResetPasswordSchema } from "../../utils/shcemas/Auth";
 import Link from "next/link";
 
 const Content = () => {

@@ -1,21 +1,19 @@
 "use client";
-import AddButton from "@/app/components/ui/addBtn";
+import AddButton from "@/components/ui/addBtn";
 import {
   MainContainer,
   SafeAreaContainer,
-} from "@/app/components/ui/containers";
-import SearchInput from "@/app/components/ui/searchInput";
-import { IPlan } from "@/app/types/api";
-import { apiUrls } from "@/app/utils/api/apiUrls";
-import { getTokenFromCookie } from "@/app/utils/api/getToken";
+} from "@/components/ui/containers";
+import { IPlan } from "@/types/api";
+import { apiUrls } from "@/utils/api/apiUrls";
+import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-
-import PlansTable from "@/app/components/tables/plansTable";
-import PlanForm from "@/app/components/forms/plansForm";
-import SelectRows from "@/app/components/ui/selectRows";
-import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
+import PlansTable from "@/components/tables/plansTable";
+import PlanForm from "@/components/forms/plansForm";
+import SelectRows from "@/components/ui/selectRows";
+import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { toast } from "sonner";
 
 const Content = () => {
@@ -70,14 +68,16 @@ const Content = () => {
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
     } catch (error) {
-      console.error(error);
+      toast.error("No se pudo obtener los planes");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    getData();
+    if (token) {
+      getData();
+    }
   }, [pageIndex, pageSize]);
 
   const handlePageChange = (
@@ -139,6 +139,8 @@ const Content = () => {
   };
   const handleCloseModal = () => {
     setOpenModal(false);
+    setSelectedId(null);
+    setSelectedType("create");
   };
   return (
     <>
@@ -149,7 +151,7 @@ const Content = () => {
               Registros ({total})
             </h2>{" "}
             <div className="w-full md:w-auto flex justify-end">
-              <AddButton text="Agregar Suscripción" onClick={handleAdd} />
+              <AddButton text="Agregar Plan" onClick={handleAdd} />
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">

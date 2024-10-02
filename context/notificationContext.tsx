@@ -30,7 +30,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     if (token) {
       setToken(token);
     }
-  }, []);
+  }, [token]);
 
   // Función para obtener notificaciones desde el servidor
   const fetchNotifications = async () => {
@@ -109,7 +109,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         setWebSocket(null);
       };
     }
-  }, [user]);
+  }, [user, token]);
 
   return (
     <NotificationContext.Provider

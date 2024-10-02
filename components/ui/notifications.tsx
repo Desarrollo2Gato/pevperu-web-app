@@ -1,7 +1,7 @@
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { LuBoxes } from "react-icons/lu";
 import { FaRegNewspaper } from "react-icons/fa";
-import { useNotifications } from "@/app/context/notificationContext";
+import { useNotifications } from "@/context/notificationContext";
 import { useEffect, useState } from "react";
 import { LuUserCheck } from "react-icons/lu";
 import Link from "next/link";

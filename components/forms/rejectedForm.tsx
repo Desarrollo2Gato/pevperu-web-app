@@ -1,12 +1,12 @@
 import { useForm } from "react-hook-form";
 import { TextAreaZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { rejectedMessage } from "@/app/utils/shcemas/Admin";
+import { rejectedMessage } from "@/utils/shcemas/Admin";
 import { useState } from "react";
-import { apiUrls } from "@/app/utils/api/apiUrls";
+import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
 import ButtonForm from "../ui/buttonForm";
-import { IPlan } from "@/app/types/api";
+import { IPlan } from "@/types/api";
 import { toast } from "sonner";
 
 type RejectedFormPros = {

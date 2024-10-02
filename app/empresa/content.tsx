@@ -1,22 +1,22 @@
 "use client";
-import { useAuthContext } from "@/app/context/authContext";
-import { InputZodField, TextAreaZodField } from "../components/ui/inputField";
+import { useAuthContext } from "@/context/authContext";
+import { InputZodField, TextAreaZodField } from "../../components/ui/inputField";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CompanyUpdateSchema } from "../utils/shcemas/Auth";
+import { CompanyUpdateSchema } from "../../utils/shcemas/Auth";
 import { useEffect, useState } from "react";
-import { apiUrls } from "../utils/api/apiUrls";
+import { apiUrls } from "../../utils/api/apiUrls";
 import axios from "axios";
-import { IUser, TDepartment, TProfession } from "../types/api";
-import { getTokenFromCookie } from "../utils/api/getToken";
-import { SelectZodField } from "../components/ui/selectField";
-import { MainContainer, SafeAreaContainer } from "../components/ui/containers";
-import ButtonArrayForm from "../components/ui/buttonArrayFrom";
+import { IUser, TDepartment, TProfession } from "../../types/api";
+import { getTokenFromCookie } from "../../utils/api/getToken";
+import { SelectZodField } from "../../components/ui/selectField";
+import { MainContainer, SafeAreaContainer } from "../../components/ui/containers";
+import ButtonArrayForm from "../../components/ui/buttonArrayFrom";
 import Image from "next/image";
 
 import { FaRegImage } from "react-icons/fa6";
 import { toast } from "sonner";
-import { imgUrl } from "../utils/img/imgUrl";
+import { imgUrl } from "../../utils/img/imgUrl";
 
 const ContentCompany = () => {
   const { user, refreshToken } = useAuthContext();
@@ -338,7 +338,6 @@ const ContentCompany = () => {
                     accept="image/png, image/jpeg, image/jpg"
                     className="hidden"
                     {...register("logo")}
-                    // onChange={handleImageChange}
                   />
                 </label>
               </div>
@@ -426,7 +425,7 @@ const ContentCompany = () => {
             <div key={field.id} className="gap-4">
               <div className="border border-zinc-300 rounded-lg p-4 flex flex-col items-start gap-4 mb-4 ">
                 <h3>Sede {index + 1}</h3>
-                <div className="grid md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 w-full md:grid-cols-3 gap-4">
                   <SelectZodField
                     id={`branchesInfo.${index}.department`}
                     name="Departamento"
@@ -473,7 +472,7 @@ const ContentCompany = () => {
                   register={register(`branchesInfo.${index}.address`)}
                   error={errors.branchesInfo?.[index]?.address}
                 />
-                <div className="grid md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 w-full md:grid-cols-3 gap-4">
                   <InputZodField
                     id={`branchesInfo.${index}.name`}
                     name="Nombre"

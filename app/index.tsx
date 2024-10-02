@@ -1,11 +1,11 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { useAuthContext } from "./context/authContext";
-import { apiUrls } from "./utils/api/apiUrls";
+import { useAuthContext } from "../context/authContext";
+import { apiUrls } from "../utils/api/apiUrls";
 import axios from "axios";
 import Image from "next/image";
-import { InputField } from "./components/ui/inputField";
+import { InputField } from "../components/ui/inputField";
 import Link from "next/link";
 
 const Index = () => {
@@ -67,10 +67,10 @@ const Index = () => {
         <div className="flex md:flex-1 flex-col md:items-start gap-4">
           <div className="bg-[#023719] rounded-lg px-5 py-3 flex-1">
             <Image
-              className=" h-full w-full contain-content"
+              className=" h-full w-full object-contain"
               src={"/img/logoh.png"}
               width={177}
-              height={77}
+              height={71}
               alt="Logo de PevPeru en Horizontal"
             />
           </div>

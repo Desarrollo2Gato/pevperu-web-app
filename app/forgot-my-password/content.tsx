@@ -2,8 +2,8 @@
 import { useRouter } from "next/navigation";
 import { FormEvent,  useState } from "react";
 import axios from "axios";
-import { apiUrls } from "../utils/api/apiUrls";
-import { InputField } from "../components/ui/inputField";
+import { apiUrls } from "../../utils/api/apiUrls";
+import { InputField } from "../../components/ui/inputField";
 import { toast } from "sonner";
 import Link from "next/link";
 

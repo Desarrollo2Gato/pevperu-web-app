@@ -1,5 +1,5 @@
-import { useAuthContext } from "@/app/context/authContext";
-import { imgUrl } from "@/app/utils/img/imgUrl";
+import { useAuthContext } from "@/context/authContext";
+import { imgUrl } from "@/utils/img/imgUrl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -8,7 +8,7 @@ import { HiOutlineUserCircle } from "react-icons/hi2";
 import { LuMoveRight } from "react-icons/lu";
 import { LuBell } from "react-icons/lu";
 import Notifications from "../ui/notifications";
-import { useNotifications } from "@/app/context/notificationContext";
+import { useNotifications } from "@/context/notificationContext";
 
 interface HeaderProps {
   handleSidebar: () => void;
@@ -41,12 +41,12 @@ const Header: React.FC<HeaderProps> = ({ handleSidebar, active }) => {
       <div className="flex flex-row gap-4">
         <button onClick={handleSidebar}>
           {active ? (
-            <LuMoveRight className="text-xl text-zinc-500 " />
+            <LuMoveRight className="text-xl text-zinc-500  transform rotate-180 " />
           ) : (
             <HiOutlineMenuAlt1 className="text-2xl text-zinc-500 " />
           )}
         </button>
-        <h1 className="capitalize text-xl text-zinc-500 font-medium ">
+        <h1 className="capitalize text-xl text-zinc-500 font-medium">
           {nameView === "admin" || nameView === "company"
             ? "Inicio"
             : nameView === "contrasenia"

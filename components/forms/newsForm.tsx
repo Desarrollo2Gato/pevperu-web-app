@@ -1,20 +1,20 @@
 import { useForm } from "react-hook-form";
 import { InputZodField, TextAreaZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { eventSaveSchema } from "@/app/utils/shcemas/Admin";
+import { newsSaveSchema } from "@/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
-import { apiUrls } from "@/app/utils/api/apiUrls";
+import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
 import { toast } from "sonner";
 import { SelectZodField } from "../ui/selectField";
 import ButtonForm from "../ui/buttonForm";
-import { IEvents } from "@/app/types/api";
+import { INews } from "@/types/api";
 import EditorHtml from "../ui/editotrHtml";
+import { useAuthContext } from "@/context/authContext";
+import { imgUrl } from "@/utils/img/imgUrl";
 import { ImgField } from "../ui/imgField";
-import { imgUrl } from "@/app/utils/img/imgUrl";
-import { useAuthContext } from "@/app/context/authContext";
 
-type EventFormProps = {
+type NewsFormProps = {
   type: "create" | "edit";
   id?: number | null;
   token: string;
@@ -22,7 +22,7 @@ type EventFormProps = {
   getData: () => void;
 };
 
-const EventForm: React.FC<EventFormProps> = ({
+const NewsForm: React.FC<NewsFormProps> = ({
   type,
   id,
   token,
@@ -30,8 +30,8 @@ const EventForm: React.FC<EventFormProps> = ({
   getData,
 }) => {
   const { user } = useAuthContext();
-  const [event, setEvent] = useState<IEvents>();
 
+  const [news, setNews] = useState<INews>();
   // img
   const [imgMain, setImgMain] = useState<any>(null);
   const [imgSecond, setImgSecond] = useState<any>(null);
@@ -40,23 +40,22 @@ const EventForm: React.FC<EventFormProps> = ({
   const [submitting, setSubmitting] = useState(false);
 
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors },
     reset,
     watch,
-    getValues,
     setValue,
+    getValues,
   } = useForm({
-    resolver: zodResolver(eventSaveSchema),
+    resolver: zodResolver(newsSaveSchema),
     defaultValues: {
       title: "",
-      description: "",
-      type: "Nacional",
       status: user?.type === "admin" ? "approved" : "pending",
+      description: "",
       content: "",
-      date: "",
-      location: "",
+      published_at: new Date().toISOString().split("T")[0] || "",
       mainImage: null,
       secondImage: null,
       link: "",
@@ -70,39 +69,40 @@ const EventForm: React.FC<EventFormProps> = ({
   }, [type, id]);
 
   useEffect(() => {
-    if (event) {
-      if (event.photos && event.photos.length > 0) {
-        setImgMain(imgUrl(event.photos[0].photo_url));
-        if (event.photos.length > 1) {
-          setImgSecond(imgUrl(event.photos[1].photo_url));
+    if (news) {
+      if (news.photos && news.photos.length > 0) {
+        setImgMain(imgUrl(news.photos[0].photo_url));
+        if (news.photos.length > 1) {
+          setImgSecond(imgUrl(news.photos[1].photo_url));
         }
       }
       reset({
-        title: event.name || "",
-        description: event.description || "",
-        type: event.type || "National",
-        status: event.status || user?.type === "admin" ? "approved" : "pending",
-        content: event.content || "",
-        date: event.date || "",
-        location: event.location || "",
+        title: news.title || "",
+        description: news.description || "",
+        content: news.content || "",
+        status: news.status || user?.type === "admin" ? "approved" : "pending",
+        link: news.link || "",
         mainImage: null,
         secondImage: null,
-        link: event.link || "",
+        published_at: news.published_at
+          ? new Date().toISOString().split("T")[0]
+          : "",
       });
     }
-  }, [event]);
+  }, [news]);
 
   const getDataById = async (id: string) => {
     setLoading(true);
     try {
-      const res = await axios.get(apiUrls.event.getOne(id), {
+      const res = await axios.get(apiUrls.news.getOne(id), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      setEvent(res.data);
+      setNews(res.data);
     } catch (error) {
-      toast.error("Error al obtener los datos");
+      console.error(error);
+      alert("Error al obtener los datos");
     } finally {
       setLoading(false);
     }
@@ -110,25 +110,26 @@ const EventForm: React.FC<EventFormProps> = ({
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
+    const date = new Date();
+    const published_at = date.toISOString().split("T")[0];
     const dataSend = new FormData();
     if (!user?.company_id) {
       toast.error("No se ha podido obtener su id, recargue la página ");
       return;
     }
-    if (event) {
-      dataSend.append("company_id", event?.company_id.toString());
+    if (news) {
+      dataSend.append("company_id", news?.company_id.toString());
     } else {
       dataSend.append("company_id", user?.company_id.toString());
     }
 
-    dataSend.append("name", data.title);
+    dataSend.append("title", data.title);
     dataSend.append("description", data.description);
     dataSend.append("content", data.content);
-    dataSend.append("date", data.date);
     dataSend.append("status", data.status);
-    dataSend.append("location", data.location);
-    dataSend.append("type", data.type);
+    dataSend.append("status", data.status);
     dataSend.append("link", data.link);
+    dataSend.append("published_at", published_at);
 
     if (data.mainImage) {
       dataSend.append("photos[]", data.mainImage[0]);
@@ -141,31 +142,30 @@ const EventForm: React.FC<EventFormProps> = ({
     const promise = new Promise(async (resolve, reject) => {
       try {
         if (type === "create") {
-          await axios.post(apiUrls.event.create, dataSend, {
+          await axios.post(apiUrls.news.create, dataSend, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "multipart/form-data",
             },
           });
-          resolve({ message: "Evento creado exitosamente" });
+          resolve({ message: "Noticia creada exitosamente" });
         }
         if (type === "edit") {
           if (id) {
-            await axios.post(apiUrls.event.update(id?.toString()), dataSend, {
+            await axios.post(apiUrls.news.update(id?.toString()), dataSend, {
               headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "multipart/form-data",
               },
             });
-            resolve({ message: "Evento actualizada exitosamente" });
+            resolve({ message: "Noticia actualizada exitosamente" });
           } else {
-            reject({ message: "No se ha podido obtener el id del evento" });
+            reject("No se ha podido obtener el id de la noticia");
           }
         }
-        closeModal();
         getData();
+        closeModal();
       } catch (error) {
-        console.error(error);
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
@@ -216,7 +216,6 @@ const EventForm: React.FC<EventFormProps> = ({
             isPost
           />
         </div>
-
         <SelectZodField
           id="status"
           name="Estado"
@@ -232,20 +231,10 @@ const EventForm: React.FC<EventFormProps> = ({
           error={errors.status}
           isdisabled={user?.type === "admin" ? false : true}
         />
-        <SelectZodField
-          id="type"
-          name="Tipo"
-          options={["Nacional", "Internacional"]}
-          placeholder="Seleccione un tipo"
-          getOptionValue={(option) => option}
-          getOptionLabel={(option) => option}
-          register={register("type")}
-          error={errors.type}
-        />
         <InputZodField
           id="title"
           name="Titulo"
-          placeholder="Ingrese el titulo del evento"
+          placeholder="Ingrese el titulo de la noticia"
           register={register("title")}
           error={errors.title}
         />
@@ -253,7 +242,7 @@ const EventForm: React.FC<EventFormProps> = ({
           id="description"
           name="Descripción"
           rows={2}
-          placeholder="Ingrese una descripción corta del evento"
+          placeholder="Ingrese una descripción corta de la noticia"
           register={register("description")}
           error={errors.description}
         />
@@ -261,44 +250,39 @@ const EventForm: React.FC<EventFormProps> = ({
           text="Contenido"
           id="content"
           value={getValues("content")}
-          // register={register("content")}
           setValue={setValue}
           error={errors.content}
         />
+
         <InputZodField
-          id="date"
+          id="published_at"
           name="Fecha"
-          placeholder="Ingrese la fecha del evento"
-          register={register("date")}
-          error={errors.date}
+          type="date"
+          placeholder="Ingrese la fecha de la noticia"
+          register={register("published_at")}
+          error={errors.published_at}
         />
-        <InputZodField
-          id="location"
-          name="Ubicación"
-          placeholder="Ingrese la ubicación del evento"
-          register={register("location")}
-          error={errors.location}
-        />
+
         <InputZodField
           id="link"
-          name="Url del evento"
+          name="Url de la noticia"
           placeholder="https://www.example.com"
           register={register("link")}
           error={errors.link}
         />
-        {/* content */}
+
         <div className="gap-8 flex justify-end items-center mt-4">
           <ButtonForm
             text="Cancelar"
+            isdisabled={submitting}
             onClick={() => {
               reset();
               closeModal();
             }}
-            isdisabled={submitting}
           />
           <ButtonForm
+            text="Guardar"
             isdisabled={submitting}
-            text={loading ? "Guardando..." : "Guardar"}
             onClick={handleSubmit(onSubmit)}
             primary
           />
@@ -308,4 +292,4 @@ const EventForm: React.FC<EventFormProps> = ({
   );
 };
 
-export default EventForm;
+export default NewsForm;

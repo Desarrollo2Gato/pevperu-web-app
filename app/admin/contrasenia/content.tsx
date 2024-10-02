@@ -1,15 +1,15 @@
 "use client";
-import ButtonForm from "@/app/components/ui/buttonForm";
+import ButtonForm from "@/components/ui/buttonForm";
 import {
   MainContainer,
   SafeAreaContainer,
-} from "@/app/components/ui/containers";
-import { InputZodField } from "@/app/components/ui/inputField";
-import { useAuthContext } from "@/app/context/authContext";
-import { IHelpCompany } from "@/app/types/api";
-import { apiUrls } from "@/app/utils/api/apiUrls";
-import { getTokenFromCookie } from "@/app/utils/api/getToken";
-import { ChangePasswordSchema } from "@/app/utils/shcemas/Auth";
+} from "@/components/ui/containers";
+import { InputZodField } from "@/components/ui/inputField";
+import { useAuthContext } from "@/context/authContext";
+import { IHelpCompany } from "@/types/api";
+import { apiUrls } from "@/utils/api/apiUrls";
+import { getTokenFromCookie } from "@/utils/api/getToken";
+import { ChangePasswordSchema } from "@/utils/shcemas/Auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useEffect, useState } from "react";

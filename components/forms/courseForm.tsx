@@ -1,15 +1,15 @@
 import { useForm } from "react-hook-form";
 import { InputZodField, TextAreaZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { courseSaveSchema } from "@/app/utils/shcemas/Admin";
+import { courseSaveSchema } from "@/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
-import { apiUrls } from "@/app/utils/api/apiUrls";
+import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
 import { toast } from "sonner";
 import ButtonForm from "../ui/buttonForm";
-import { ICourse } from "@/app/types/api";
+import { ICourse } from "@/types/api";
 import EditorHtml from "../ui/editotrHtml";
-import { useAuthContext } from "@/app/context/authContext";
+import { useAuthContext } from "@/context/authContext";
 
 type CourseFormProps = {
   type: "create" | "edit";

@@ -1,22 +1,22 @@
 "use client";
-import AddButton from "@/app/components/ui/addBtn";
+import AddButton from "@/components/ui/addBtn";
 import {
   MainContainer,
   SafeAreaContainer,
-} from "@/app/components/ui/containers";
-import SearchInput from "@/app/components/ui/searchInput";
-import { useAuthContext } from "@/app/context/authContext";
-import { IUser } from "@/app/types/api";
-import { apiUrls } from "@/app/utils/api/apiUrls";
-import { getTokenFromCookie } from "@/app/utils/api/getToken";
+} from "@/components/ui/containers";
+import SearchInput from "@/components/ui/searchInput";
+import { useAuthContext } from "@/context/authContext";
+import { IUser } from "@/types/api";
+import { apiUrls } from "@/utils/api/apiUrls";
+import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Modal, Box, Typography } from "@mui/material";
 
-import UsersTable from "@/app/components/tables/usersTable";
+import UsersTable from "@/components/tables/usersTable";
 import { toast } from "sonner";
-import { ConfirmModal } from "@/app/components/ui/modals";
+import { ConfirmModal } from "@/components/ui/modals";
 
 const Content = () => {
   const [token, setToken] = useState("");

@@ -1,17 +1,17 @@
 import { useFieldArray, useForm } from "react-hook-form";
 import { InputColorZodField, InputZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { categorySaveSchema } from "@/app/utils/shcemas/Admin";
+import { categorySaveSchema } from "@/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
-import { apiUrls } from "@/app/utils/api/apiUrls";
+import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
 import { Toaster, toast } from "sonner";
 import { SelectZodField } from "../ui/selectField";
 import ButtonForm from "../ui/buttonForm";
-import { ICategory } from "@/app/types/api";
+import { ICategory } from "@/types/api";
 import ButtonArrayForm from "../ui/buttonArrayFrom";
 import { ImgField } from "../ui/imgField";
-import { imgUrl } from "@/app/utils/img/imgUrl";
+import { imgUrl } from "@/utils/img/imgUrl";
 import { resolve } from "path";
 
 type CategoryFormProps = {

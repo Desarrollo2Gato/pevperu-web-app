@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import Sidebar from "../components/navigation/sidebar";
-import Header from "../components/navigation/header";
+import Sidebar from "../../components/navigation/sidebar";
+import Header from "../../components/navigation/header";
 
 export default function RootLayout({
   children,
