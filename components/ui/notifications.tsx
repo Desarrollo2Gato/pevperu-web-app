@@ -4,10 +4,93 @@ import { FaRegNewspaper } from "react-icons/fa";
 import { useNotifications } from "@/context/notificationContext";
 import { useEffect, useState } from "react";
 import { LuUserCheck } from "react-icons/lu";
-import Link from "next/link";
+import axios from "axios";
+import { apiUrls } from "@/utils/api/apiUrls";
+import { getTokenFromCookie } from "@/utils/api/getToken";
+import { toast } from "sonner";
+import { useAuthContext } from "@/context/authContext";
+import { useRouter } from "next/navigation";
 
-const Notifications = () => {
-  const { notifications } = useNotifications();
+interface NotificationsProps {
+  setShowNotification: () => void;
+}
+
+const Notifications: React.FC<NotificationsProps> = ({setShowNotification}) => {
+  const { notifications, fetchNotifications } = useNotifications();
+  const [token, setToken] = useState<string | null>(null);
+  const { user } = useAuthContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = getTokenFromCookie();
+    if (token) {
+      setToken(token.toString());
+    }
+  }, []);
+
+  const handleNoti = async (
+    id: string,
+    type: string,
+    type_id: string,
+    status: string
+  ) => {
+    if (status === "unread") {
+      onRead(id);
+    }
+    if (user?.type === "admin") {
+      switch (type) {
+        case "Event":
+          router.push(`/admin/eventos`);
+          break;
+        case "Product":
+          router.push(`/admin/productos`);
+
+          break;
+        case "News":
+          router.push(`/admin/noticias`);
+
+          break;
+        default:
+          break;
+      }
+    } else {
+      switch (type) {
+        case "Event":
+          router.push(`/empresa/eventos`);
+          break;
+        case "Product":
+          router.push(`/empresa/productos`);
+          break;
+        case "News":
+          router.push(`/empresa/noticias`);
+          break;
+        case "Subs":
+          router.push(`/empresa/suscripciones`);
+          break;
+        default:
+          break;
+      }
+    }
+    setShowNotification();
+  };
+
+  const onRead = async (id: string) => {
+    try {
+      const res = await axios.post(
+        apiUrls.notifications.read(id),
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      fetchNotifications();
+    } catch (error) {
+      toast.error("Error al leer la notificación");
+    }
+  };
+
   return (
     <div className="w-fulf overflow-hidden">
       <div className="p-4 ">
@@ -18,7 +101,14 @@ const Notifications = () => {
               message={notifications.message}
               type={notifications.type}
               status={notifications.status}
-              onPress={() => console.log("Pressed")}
+              onPress={() =>
+                handleNoti(
+                  notifications.id.toString(),
+                  notifications.type,
+                  notifications.id_item.toString(),
+                  notifications.status
+                )
+              }
             />
           ))}
         </div>
@@ -64,12 +154,22 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
   }, [type]);
 
   return (
-    <div className="flex flex-row gap-2 items-center bg-gray-100 p-2 rounded-md">
+    <div
+      role="button"
+      onClick={onPress}
+      className="flex flex-row gap-2 items-center bg-gray-100 p-2 rounded-md"
+    >
       <div className="bg-white rounded-[100%] p-1 aspect-square h-9 w-9 justify-center items-center flex">
-        {title === "Evento" && <FaRegCalendarAlt className="text-green-800 text-xl" />}
+        {title === "Evento" && (
+          <FaRegCalendarAlt className="text-green-800 text-xl" />
+        )}
         {title === "Producto" && <LuBoxes className="text-green-800 text-xl" />}
-        {title === "Noticia" && <FaRegNewspaper className="text-green-800 text-xl" />}
-        {title === "Suscripción" && <LuUserCheck className="text-green-800 text-xl" />}
+        {title === "Noticia" && (
+          <FaRegNewspaper className="text-green-800 text-xl" />
+        )}
+        {title === "Suscripción" && (
+          <LuUserCheck className="text-green-800 text-xl" />
+        )}
       </div>
       <div className="flex flex-col w-full">
         <span className="text-zinc-500 font-medium text-sm">{title}</span>

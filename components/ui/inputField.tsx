@@ -157,8 +157,9 @@ type InputFileProps = {
   name: string;
   placeholder?: string;
   error?: FieldError;
-  register: any;
-  setValue: UseFormSetValue<any>;
+  register?: any;
+  setValue?: UseFormSetValue<any>;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 export const InputFileZod: React.FC<InputFileProps> = ({
@@ -168,13 +169,14 @@ export const InputFileZod: React.FC<InputFileProps> = ({
   register,
   error,
   setValue,
+  onChange,
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     console.log(id);
-    setValue("files.0.file_url", selectedFile, { shouldValidate: true });
+    // setValue("files.0.file_url", selectedFile, { shouldValidate: true });
   }, [selectedFile]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -208,7 +210,10 @@ export const InputFileZod: React.FC<InputFileProps> = ({
           placeholder={placeholder}
           ref={fileInputRef}
           {...register}
-          // onChange={handleFileChange}
+          onChange={() => {
+            onChange;
+            handleFileChange;
+          }}
           accept=".pdf"
         />
       </label>

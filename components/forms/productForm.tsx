@@ -327,7 +327,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       } finally {
         getData();
         setSubmitting(false);
-
       }
     });
     toast.promise(promise, {
@@ -525,6 +524,12 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           </label>
           {filesData.length > 0 ? (
             filesField.map((item, index) => (
+              // <InputFileZod
+              //   key={item.id}
+              //   id={`files${index}`}
+              //   name={item.file_type}
+              //   onChange={handleFileChange(index, item.file_type)}
+              // />
               <div
                 className="w-full relative flex flex-col gap-1"
                 key={item.id}
@@ -539,7 +544,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
                   type="file"
                   id={`files${index}`}
                   accept=".pdf"
-                  className="w-full border border-zinc-200 rounded-sm px-2"
+                  className="w-full text-xs border border-zinc-200 rounded-sm px-2"
                   onChange={handleFileChange(index, item.file_type)}
                 />
               </div>

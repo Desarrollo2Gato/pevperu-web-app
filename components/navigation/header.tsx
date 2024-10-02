@@ -2,7 +2,7 @@ import { useAuthContext } from "@/context/authContext";
 import { imgUrl } from "@/utils/img/imgUrl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HiOutlineMenuAlt1 } from "react-icons/hi";
 import { HiOutlineUserCircle } from "react-icons/hi2";
 import { LuMoveRight } from "react-icons/lu";
@@ -29,6 +29,22 @@ const Header: React.FC<HeaderProps> = ({ handleSidebar, active }) => {
   const toggleNotification = () => {
     setShowNotification(!showNotification);
   };
+
+  const handleClick = (e: MouseEvent) => {
+    // Verifica si el target es un elemento
+    const target = e.target as Element; // Aserción de tipo
+
+    // Comprueba si el clic ocurrió fuera del contenedor de notificaciones
+    if (target.closest(".notification-container")) return;
+    setShowNotification(false);
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClick);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+    };
+  }, []);
 
   return (
     <div
@@ -69,7 +85,9 @@ const Header: React.FC<HeaderProps> = ({ handleSidebar, active }) => {
           </button>
           {showNotification && (
             <div className="absolute z-20 right-0 mt-[14px] w-80 md:w-[350px] bg-white shadow-lg rounded-b-md">
-              <Notifications />
+              <Notifications
+                setShowNotification={() => setShowNotification(false)}
+              />
             </div>
           )}
         </div>
