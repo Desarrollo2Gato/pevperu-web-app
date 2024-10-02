@@ -15,7 +15,7 @@ type EditorHtmlProps = {
 
 const modules = {
   toolbar: [
-    [{ header: [1, 2, 3, 4, false]}],
+    [{ header: [1, 2, 3, 4, false] }],
     ["bold", "italic", "underline", "strike"],
     [{ list: "ordered" }, { list: "bullet" }],
     ["link"],
@@ -32,9 +32,7 @@ const EditorHtml: React.FC<EditorHtmlProps> = ({
   // register,
 }) => {
   useEffect(() => {
-    if (value) {
-      setValue(id, value); 
-    }
+      setValue(id, value || "");
   }, [value, setValue, id]);
   return (
     <div className="w-full relative">
@@ -45,12 +43,11 @@ const EditorHtml: React.FC<EditorHtmlProps> = ({
         <ReactQuill
           theme="snow"
           value={value}
-          defaultValue={value}
           onChange={(content) => {
-            setValue(id, content); 
+            setValue(id, content);
             if (onChange) onChange(content);
           }}
-          // {...register}
+          defaultValue={"holi"}
           placeholder="Escribe aquí..."
           id={id}
           modules={modules}

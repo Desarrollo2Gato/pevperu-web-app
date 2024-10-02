@@ -47,7 +47,11 @@ const Header: React.FC<HeaderProps> = ({ handleSidebar, active }) => {
           )}
         </button>
         <h1 className="capitalize text-xl text-zinc-500 font-medium ">
-          {nameView === "admin" || nameView === "company" ? "Inicio" : nameView}
+          {nameView === "admin" || nameView === "company"
+            ? "Inicio"
+            : nameView === "contrasenia"
+            ? "Contraseña"
+            : nameView}
         </h1>
       </div>
 
@@ -72,7 +76,7 @@ const Header: React.FC<HeaderProps> = ({ handleSidebar, active }) => {
         <div className="text-zinc-500 md:flex hidden flex-row gap-1 items-center">
           <span>{user?.type === "admin" ? "Administrador" : "Usuario"}</span> -
           <span>{name}</span>
-          <Link href={"/admin/perfil"} className="ml-2">
+          <Link href={"/"} className="ml-2">
             {user?.logo ? (
               <img
                 src={imgUrl(user?.logo)}

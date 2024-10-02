@@ -157,9 +157,11 @@ export const CompanyUpdateSchema = z.object({
     .min(1, "El horario de atención es requerido")
     .max(255, "El horario de atención no puede tener más de 255 caracteres"),
   // logo: z.any().nullable(),
-  logo: z.custom<FileList>((files) => files?.length > 0, {
-    message: "La imagen es requerida",
-  }).nullable(),
+  logo: z
+    .custom<FileList>((files) => files?.length > 0, {
+      message: "La imagen es requerida",
+    })
+    .nullable(),
   branchesInfo: z
     .array(
       z.object({
@@ -182,8 +184,9 @@ export const ForgotPasswordSchema = z.object({
 export const ResetPasswordSchema = z
   .object({
     code: z
-      .array(z.string().min(1, "El código es requerido"))
-      .length(4, "El código debe tener 4 dígitos"),
+      .string()
+      .max(4, "El código debe tener 4 dígitos")
+      .min(4, "El código debe tener 4 dígitos"),
 
     email: z.string().email("El email no es válido"),
     password: z

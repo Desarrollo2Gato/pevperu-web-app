@@ -320,7 +320,6 @@ const ContentAdmin = () => {
                     accept="image/png, image/jpeg, image/jpg"
                     className="hidden"
                     {...register("logo")}
-                    // onChange={handleImageChange}
                   />
                 </label>
               </div>
@@ -338,7 +337,6 @@ const ContentAdmin = () => {
                     accept="image/png, image/jpeg, image/jpg"
                     className="hidden"
                     {...register("logo")}
-                    // onChange={handleImageChange}
                   />
                 </label>
               </div>
@@ -365,7 +363,7 @@ const ContentAdmin = () => {
           </div>
         </MainContainer>
         <MainContainer title="Datos de la empresa">
-          <div className=" grid md:grid-cols-2 gap-4 mb-4">
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <InputZodField
               id="company"
               name="Nombre de la empresa"
@@ -426,7 +424,7 @@ const ContentAdmin = () => {
             <div key={field.id} className="gap-4">
               <div className="border border-zinc-300 rounded-lg p-4 flex flex-col items-start gap-4 mb-4 ">
                 <h3>Sede {index + 1}</h3>
-                <div className="grid md:grid-cols-3 gap-2">
+                <div className="grid w-full grid-cols-1 md:grid-cols-3 gap-2">
                   <SelectZodField
                     id={`branchesInfo.${index}.department`}
                     name="Departamento"
@@ -473,7 +471,7 @@ const ContentAdmin = () => {
                   register={register(`branchesInfo.${index}.address`)}
                   error={errors.branchesInfo?.[index]?.address}
                 />
-                <div className="grid md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 w-full md:grid-cols-3 gap-2">
                   <InputZodField
                     id={`branchesInfo.${index}.name`}
                     name="Nombre"

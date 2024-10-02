@@ -29,6 +29,8 @@ export const helpUpdateSchema = z.object({
     .string()
     .min(1, "La dirección es requerida")
     .max(255, "La dirección no puede tener más de 255 caracteres"),
+  link_web: z.string().nullable(),
+  link_admin_app: z.string().nullable(),
 });
 
 export const planSaveSchema = z.object({
@@ -202,11 +204,8 @@ export const productSaveSchema = z.object({
     .nullable(),
   files: z.array(
     z.object({
-      file_type: z.any().nullable(),
-      file_url: z.custom<FileList>((files) => files?.length > 0, {
-        message: "La imagen es requerida",
-      })
-      .nullable(),
+      file_type: z.string().nullable(),
+      file_label: z.string().nullable(),
     })
   ),
   status: z.string().min(1, "El estado es requerido"),

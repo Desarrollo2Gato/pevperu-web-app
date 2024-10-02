@@ -1,9 +1,7 @@
+import Content from "./content";
+
 const ForgotMyPasswordPage = () => {
-  return (
-    <div>
-      <h1>ForgotMyPasswordPage</h1>
-    </div>
-  );
+  return <Content />;
 };
 
 export default ForgotMyPasswordPage;

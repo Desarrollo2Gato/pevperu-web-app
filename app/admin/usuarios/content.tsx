@@ -128,14 +128,13 @@ const Content = () => {
     <>
       <SafeAreaContainer isTable>
         <MainContainer>
-          {/* header */}
           <div className="flex flex-row justify-between pb-4 border-b border-b-gray-50">
-            <h2>Registros: {total}</h2>{" "}
+            <h2 className="font-medium text-zinc-500 text-lg w-full md:w-auto">
+              Registros ({total})
+            </h2>{" "}
           </div>
-          <div className="flex justify-between mb-4 pt-4">
-            <div></div>
-            {/* buscador */}
-            <div className="flex flex-row self-end">
+          <div className="flex justify-end mb-4 pt-4">
+            <div className="w-full sm:w-auto flex flex-row self-end">
               <SearchInput />
             </div>
           </div>

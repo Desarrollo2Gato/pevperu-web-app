@@ -45,7 +45,6 @@ const Content = () => {
   );
 
   useEffect(() => {
-    //obtener token
     const token = getTokenFromCookie();
     if (token) {
       setToken(token);
@@ -78,9 +77,6 @@ const Content = () => {
       setLoading(false);
     }
   };
-  // useEffect(() => {
-  //   getData();
-  // }, [pageIndex, pageSize]);
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -183,7 +179,6 @@ const Content = () => {
   };
 
   useEffect(() => {
-    // limpiar data
     setData([]);
     console.log(selectedAction);
   }, [selectedAction]);
@@ -204,19 +199,20 @@ const Content = () => {
     <>
       <SafeAreaContainer isTable>
         <MainContainer>
-          {/* header */}
-          <div className="flex flex-row justify-between pb-4 border-b border-b-gray-50">
-            <h2>Registros: {total}</h2>{" "}
-            <AddButton text="Agregar Categoría" onClick={handleAdd} />
+          <div className="flex flex-col md:flex-row  md:justify-between pb-4 border-b border-b-gray-50 items-center gap-4">
+            <h2 className="font-medium text-zinc-500 text-lg w-full md:w-auto">
+              Registros ({total})
+            </h2>{" "}
+            <div className="w-full md:w-auto flex justify-end">
+              <AddButton text="Agregar Suscripción" onClick={handleAdd} />
+            </div>
           </div>
-          <div className="flex justify-between mb-4 pt-4">
-            {/* select items per page */}
+          <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">
             <SelectRows
               pageSize={pageSize.toString()}
               handlePageSizeChange={handlePageSizeChange}
             />
-            {/* buscador */}
-            <div className="flex flex-row self-end">
+            <div className="w-full sm:w-auto flex flex-row self-end">
               <SearchInput
                 placeholder="Buscar categoria"
                 onClick={(query) => getCategoriesBySearch(query)}
@@ -234,7 +230,6 @@ const Content = () => {
               />
             )}
           </div>
-          {/* pagination */}
           <div className="mt-4 justify-center flex">
             <Pagination
               count={pageCount}
@@ -245,7 +240,6 @@ const Content = () => {
           </div>
         </MainContainer>
       </SafeAreaContainer>
-      {/* form modal */}
       <FormModal
         title={`${selectedType === "edit" ? "Editar" : "Crear"} categoría`}
         openModal={openModal}
@@ -259,7 +253,6 @@ const Content = () => {
           getData={getData}
         />
       </FormModal>
-      {/* delete modal */}
       <ConfirmModal
         openModal={deleteModal}
         setOpenModal={() => setDeleteModal(false)}

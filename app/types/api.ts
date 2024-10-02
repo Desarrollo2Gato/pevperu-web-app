@@ -212,4 +212,6 @@ export interface IHelpCompany {
   help_email_support: string;
   company_id: string;
   id: number;
+  link_web: string;
+  link_admin_app: string;
 }

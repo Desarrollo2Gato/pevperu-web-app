@@ -5,7 +5,7 @@ type SelectZodProps = {
   name: string;
   options: any[];
   error?: FieldError;
-  register: any;
+  register?: any;
   getOptionValue?: (option: any) => string | number;
   getOptionLabel?: (option: any) => string;
   placeholder: string;

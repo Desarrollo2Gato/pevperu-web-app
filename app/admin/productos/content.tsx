@@ -126,6 +126,12 @@ const Content = () => {
     setProviderFilter(newProvider);
     setSelectedAction("provider");
   };
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCategory = e.target.value as "all" | string;
+    newCategory;
+    setCategoryFilter(newCategory);
+    setSelectedAction("category");
+  };
 
   const onApprove = async (id: string) => {
     const promise = new Promise(async (resolve, rejects) => {
@@ -385,11 +391,7 @@ const Content = () => {
     });
   };
 
-  // useEffect(() => {
-  //   getData();
-  // }, [pageIndex, pageSize]);
   useEffect(() => {
-    // limpiar data
     setData([]);
   }, [selectedAction]);
   useEffect(() => {
@@ -458,23 +460,27 @@ const Content = () => {
                     label: category.name,
                   })),
                 ]}
-                onChange={handleProviderChange}
+                onChange={handleCategoryChange}
                 defaultValue={categoryFilter}
               />
             </div>
           </MainContainer>
         </div>
         <MainContainer>
-          <div className="flex flex-row justify-between pb-4 border-b border-b-gray-50">
-            <h2>Registros: {total}</h2>{" "}
-            <AddButton text="Agregar Producto" onClick={handleAdd} />
+          <div className="flex flex-col md:flex-row  md:justify-between pb-4 border-b border-b-gray-50 items-center gap-4">
+            <h2 className="font-medium text-zinc-500 text-lg w-full md:w-auto">
+              Registros ({total})
+            </h2>{" "}
+            <div className="w-full md:w-auto flex justify-end">
+              <AddButton text="Agregar Suscripción" onClick={handleAdd} />
+            </div>
           </div>
-          <div className="flex justify-between mb-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">
             <SelectRows
               pageSize={pageSize.toString()}
               handlePageSizeChange={handlePageSizeChange}
             />
-            <div className="flex flex-row self-end">
+            <div className="w-full sm:w-auto flex flex-row self-end">
               <SearchInput
                 placeholder="Buscar producto"
                 onClick={(query) => getProductsBySearch(query)}

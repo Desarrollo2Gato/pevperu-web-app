@@ -41,7 +41,7 @@ export const InputField: React.FC<InputProps> = ({
       <input
         type={isPassword && showPassword ? "text" : type}
         id={id}
-        className=" w-full bg-transparent rounded-lg border-[0.5px] border-zinc-300 text-zinc-600 px-4 py-3 placeholder-zinc-300 outline-none focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800 focus:ring-opacity-50"
+        className=" w-full mt-1 bg-transparent rounded-lg border-[0.5px] border-zinc-300 text-zinc-600 px-4 py-3 placeholder-zinc-300 outline-none focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800 focus:ring-opacity-50"
         value={value}
         onChange={onChange}
         placeholder={placeholder}
@@ -90,31 +90,33 @@ export const InputZodField: React.FC<InputZodProps> = ({
   };
 
   return (
-    <div className="w-full relative">
+    <div className="w-full">
       <label htmlFor={id} className="text-green-800  text-base font-medium ">
         {name}
       </label>
-      <input
-        type={isPassword && showPassword ? "text" : type}
-        id={id}
-        className={`mt-1 w-full bg-transparent rounded-lg border-[0.5px]  text-zinc-600 px-3 py-2 placeholder-zinc-300 outline-none focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-opacity-50 text-sm transition-all duration-500 transform  ${
-          error
-            ? "border-red-500 focus:ring-red-500"
-            : "border-zinc-300 focus:ring-green-800"
-        }`}
-        placeholder={placeholder}
-        {...(isrequired && { required: true })}
-        {...register}
-      />
-      {isPassword && (
-        <button
-          type="button"
-          onClick={togglePassword}
-          className="absolute bottom-4 right-2 text-zinc-300 text-xl"
-        >
-          {showPassword ? <FaEye /> : <FaEyeSlash />}
-        </button>
-      )}
+      <div className="relative">
+        <input
+          type={isPassword && showPassword ? "text" : type}
+          id={id}
+          className={`mt-1 w-full bg-transparent rounded-lg border-[0.5px]  text-zinc-600 px-3 py-2 placeholder-zinc-300 outline-none focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-opacity-50 text-sm transition-all duration-500 transform  ${
+            error
+              ? "border-red-500 focus:ring-red-500"
+              : "border-zinc-300 focus:ring-green-800"
+          }`}
+          placeholder={placeholder}
+          {...(isrequired && { required: true })}
+          {...register}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={togglePassword}
+            className="absolute bottom-2 right-2 text-zinc-300 text-xl"
+          >
+            {showPassword ? <FaEye /> : <FaEyeSlash />}
+          </button>
+        )}
+      </div>
       {error && <p className="mt-1 text-sm text-red-600">{error.message}</p>}
     </div>
   );
@@ -171,7 +173,7 @@ export const InputFileZod: React.FC<InputFileProps> = ({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    console.log(id)
+    console.log(id);
     setValue("files.0.file_url", selectedFile, { shouldValidate: true });
   }, [selectedFile]);
 
@@ -190,8 +192,6 @@ export const InputFileZod: React.FC<InputFileProps> = ({
     setSelectedFile(null);
     // setValue(id, null, { shouldValidate: true });
   };
-
-  
 
   return (
     <div className="w-full relative">

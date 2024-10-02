@@ -186,24 +186,21 @@ const Content = () => {
   return (
     <>
       <SafeAreaContainer isTable>
-        <div className="mb-4">
-          <MainContainer title="Filtros">
-            <div className="flex gap-1 flex-wrap justify-between mb-4 flex-row w-full">
-              <p>filtrar x fecha</p>
-            </div>
-          </MainContainer>
-        </div>
         <MainContainer>
-          <div className="flex flex-row justify-between pb-4 border-b border-b-gray-50">
-            <h2>Registros: {total}</h2>{" "}
-            <AddButton text="Agregar Curso" onClick={handleAdd} />
+          <div className="flex flex-col md:flex-row  md:justify-between pb-4 border-b border-b-gray-50 items-center gap-4">
+            <h2 className="font-medium text-zinc-500 text-lg w-full md:w-auto">
+              Registros ({total})
+            </h2>{" "}
+            <div className="w-full md:w-auto flex justify-end">
+              <AddButton text="Agregar Curso" onClick={handleAdd} />
+            </div>
           </div>
-          <div className="flex justify-between mb-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">
             <SelectRows
               pageSize={pageSize.toString()}
               handlePageSizeChange={handlePageSizeChange}
             />
-            <div className="flex flex-row self-end">
+            <div className="w-full sm:w-auto flex flex-row self-end">
               <SearchInput
                 placeholder="Buscar curso"
                 onClick={(query) => getCoursesBySearch(query)}
@@ -227,7 +224,6 @@ const Content = () => {
           </div>
         </MainContainer>
       </SafeAreaContainer>
-      {/* form modal */}
       <FormModal
         title={`${selectedType === "edit" ? "Editar" : "Crear"} curso`}
         openModal={openModal}

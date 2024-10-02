@@ -1,5 +1,9 @@
 import { useFieldArray, useForm } from "react-hook-form";
-import { InputZodField, TextAreaZodField } from "../ui/inputField";
+import {
+  InputFileZod,
+  InputZodField,
+  TextAreaZodField,
+} from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productSaveSchema } from "@/app/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
@@ -17,6 +21,8 @@ import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import { useAuthContext } from "@/app/context/authContext";
 import { ImgField } from "../ui/imgField";
+import { BsHandIndexThumb } from "react-icons/bs";
+import { selectClasses } from "@mui/material";
 
 type ProdcutFormProps = {
   type: "create" | "edit";
@@ -28,7 +34,13 @@ type ProdcutFormProps = {
 
 type TFile = {
   id: number;
-  file_url: string;
+  file_url: any;
+  file_type: string;
+};
+
+type TFileData = {
+  id: number;
+  file: File;
   file_type: string;
 };
 
@@ -62,6 +74,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   const [gettingCategories, setGettingCategories] = useState(false);
   const [SelectedLabels, setSelectedLabels] = useState<any[]>([]);
   const [labelsData, setLabelsData] = useState<any[]>([]);
+  const [files, setFiles] = useState<TFileData[]>([]);
   const {
     control,
     register,
@@ -84,7 +97,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       img2: null,
       img3: null,
       img4: null,
-      files: [{ file_type: "", file_url: null }],
+      files: [{ file_type: "", file_label: "" }],
       featured_product: "false",
     },
   });
@@ -97,11 +110,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     control,
     name: "specifications",
   });
-  const {
-    fields: filesField,
-    append: filesAppend,
-    remove: filesRemove,
-  } = useFieldArray({
+  const { fields: filesField } = useFieldArray({
     control,
     name: "files",
   });
@@ -132,6 +141,14 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         }));
         setFilesInitialData(FilesToDownload);
       }
+
+      if (product.labels && product.labels.length > 0) {
+        const labels = product.labels.map((label: any) => ({
+          value: label.id,
+          label: label.name,
+        }));
+        setLabelsData(labels);
+      }
       reset({
         name: product.name || "",
         description: product.description || "",
@@ -145,6 +162,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         img2: null,
         img3: null,
         img4: null,
+        files: [{ file_type: "", file_label: "" }],
         status:
           product.status || user?.type === "admin" ? "approved" : "pending",
       });
@@ -168,41 +186,24 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     return setSelectedLabels(category?.labels || []);
   };
 
-  // obtener archivos segun la categoria
   const getFiles = (categoryId: string) => {
-    // extraer files de categoryData
     const category = categoriesData.find(
       (item) => item.id === Number(categoryId)
     );
     setFilesData(category?.files || []);
 
-    if (category?.files && category.files.length > 0) {
-      const filesInput = category.files.map((file: any, index: number) => ({
-        id: index,
-        file_url: null,
-        file_type: file.file_type,
-      }));
-      setValue("files", filesInput);
-    }
+    const filesInput = category?.files?.map((file: any, index: number) => ({
+      id: index,
+      file_label: file.file_label || "",
+      file_type: file.file_label || file.file_type || "",
+    }));
+    setValue("files", filesInput);
   };
-
   const handleChange = (selected: any) => {
-    // onli save id of labels
     const labels = selected.map((item: any) => item.value);
+    setLabelsData(selected);
     setValue("labels", labels || []);
   };
-
-  useEffect(() => {
-    console.log("watch files", watch("files"));
-    console.log("file 0", watch("files.0.file_url"));
-  }, [watch("files")]);
-
-  // const getLabels = (categoryId:string) => {
-  //   const category = categoriesData.find(
-  //     (item) => item.id = Number(categoryId)
-  //   );
-
-  // }
 
   const getCategories = async () => {
     setGettingCategories(true);
@@ -239,6 +240,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     }
   };
 
+  console.log(getValues("description"), "getvalue");
   const onSubmit = async (data: any) => {
     console.log(data);
     setSubmitting(true);
@@ -285,9 +287,9 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     }
 
     // files
-    data.files.forEach((file: any, index: number) => {
-      if (file.file_url) {
-        dataSend.append(`${file.file_type}`, file.file_url[0]);
+    files.forEach((file: any) => {
+      if (file.file) {
+        dataSend.append(`${file.file_type}`, file.file);
       }
     });
 
@@ -315,6 +317,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
             reject({ message: "No se pudo actualizar el producto" });
           }
         }
+        closeModal();
       } catch (error) {
         console.error(error);
         if (axios.isAxiosError(error)) {
@@ -324,6 +327,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       } finally {
         getData();
         setSubmitting(false);
+
       }
     });
     toast.promise(promise, {
@@ -332,6 +336,26 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       error: (error: any) => `${error.message}`,
     });
   };
+
+  const handleFileChange = (index: number, file_type: string) => (e: any) => {
+    const file = e.target.files?.[0];
+    if (files) {
+      const newFileEntry = {
+        id: index,
+        file: file,
+        file_type,
+      };
+      setFiles((prevFiles) => {
+        const updatedFiles = [...prevFiles];
+        updatedFiles[index] = newFileEntry;
+        return updatedFiles;
+      });
+    }
+  };
+
+  useEffect(() => {
+    console.log("description", getValues("description"));
+  }, [watch("description")]);
 
   return (
     <>
@@ -499,37 +523,25 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           <label className="text-green-800 text-base font-medium">
             Archivos
           </label>
-
           {filesData.length > 0 ? (
             filesField.map((item, index) => (
               <div
+                className="w-full relative flex flex-col gap-1"
                 key={item.id}
-                className="flex flex-col gap-2 border border-zinc-300 rounded-md p-4"
               >
-                {/* <InputFileZod
-                  id={`files.${index}.file_url`}
-                  name={item.file_type}
-                  placeholder="Seleccione un archivo"
-                  register={register(`files.${index}.file_url`)}
-                  setValue={setValue}
-                  error={errors.files?.[index]?.file_url}
-                /> */}
+                <label
+                  htmlFor={`files${index}`}
+                  className="text-zinc-500 font-medium text-base "
+                >
+                  {item.file_label ? item.file_label : item.file_type}
+                </label>
                 <input
                   type="file"
-                  id={`files.${index}.file_url`}
-                  className={``}
-                  // onChange={(e) => {
-                  //   const file = e.target.files || null;
-                  //   setValue(`files.${index}.file_url`, file);
-                  // }}
-                  accept="application/pdf"
-                  {...register(`files.${index}.file_url`)}
+                  id={`files${index}`}
+                  accept=".pdf"
+                  className="w-full border border-zinc-200 rounded-sm px-2"
+                  onChange={handleFileChange(index, item.file_type)}
                 />
-                {errors.files?.[index]?.file_url && (
-                  <p className="text-red-500">
-                    {errors.files[index].file_url.message}
-                  </p>
-                )}
               </div>
             ))
           ) : (
@@ -560,6 +572,8 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
               classNamePrefix="custom-select"
               onChange={handleChange}
               closeMenuOnSelect={false}
+              required={false}
+              value={labelsData}
               styles={{
                 control: (provided, state) => ({
                   ...provided,

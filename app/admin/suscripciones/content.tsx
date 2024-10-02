@@ -8,8 +8,7 @@ import { useEffect, useState } from "react";
 import { getTokenFromCookie } from "@/app/utils/api/getToken";
 import axios from "axios";
 import { apiUrls, pagination } from "@/app/utils/api/apiUrls";
-import { ISubscription } from "@/app/types/api";
-import SearchInput from "@/app/components/ui/searchInput";
+import { ICompany, IPlan, ISubscription } from "@/app/types/api";
 import AddButton from "@/app/components/ui/addBtn";
 import SubsForm from "@/app/components/forms/subsForm";
 import SelectRows from "@/app/components/ui/selectRows";
@@ -17,6 +16,7 @@ import { toast } from "sonner";
 import { ConfirmModal, FormModal } from "@/app/components/ui/modals";
 import { Pagination } from "@mui/material";
 import RenewModal from "@/app/components/ui/renewModal";
+import SelectComponent from "@/app/components/ui/select";
 
 const Content = () => {
   // token
@@ -29,6 +29,8 @@ const Content = () => {
   const [pageCount, setPageCount] = useState(0);
   // data
   const [data, setData] = useState<ISubscription[]>([]);
+  const [plans, setPlans] = useState<IPlan[]>([]);
+  const [providers, setProviders] = useState<ICompany[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
@@ -41,17 +43,17 @@ const Content = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
   const [selectedAction, setSelectedAction] = useState<
-    "data" | "date" | "search" | "status"
+    "data" | "date" | "status" | "provider" | "plan"
   >("data");
 
-  const [searchQuery, setSearchQuery] = useState<string>("");
-
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  // filters
+  const [planFilter, setPlanFilter] = useState<"all" | string>("all");
+  const [providerFilter, setProviderFilter] = useState<"all" | string>("all");
+  const [startDate, setStartDate] = useState<Date | null>(new Date());
+  const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [status, setStatus] = useState<"active" | "inactive" | "all">("all");
-  
+
   useEffect(() => {
-    //obtener token
     const token = getTokenFromCookie();
     if (token) {
       setToken(token);
@@ -63,35 +65,22 @@ const Content = () => {
     setStatus(newStatus);
     setSelectedAction("status");
   };
-
-  const getData = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        apiUrls.subscription.pagination(pageIndex, pageSize),
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setData(response.data.data);
-      setPageCount(response.data.last_page);
-      setTotal(response.data.total);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+  const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newPlan = e.target.value;
+    setPlanFilter(newPlan);
+    setSelectedAction("plan");
   };
-
+  const handleDatesChange = () => {
+    if (!startDate || !endDate) return;
+    setSelectedAction("date");
+    getSubsByDate(startDate, endDate);
+  };
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
     newPage: number
   ) => {
     setPageIndex(newPage);
   };
-
   const handlePageSizeChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
@@ -99,16 +88,28 @@ const Content = () => {
     setPageSize(parseInt(selectedValue, 10));
     setPageIndex(1);
   };
-
   const handleAdd = () => {
     setOpenModal(true);
     setSelectedType("create");
   };
-
   const handleDelete = (id: number) => {
     setSelectedId(id);
     setDeleteModal(true);
   };
+  const handleEdit = (id: number) => {
+    setOpenModal(true);
+    setSelectedId(id);
+    setSelectedType("edit");
+  };
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  const handleRenew = (id: number) => {
+    setRenewModal(true);
+    setSelectedId(id);
+  };
+
   const onDelete = () => {
     if (!selectedId) return;
     const promise = new Promise(async (resolve, reject) => {
@@ -140,20 +141,51 @@ const Content = () => {
     });
   };
 
-  const handleEdit = (id: number) => {
-    setOpenModal(true);
-    setSelectedId(id);
-    setSelectedType("edit");
+  const getData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        apiUrls.subscription.pagination(pageIndex, pageSize),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setData(response.data.data);
+      setPageCount(response.data.last_page);
+      setTotal(response.data.total);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
-  const handleCloseModal = () => {
-    setOpenModal(false);
+  const getPlans = async () => {
+    try {
+      const response = await axios.get(apiUrls.plan.getAll, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setPlans(response.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
-
-  const handleRenew = (id: number) => {
-    setRenewModal(true);
-    setSelectedId(id);
+  const getProviders = async () => {
+    try {
+      const response = await axios.get(apiUrls.company.getAll, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setProviders(response.data);
+    } catch (error) {
+      toast.error("Error al obtener proveedores");
+      console.error(error);
+    }
   };
-
   // filters
   const getSubsByStatus = (status: string) => {
     if (status === "all") {
@@ -195,16 +227,17 @@ const Content = () => {
       error: (error: any) => `${error.message}`,
     });
   };
-
-  // search
-
-  const getSubsBySearch = (query: string) => {
+  const getSubsByPlan = (plan: string) => {
+    if (plan === "all") {
+      setSelectedAction("data");
+      return;
+    }
     const promise = new Promise(async (resolve, reject) => {
       try {
-        const res = await axios.delete(
+        const res = await axios.get(
           apiUrls.subscription.getAll +
-            "?like=" +
-            query +
+            "?plan_id=" +
+            plan +
             "&" +
             pagination(pageIndex, pageSize),
           {
@@ -214,13 +247,15 @@ const Content = () => {
           }
         );
         setData(res.data.data);
+        setPageCount(res.data.last_page);
+        setTotal(res.data.total);
+        resolve({ message: "Suscripciones filtradas" });
       } catch (error) {
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
-        reject({ message: "No se pudo filtrar por estado" });
+        reject({ message: "No se pudo filtrar por plan" });
       } finally {
-        getData();
         setDeleteModal(false);
       }
     });
@@ -231,119 +266,159 @@ const Content = () => {
       error: (error: any) => `${error.message}`,
     });
   };
-  const getSubsByDate = (start: Date, end: Date) => {};
+  const getSubsByDate = (start: Date, end: Date) => {
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        const res = await axios.get(
+          apiUrls.subscription.getAll +
+            "?start_date=" +
+            start.toISOString() +
+            "&end_date=" +
+            end.toISOString() +
+            "&" +
+            pagination(pageIndex, pageSize),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setData(res.data.data);
+        setPageCount(res.data.last_page);
+        setTotal(res.data.total);
+        resolve({ message: "Suscripciones filtradas" });
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+        }
+        reject({ message: "No se pudo filtrar por fecha" });
+      } finally {
+        setDeleteModal(false);
+      }
+    });
+
+    toast.promise(promise, {
+      loading: "Filtrando suscripciones...",
+      success: (data: any) => `${data.message}`,
+      error: (error: any) => `${error.message}`,
+    });
+  };
 
   useEffect(() => {
-    // limpiar data
     setData([]);
-    console.log(selectedAction);
   }, [selectedAction]);
 
   useEffect(() => {
-    console.log("data", data);
-    console.log("selectedAction", selectedAction);
-  }, [data]);
-
+    if (token) {
+      getPlans();
+      getProviders();
+    }
+  }, [token]);
   useEffect(() => {
     if (token && selectedAction === "data") {
       getData();
     }
-    console.log(selectedAction);
   }, [token, selectedAction, pageIndex]);
-
   // status
   useEffect(() => {
     if (token && selectedAction === "status") {
       getSubsByStatus(status);
     }
   }, [token, selectedAction, status, pageIndex]);
+  useEffect(() => {
+    if (token && selectedAction === "plan") {
+      getSubsByPlan(planFilter);
+    }
+  }, [token, selectedAction, planFilter, pageIndex]);
+  useEffect(() => {
+    if (token && selectedAction === "date") {
+      getSubsByDate(startDate!, endDate!);
+    }
+  }, [token, selectedAction, startDate, endDate, pageIndex]);
 
   return (
     <>
       <SafeAreaContainer isTable>
         <div className="mb-4">
           <MainContainer title="Filtros">
-            <div className="flex gap-1 flex-wrap justify-between mb-4 flex-row w-full">
-              <div className="flex flex-col justify-between">
-                <label
-                  htmlFor="statusFilter"
-                  className="text-xs font-medium text-green-800 "
-                >
-                  Estado
-                </label>
-                <select
+            <div className="flex flex-wrap md:flex-row flex-col gap-4 justify-between">
+              <div className="w-full lg:w-auto flex flex-col sm:flex-row gap-4 justify-between">
+                <SelectComponent
+                  label="Estado"
                   id="statusFilter"
-                  className="mt-1 border border-zinc-300 text-xs rounded-md px-2 py-1 text-zinc-600 focus:border-green-800 focus:ring-green-800"
+                  options={[
+                    { value: "all", label: "Todos" },
+                    { value: "active", label: "Activos" },
+                    { value: "inactive", label: "Inactivos" },
+                  ]}
                   onChange={handleStatusChange}
                   defaultValue={status}
-                >
-                  <option value="all">Todos</option>
-                  <option value="active">Activos</option>
-                  <option value="inactive">Inactivos</option>
-                </select>
+                />
+                <SelectComponent
+                  label="Plan"
+                  id="planFilter"
+                  options={[
+                    { value: "all", label: "Todos" },
+                    ...plans.map((plan) => ({
+                      value: plan.id.toString(),
+                      label: plan.name,
+                    })),
+                  ]}
+                  onChange={handlePlanChange}
+                  defaultValue={planFilter}
+                />
               </div>
-              <div className="flex flex-col justify-between">
+
+              <div className="w-full lg:w-auto flex flex-col sm:flex-row justify-between gap-4">
                 <label
                   htmlFor="statusFilter"
-                  className="text-xs font-medium text-green-800 "
-                >
-                  Plan
-                </label>
-                <select
-                  id="statusFilter"
-                  className="mt-1 border border-zinc-300 text-xs rounded-md px-2 py-1 text-zinc-600 focus:border-green-800 focus:ring-green-800"
-                  onChange={handleStatusChange}
-                  defaultValue={status}
-                >
-                  <option value="all">Todos</option>
-                  <option value="active">Activos</option>
-                  <option value="inactive">Inactivos</option>
-                </select>
-              </div>
-              <div className="flex gap-1">
-                <label
-                  htmlFor="statusFilter"
-                  className="flex flex-col text-xs font-medium text-green-800 "
+                  className="flex flex-col font-medium text-green-800 md:max-w-[300px] md:min-w-[200px] w-full "
                 >
                   Fecha de inicio
                   <input
                     type="date"
-                    className="mt-1 border border-zinc-300 text-xs rounded-md px-2 py-1 text-zinc-600 focus:border-green-800 focus:ring-green-800"
-                    onChange={(e) => setStartDate(new Date(e.target.value))}
+                    value={startDate?.toISOString().split("T")[0]}
+                    className="mt-1 border border-zinc-300 text-sm rounded-md px-4 py-1.5 text-zinc-600 focus:border-green-800 focus:ring-green-800 w-full"
+                    onChange={(e) => {
+                      setStartDate(new Date(e.target.value));
+                      handleDatesChange();
+                    }}
                   />
                 </label>
                 <label
                   htmlFor="statusFilter"
-                  className="flex flex-col text-xs font-medium text-green-800 "
+                  className="flex flex-col font-medium text-green-800 md:max-w-[300px] md:min-w-[200px] w-full"
                 >
                   Fecha de fin
                   <input
                     type="date"
-                    className="mt-1 border border-zinc-300 text-xs rounded-md px-2 py-1 text-zinc-600 focus:border-green-800 focus:ring-green-800"
-                    onChange={(e) => setEndDate(new Date(e.target.value))}
+                    value={endDate?.toISOString().split("T")[0]}
+                    className="mt-1 border border-zinc-300 text-sm rounded-md px-4 py-1.5 text-zinc-600 focus:border-green-800 focus:ring-green-800  w-full"
+                    onChange={(e) => {
+                      setEndDate(new Date(e.target.value));
+                      handleDatesChange();
+                    }}
                   />
                 </label>
               </div>
             </div>
           </MainContainer>
         </div>
-
         <MainContainer>
-          <div className="flex flex-row justify-between pb-4 border-b border-b-gray-50 items-center">
-            <h2>Registros: {total}</h2>{" "}
+          <div className="flex flex-col md:flex-row  md:justify-between pb-4 border-b border-b-gray-50 items-center gap-4">
+            <h2 className="font-medium text-zinc-500 text-lg w-full md:w-auto">
+              Registros ({total})
+            </h2>{" "}
+            <div className="w-full md:w-auto flex justify-end">
             <AddButton text="Agregar Suscripción" onClick={handleAdd} />
+            </div>
           </div>
 
-          <div className="flex justify-between mb-4 pt-4">
             <SelectRows
               pageSize={pageSize.toString()}
               handlePageSizeChange={handlePageSizeChange}
             />
-            <div className="flex flex-row self-end">
-              <SearchInput />
-            </div>
-          </div>
-          <div className=" overflow-x-auto">
+          <div className=" overflow-x-auto mt-4">
             <SubsTable
               dataTable={data}
               onDelete={(id: number) => handleDelete(id)}
@@ -361,7 +436,6 @@ const Content = () => {
           </div>
         </MainContainer>
       </SafeAreaContainer>
-      {/* form modal */}
       <FormModal
         title={`${selectedType === "edit" ? "Editar" : "Crear"} suscripción`}
         openModal={openModal}
@@ -375,14 +449,12 @@ const Content = () => {
           getData={getData}
         />
       </FormModal>
-      {/* delete modal */}
       <ConfirmModal
         openModal={deleteModal}
         setOpenModal={() => setDeleteModal(false)}
         onAction={onDelete}
         title="Eliminar Subscripción"
       />
-      {/* renewModal */}
       {selectedId && (
         <RenewModal
           openModal={renewModal}

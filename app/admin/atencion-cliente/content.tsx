@@ -44,6 +44,8 @@ const Content = () => {
       emailCourse: "",
       emailSupport: "",
       address: "",
+      link_web: "",
+      link_admin_app: "",
     },
   });
   useEffect(() => {
@@ -63,6 +65,8 @@ const Content = () => {
         emailCourse: dataHelp.help_email_courses || "",
         emailSupport: dataHelp.help_email_support || "",
         address: dataHelp.help_address || "",
+        link_web: dataHelp.link_web || "",
+        link_admin_app: dataHelp.link_admin_app || "",
       });
     }
   }, [dataHelp]);
@@ -99,6 +103,8 @@ const Content = () => {
             help_email_courses: data.emailCourse,
             help_email_support: data.emailSupport,
             help_address: data.address,
+            link_web: data.link_web,
+            link_admin_app: data.link_admin_app,
             company_id: 1,
           },
           {
@@ -110,7 +116,7 @@ const Content = () => {
         setDataHelp(res.data);
         resolve({ message: "Cambios guardados" });
       } catch (error) {
-        if(axios.isAxiosError(error)){
+        if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
         reject({ message: "Error al guardar cambios" });
@@ -191,6 +197,24 @@ const Content = () => {
               type="email"
               register={register("emailSupport")}
               error={errors.emailSupport}
+            />
+          </div>
+        </MainContainer>
+        <MainContainer title="Enlaces">
+          <div className="flex flex-col gap-4">
+            <InputZodField
+              id="link_web"
+              name="Link de la web"
+              placeholder="https://www.example.com"
+              register={register("link_web")}
+              error={errors.link_web}
+            />
+            <InputZodField
+              id="link_admin_app"
+              name="Link de la app (web admin)"
+              placeholder="https://www.example.com"
+              register={register("link_admin_app")}
+              error={errors.link_admin_app}
             />
           </div>
         </MainContainer>
