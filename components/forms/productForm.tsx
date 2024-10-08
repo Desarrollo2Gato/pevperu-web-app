@@ -177,7 +177,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     if (id) {
       handleCategoryChange(id);
     }
-  }, [categoriesData, watch("category_id")]);
+  }, [ watch("category_id")]);
 
   useEffect(() => {
     if (selectedCategory) {
