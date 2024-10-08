@@ -30,7 +30,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     if (token) {
       setToken(token);
     }
-  }, [token]);
+  }, [user]);
+  useEffect(() => {
+    if (token) {
+      fetchNotifications();
+    }
+  }, [user]);
 
   // Función para obtener notificaciones desde el servidor
   const fetchNotifications = async () => {
@@ -74,7 +79,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     if (token) {
-      fetchNotifications(); 
+      fetchNotifications();
 
       const ws = new WebSocket(
         `wss://pevperu-server.jocargames.com/app/txizrczlrzunccto1s1w`
@@ -94,14 +99,17 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         ws.send(JSON.stringify(subscribeMessage));
       };
 
-      ws.onmessage = handleWebSocketMessage;
+      ws.onmessage = (event) => {
+        // console.log("Mensaje recibido del WebSocket:", event.data); 
+        handleWebSocketMessage(event);
+      };
 
       ws.onerror = (error) => {
-        console.log("Error en WebSocket: ", error);
+        // console.log("Error en WebSocket: ", error);
       };
 
       ws.onclose = () => {
-        console.log("WebSocket desconectado");
+        // console.log("WebSocket desconectado");
       };
 
       return () => {

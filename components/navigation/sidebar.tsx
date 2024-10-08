@@ -22,6 +22,9 @@ import { getTokenFromCookie } from "@/utils/api/getToken";
 import Link from "next/link";
 import { BootstrapTooltip } from "../ui/tooltip";
 import { TbLockCog } from "react-icons/tb";
+import { LuFilter } from "react-icons/lu";
+import { PiFilesBold } from "react-icons/pi";
+
 
 interface SidebarProps {
   active: boolean;
@@ -106,7 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                     : " opacity-30"
                 } transition-all duration-500`}
               >
-                <HiOutlineHome className="" />
+                <HiOutlineHome className="text-2xl" />
                 <span
                   className={`${
                     !active ? "hidden" : "hidden md:inline-block"
@@ -140,7 +143,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                         : " opacity-30"
                     } transition-all duration-500`}
                   >
-                    <LuBoxes />
+                    <LuBoxes className="text-2xl" />
 
                     <span
                       className={`${
@@ -173,7 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                         : " opacity-30"
                     } transition-all duration-500`}
                   >
-                    <MdEventNote />
+                    <MdEventNote className="text-2xl" />
 
                     <span
                       className={`${
@@ -206,7 +209,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                         : " opacity-30"
                     } transition-all duration-500`}
                   >
-                    <IoNewspaperOutline />
+                    <IoNewspaperOutline className="text-2xl" />
 
                     <span
                       className={`${
@@ -244,7 +247,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                         : " opacity-30"
                     } transition-all duration-500`}
                   >
-                    <TbDeviceIpadDollar />
+                    <TbDeviceIpadDollar className="text-2xl" />
 
                     <span
                       className={`${
@@ -277,7 +280,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                         : " opacity-30"
                     } transition-all duration-500`}
                   >
-                    <PiCards />
+                    <PiCards className="text-2xl" />
 
                     <span
                       className={`${
@@ -285,6 +288,39 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                       } ml-2 text-base inline-block transform transition-all duration-700`}
                     >
                       Planes
+                    </span>
+                  </Link>
+                </BootstrapTooltip>
+              </li>
+              <li
+                className={`w-full justify-center flex items-center py-4 group ${
+                  active ? "px-4 md:px-8" : "px-4 "
+                } `}
+              >
+                <BootstrapTooltip
+                  placement="right"
+                  title={active ? "" : "Filtros"}
+                >
+                  <Link
+                    href={"/admin/filtros"}
+                    className={`flex flex-row items-center relative ${
+                      !active
+                        ? "justify-center"
+                        : "justify-center md:justify-start"
+                    } w-full  hover:opacity-100 ${
+                      pathname === "/admin/filtros"
+                        ? "opacity-100"
+                        : " opacity-30"
+                    } transition-all duration-500`}
+                  >
+                    <LuFilter className="text-2xl" />
+
+                    <span
+                      className={`${
+                        !active ? "hidden" : "hidden md:inline-block"
+                      } ml-2 text-base inline-block transform transition-all duration-700`}
+                    >
+                      Filtros
                     </span>
                   </Link>
                 </BootstrapTooltip>
@@ -310,7 +346,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                         : " opacity-30"
                     } transition-all duration-500`}
                   >
-                    <MdOutlineAutoAwesomeMosaic />
+                    <MdOutlineAutoAwesomeMosaic className="text-2xl" />
 
                     <span
                       className={`${
@@ -343,7 +379,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                         : " opacity-30"
                     } transition-all duration-500`}
                   >
-                    <LuBoxes />
+                    <LuBoxes className="text-2xl" />
 
                     <span
                       className={`${
@@ -377,7 +413,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                         : " opacity-30"
                     } transition-all duration-500`}
                   >
-                    <MdEventNote />
+                    <MdEventNote className="text-2xl" />
 
                     <span
                       className={`${
@@ -410,7 +446,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                         : " opacity-30"
                     } transition-all duration-500`}
                   >
-                    <IoNewspaperOutline />
+                    <IoNewspaperOutline className="text-2xl" />
 
                     <span
                       className={`${
@@ -443,7 +479,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                         : " opacity-30"
                     } transition-all duration-500`}
                   >
-                    <GrBook />
+                    <GrBook className="text-2xl" />
                     <span
                       className={`${
                         !active ? "hidden" : "hidden md:inline-block"
@@ -475,7 +511,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                         : " opacity-30"
                     } transition-all duration-500`}
                   >
-                    <RiCustomerService2Line />
+                    <RiCustomerService2Line className="text-2xl" />
 
                     <span
                       className={`${
@@ -508,7 +544,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                         : " opacity-30"
                     } transition-all duration-500`}
                   >
-                    <FaUsers />
+                    <FaUsers className="text-2xl" />
 
                     <span
                       className={`${
@@ -516,6 +552,39 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                       } ml-2 text-base inline-block transform transition-all duration-700`}
                     >
                       Usuarios
+                    </span>
+                  </Link>
+                </BootstrapTooltip>
+              </li>
+              <li
+                className={`w-full justify-center flex items-center py-4 group ${
+                  active ? "px-4 md:px-8" : "px-4 "
+                } `}
+              >
+                <BootstrapTooltip
+                  placement="right"
+                  title={active ? "" : "Archivos"}
+                >
+                  <Link
+                    href={"/admin/archivos"}
+                    className={`flex flex-row items-center relative ${
+                      !active
+                        ? "justify-center"
+                        : "justify-center md:justify-start"
+                    } w-full  hover:opacity-100 ${
+                      pathname === "/admin/archivos"
+                        ? "opacity-100"
+                        : " opacity-30"
+                    } transition-all duration-500`}
+                  >
+                    <PiFilesBold className="text-2xl" />
+
+                    <span
+                      className={`${
+                        !active ? "hidden" : "hidden md:inline-block"
+                      } ml-2 text-base inline-block transform transition-all duration-700`}
+                    >
+                      Archivos
                     </span>
                   </Link>
                 </BootstrapTooltip>
@@ -540,12 +609,13 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                 className={`flex flex-row items-center relative ${
                   !active ? "justify-center" : "justify-center md:justify-start"
                 } w-full  hover:opacity-100 ${
-                  pathname === "/admin/contrasenia" || pathname === "/empresa/contrasenia"
+                  pathname === "/admin/contrasenia" ||
+                  pathname === "/empresa/contrasenia"
                     ? "opacity-100"
                     : " opacity-30"
                 } transition-all duration-500`}
               >
-                <TbLockCog className="" />
+                <TbLockCog className="text-2xl" />
                 <span
                   className={`${
                     !active ? "hidden" : "hidden md:inline-block"
@@ -567,7 +637,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                 !active ? "justify-center" : "justify-center md:justify-start"
               } w-full  text-lime-400 transition-all duration-500 `}
             >
-              <LuLogOut />
+              <LuLogOut className="text-2xl" />
 
               <span
                 className={`${

@@ -12,6 +12,7 @@ import {
 import Cookies from "js-cookie";
 import axios from "axios";
 import { apiUrls } from "../utils/api/apiUrls";
+import { useRouter } from "next/navigation";
 
 type User = {
   email: string;
@@ -41,6 +42,7 @@ export default function AuthContextProvider({
 }: {
   children: ReactNode;
 }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [authTokens, setAuthTokens] = useState<string | null>(null);
 
@@ -56,6 +58,7 @@ export default function AuthContextProvider({
     Cookies.remove("user");
     setAuthTokens(null);
     setUser(null);
+    router.push("/");
   }, []);
 
   const isAdmin = useCallback(
@@ -99,7 +102,7 @@ export default function AuthContextProvider({
       console.log("Error refreshing token", error);
       logout();
     }
-  }, [logout]);
+  }, []);
 
   const validateToken = useCallback(async (): Promise<boolean> => {
     const currentToken = Cookies.get("authTokens");
@@ -117,6 +120,7 @@ export default function AuthContextProvider({
     logout();
     return false;
   }, [logout, refreshToken]);
+  
   useEffect(() => {
     const checkToken = async () => {
       const isValid = await validateToken();

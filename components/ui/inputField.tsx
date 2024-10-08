@@ -3,8 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa";
 import { FieldError, UseFormSetValue } from "react-hook-form";
-import { FaTrash } from "react-icons/fa";
-import { watch } from "fs";
 
 type InputProps = {
   name: string;

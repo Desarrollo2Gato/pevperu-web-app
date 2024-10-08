@@ -5,14 +5,14 @@ import { categorySaveSchema } from "@/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
 import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import { SelectZodField } from "../ui/selectField";
 import ButtonForm from "../ui/buttonForm";
-import { ICategory } from "@/types/api";
+import { ICategory, IFilter } from "@/types/api";
 import ButtonArrayForm from "../ui/buttonArrayFrom";
 import { ImgField } from "../ui/imgField";
 import { imgUrl } from "@/utils/img/imgUrl";
-import { resolve } from "path";
+import SelectTag from "../ui/selectTag";
 
 type CategoryFormProps = {
   type: "create" | "edit";
@@ -30,6 +30,9 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   getData,
 }) => {
   const [data, setData] = useState<ICategory>();
+  const [filtersData, setFiltersData] = useState<any[]>([]);
+
+  const [selectedFilters, setSelectedFilters] = useState<any[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -42,6 +45,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
     watch,
   } = useForm({
     resolver: zodResolver(categorySaveSchema),
@@ -52,7 +56,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
       textColor: "#ffffff",
       labels: [{ name: "" }],
       type: "",
-      filter_ids: [],
+      filter_ids: [] as any[],
       files: [{ file_type: "" }],
     },
   });
@@ -75,6 +79,10 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   });
 
   useEffect(() => {
+    getFilters();
+  }, []);
+
+  useEffect(() => {
     if (type === "edit" && id) {
       getDataById(id?.toString());
     }
@@ -89,6 +97,15 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
       if (data.files) {
         files = data.files.map((file: any) => ({ file_type: file.label }));
       }
+      let filterIds: number[] = [];
+      if (data.filters && data.filters.length > 0) {
+        filterIds = data.filters.map((filter: any) => filter.id);
+        const filters = data.filters.map((filter: any) => ({
+          value: filter.id,
+          label: filter.name,
+        }));
+        setFiltersData(filters);
+      }
       reset({
         name: data.name,
         icon_url: null,
@@ -96,6 +113,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         textColor: data.text_color || "",
         labels: data.labels || [{ name: "#ffffff" }],
         type: data.type,
+        filter_ids: filterIds || [],
         files: files || [{ file_type: "" }],
       });
     }
@@ -119,14 +137,37 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     }
   };
 
+  const getFilters = async () => {
+    try {
+      const res = await axios.get(apiUrls.filter.getAll, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setSelectedFilters(res.data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al obtener los filtros");
+    }
+  };
+
+  useEffect(() => {
+    console.log("filtersData", watch("filter_ids"));
+  }, [watch("filter_ids")]);
+
   const onSubmit = async (data: any) => {
-    console.log(data);
     setSubmitting(true);
     const dataSend = new FormData();
     dataSend.append("name", data.name);
     dataSend.append("background_color", data.labelBgColor);
     dataSend.append("text_color", data.textColor);
     dataSend.append("type", data.type);
+
+    //filters
+    if (data.filter_ids.length > 0) {
+      const filterIds = data.filter_ids.map((id: any) => id.toString());
+      filterIds.forEach((id: any) => dataSend.append("filter_ids[]", id));
+    }
     // files
     if (data.files.length > 0 && data.files[0].file_type) {
       const filesArray = data.files.map((file: any) => file.file_type);
@@ -141,7 +182,6 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     }
     // icon
     if (data.icon_url) {
-      console.log(data.icon_url[0]);
       dataSend.append("icon", data.icon_url[0]);
     }
 
@@ -153,12 +193,10 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
               Authorization: `Bearer ${token}`,
             },
           });
-          console.log("creado");
           resolve({ message: "Categoría creada exitosamente" });
         }
         if (type === "edit") {
           if (id) {
-            console.log("id", id);
             await axios.post(
               apiUrls.category.update(id?.toString()),
               dataSend,
@@ -168,7 +206,6 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
                 },
               }
             );
-            console.log("editado");
             resolve({ message: "Categoría actualizada exitosamente" });
           } else {
             reject("No se ha podido obtener el id de la categoría");
@@ -239,6 +276,17 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           register={register("type")}
           error={errors.type}
         />
+        {/* filtros */}
+        <SelectTag
+          data={filtersData}
+          setData={setFiltersData}
+          selectedItems={selectedFilters}
+          setValue={setValue}
+          value="filter_ids"
+          text="Filtros"
+          placeholder="filtros"
+          displayField="name"
+        />
         {/* labels */}
         <div className="flex flex-col gap-2">
           <h2 className=" font-medium text-zinc-500">Etiquetas</h2>
@@ -255,16 +303,13 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
                 error={errors.labels?.[index]?.name}
               />
               <div className="flex items-center gap-2">
-                {
-                  // if is not the first element
-                  labelsFields.length > 1 && (
-                    <ButtonArrayForm
-                      text="Eliminar"
-                      onClick={() => removeLabel(index)}
-                      isDelete
-                    />
-                  )
-                }
+                {labelsFields.length > 1 && (
+                  <ButtonArrayForm
+                    text="Eliminar"
+                    onClick={() => removeLabel(index)}
+                    isDelete
+                  />
+                )}
               </div>
             </div>
           ))}

@@ -4,7 +4,7 @@ export const BASE_URL = "https://pevperu-server.jocargames.com/api/V1";
 // export const BASE_URL = "http://127.0.0.1:8001/api/V1";
 
 export const pagination = (page: number, per_page: number) => {
-  return `per_page${per_page}&page=${page}`;
+  return `per_page=${per_page}&page=${page}`;
 };
 
 export const apiUrls = {
@@ -205,4 +205,8 @@ export const apiUrls = {
     read: (id: string) => `${BASE_URL}/notifications/${id}/read`,
     observation: (id: string) => `${BASE_URL}/notifications/${id}/observation`,
   },
+  product_file:{
+    getAll: `${BASE_URL}/product-files`,
+    update: (id: string) => `${BASE_URL}/product-files/${id}/approve`,
+  }
 };

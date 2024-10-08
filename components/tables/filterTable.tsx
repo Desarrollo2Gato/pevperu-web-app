@@ -1,80 +1,75 @@
-import { IUser } from "@/types/api";
+import { IFilter } from "@/types/api";
+import { useEffect, useState } from "react";
+import { BiSolidEdit } from "react-icons/bi";
+import { FiTrash } from "react-icons/fi";
+import { FaRegImage } from "react-icons/fa6";
+
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import StatusSpan from "../ui/statusSpan";
-import { FaBan } from "react-icons/fa";
-import { FaCheck } from "react-icons/fa";
-import { BootstrapTooltip } from "../ui/tooltip";
+import { imgUrl } from "@/utils/img/imgUrl";
 
-interface UsersTableProps {
-  dataTable: IUser[];
-  onSuspend: (id: number) => void;
-  onUnsuspend: (id: number) => void;
+interface FilterTableProps {
+  dataTable: IFilter[];
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
 }
-const UsersTable: React.FC<UsersTableProps> = ({
+const FilterTable: React.FC<FilterTableProps> = ({
   dataTable,
-  onSuspend,
-  onUnsuspend,
+  onEdit,
+  onDelete,
 }) => {
-  const data: IUser[] = dataTable;
+  const data: IFilter[] = dataTable;
 
   // colums
-  const columns: ColumnDef<IUser, any>[] = [
+  const columns: ColumnDef<IFilter, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
     },
     {
-      accessorKey: "full_name",
-      header: "Nombre completo",
-    },
-    {
-      accessorKey: "company",
-      header: "Empresa",
+      accessorKey: "icon",
+      header: "Ícono",
       cell: (info) =>
-        info.row.original.work_for_company
-          ? info.row.original.work_for_company
-          : "Sin empresa",
-    },
-    {
-      accessorKey: "status",
-      header: "Estado",
-      cell: (info) =>
-        info.row.original.status === "approved" ? (
-          <StatusSpan text="Activo" bg="bg-green-400" />
+        info.row.original.icon ? (
+          <img
+            className="w-8 h-8 object-contain"
+            src={imgUrl(info.row.original.icon)}
+            alt="icon"
+          />
         ) : (
-          <StatusSpan text="Baneado" bg="bg-red-600" />
+          <div className="w-8 h-8 rounded flex justify-center items-center border border-green-800  text-green-800">
+            <FaRegImage />
+          </div>
         ),
     },
+
+    {
+      accessorKey: "name",
+      header: "Filtro",
+    },
+
     {
       accessorKey: "actions",
       header: "Acciones",
       cell: (info) => (
-        <>
-          {info.row.original.status === "approved" ? (
-            <BootstrapTooltip title="Banear" placement="right" >
-              <button
-                onClick={() => onSuspend(Number(info.row.original.id))}
-                className="bg-red-500 hover:bg-red-600 text-white p-1 aspect-square rounded transition-all duration-500"
-              >
-                <FaBan className="text-lg" />
-              </button>
-            </BootstrapTooltip>
-          ) : (
-            <BootstrapTooltip title="Desbanear">
-              <button
-                onClick={() => onUnsuspend(Number(info.row.original.id))}
-                className="bg-green-400 hover:bg-green-500 text-white p-1 aspect-square rounded transition-all duration-500"
-              >
-                <FaCheck className="text-lg" />
-              </button>
-            </BootstrapTooltip>
-          )}
-        </>
+        <div className="flex justify-center items-center gap-2">
+          <button
+            onClick={() => onEdit(Number(info.row.original.id))}
+            className="bg-teal-400 hover:bg-teal-500 text-white p-1 aspect-square rounded transition-all duration-500"
+          >
+            <BiSolidEdit className="text-lg" />
+          </button>
+          <button
+            onClick={() => onDelete(Number(info.row.original.id))}
+            className="bg-yellow-400 hover:bg-yellow-500 text-white  p-1 rounded aspect-square transition-all duration-500"
+          >
+            <FiTrash className="text-lg" />
+          </button>
+        </div>
       ),
     },
   ];
@@ -138,4 +133,4 @@ const UsersTable: React.FC<UsersTableProps> = ({
   );
 };
 
-export default UsersTable;
+export default FilterTable;

@@ -1,9 +1,6 @@
 "use client";
 import AddButton from "@/components/ui/addBtn";
-import {
-  MainContainer,
-  SafeAreaContainer,
-} from "@/components/ui/containers";
+import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
 import { ICategory, ICourse } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
@@ -16,7 +13,6 @@ import CoursesTable from "@/components/tables/coursesTable";
 import SelectRows from "@/components/ui/selectRows";
 import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { toast } from "sonner";
-import SelectComponent from "@/components/ui/select";
 
 const Content = () => {
   const [token, setToken] = useState("");
@@ -133,6 +129,7 @@ const Content = () => {
     }
   };
   const getCoursesBySearch = (query: string) => {
+    setSelectedAction("search");
     setSearchQuery(query);
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
@@ -172,17 +169,18 @@ const Content = () => {
 
   useEffect(() => {
     setData([]);
+    setPageIndex(1);
   }, [selectedAction]);
   useEffect(() => {
     if (token && selectedAction === "data") {
       getData();
     }
-  }, [token, selectedAction, pageIndex]);
+  }, [token, selectedAction, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "search") {
       getCoursesBySearch(searchQuery);
     }
-  }, [token, selectedAction, pageIndex]);
+  }, [token, selectedAction, pageIndex, pageSize, searchQuery]);
   return (
     <>
       <SafeAreaContainer isTable>

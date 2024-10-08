@@ -1,21 +1,18 @@
 "use client";
 import AddButton from "@/components/ui/addBtn";
-import {
-  MainContainer,
-  SafeAreaContainer,
-} from "@/components/ui/containers";
+import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
-import { ICategory } from "@/types/api";
+import { IFilter } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import CategoryTable from "@/components/tables/categoriesTable";
-import CategoryForm from "@/components/forms/categoryForm";
 import SelectRows from "@/components/ui/selectRows";
 import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { toast } from "sonner";
+import FilterForm from "@/components/forms/filterForm";
+import FilterTable from "@/components/tables/filterTable";
 
 const Content = () => {
   const [token, setToken] = useState("");
@@ -27,7 +24,7 @@ const Content = () => {
   const [pageCount, setPageCount] = useState(0);
 
   // data
-  const [data, setData] = useState<ICategory[]>([]);
+  const [data, setData] = useState<IFilter[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
@@ -61,14 +58,13 @@ const Content = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        apiUrls.category.pagination(pageIndex, pageSize),
+        apiUrls.filter.pagination(pageIndex, pageSize),
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      console.log(JSON.stringify(response.data.data, null, 2));
       setData(response.data.data);
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
@@ -108,17 +104,17 @@ const Content = () => {
     if (!selectedId) return;
     const promise = new Promise(async (resolve, reject) => {
       try {
-        await axios.delete(apiUrls.category.delete(selectedId?.toString()), {
+        await axios.delete(apiUrls.filter.delete(selectedId?.toString()), {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        resolve({ message: "Categoría eliminado" });
+        resolve({ message: "Filtro eliminado" });
       } catch (error) {
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
-        reject({ message: "No se pudo eliminar la categoría" });
+        reject({ message: "No se pudo eliminar el filtro" });
       } finally {
         getData();
         setDeleteModal(false);
@@ -126,7 +122,7 @@ const Content = () => {
     });
 
     toast.promise(promise, {
-      loading: "Eliminando categoría...",
+      loading: "Eliminando filtro...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
@@ -141,13 +137,13 @@ const Content = () => {
     setOpenModal(false);
   };
 
-  const getCategoriesBySearch = (query: string) => {
+  const getFilterBySearch = (query: string) => {
     setSearchQuery(query);
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
         const res = await axios.get(
-          apiUrls.category.getAll +
+          apiUrls.filter.getAll +
             "?like=" +
             query +
             "&" +
@@ -161,7 +157,7 @@ const Content = () => {
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
-        resolve({ message: "Categorías filtradas" });
+        resolve({ message: "Filtros filtradas" });
       } catch (error) {
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
@@ -173,7 +169,7 @@ const Content = () => {
     });
 
     toast.promise(promise, {
-      loading: "Filtrando categorías...",
+      loading: "Filtrando filtros...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
@@ -193,7 +189,7 @@ const Content = () => {
   // status
   useEffect(() => {
     if (token && selectedAction === "search") {
-      getCategoriesBySearch(searchQuery);
+      getFilterBySearch(searchQuery);
     }
   }, [token, selectedAction, searchQuery, pageIndex, pageSize]);
   return (
@@ -205,7 +201,7 @@ const Content = () => {
               Registros ({total})
             </h2>{" "}
             <div className="w-full md:w-auto flex justify-end">
-              <AddButton text="Agregar Categoría" onClick={handleAdd} />
+              <AddButton text="Agregar Filtro" onClick={handleAdd} />
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">
@@ -215,8 +211,8 @@ const Content = () => {
             />
             <div className="w-full sm:w-auto flex flex-row self-end">
               <SearchInput
-                placeholder="Buscar categoria"
-                onClick={(query) => getCategoriesBySearch(query)}
+                placeholder="Buscar filtro"
+                onClick={(query) => getFilterBySearch(query)}
               />
             </div>
           </div>
@@ -224,7 +220,7 @@ const Content = () => {
             {loading ? (
               <div>Cargando...</div>
             ) : (
-              <CategoryTable
+              <FilterTable
                 dataTable={data}
                 onDelete={(id: number) => handleDelete(id)}
                 onEdit={(id: number) => handleEdit(id)}
@@ -242,11 +238,11 @@ const Content = () => {
         </MainContainer>
       </SafeAreaContainer>
       <FormModal
-        title={`${selectedType === "edit" ? "Editar" : "Crear"} categoría`}
+        title={`${selectedType === "edit" ? "Editar" : "Crear"} filtro`}
         openModal={openModal}
         setOpenModal={() => setOpenModal(false)}
       >
-        <CategoryForm
+        <FilterForm
           closeModal={handleCloseModal}
           type={selectedType}
           id={selectedId}
@@ -258,7 +254,7 @@ const Content = () => {
         openModal={deleteModal}
         setOpenModal={() => setDeleteModal(false)}
         onAction={onDelete}
-        title="Eliminar Categoría"
+        title="Eliminar Filtro"
       />
     </>
   );

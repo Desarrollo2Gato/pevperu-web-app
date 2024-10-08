@@ -1,13 +1,9 @@
 import { useFieldArray, useForm } from "react-hook-form";
-import {
-  InputFileZod,
-  InputZodField,
-  TextAreaZodField,
-} from "../ui/inputField";
+import { InputZodField, TextAreaZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productSaveSchema } from "@/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
-import { IProduct } from "@/types/api";
+import { ICategory, IProduct } from "@/types/api";
 import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
 import { toast } from "sonner";
@@ -15,15 +11,10 @@ import { SelectZodField } from "../ui/selectField";
 import ButtonForm from "../ui/buttonForm";
 import { imgUrl } from "@/utils/img/imgUrl";
 import ButtonArrayForm from "../ui/buttonArrayFrom";
-import EditorHtml from "../ui/editotrHtml";
-
-import Select from "react-select";
-import makeAnimated from "react-select/animated";
 import { useAuthContext } from "@/context/authContext";
 import { ImgField } from "../ui/imgField";
-import { BsHandIndexThumb } from "react-icons/bs";
-import { selectClasses } from "@mui/material";
 import EditorText from "../ui/editorText";
+import SelectTag from "../ui/selectTag";
 
 type ProdcutFormProps = {
   type: "create" | "edit";
@@ -45,8 +36,6 @@ type TFileData = {
   file_type: string;
 };
 
-const animatedComponents = makeAnimated();
-
 const ProductForm: React.FC<ProdcutFormProps> = ({
   type,
   id,
@@ -66,16 +55,24 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
 
   // files
   const [filesInitialData, setFilesInitialData] = useState<TFile[]>([]);
-  // const [fileDownload, setFileDownload] = useState<string>("");
 
   const [filesData, setFilesData] = useState<any[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [gettingCategories, setGettingCategories] = useState(false);
+
   const [SelectedLabels, setSelectedLabels] = useState<any[]>([]);
   const [labelsData, setLabelsData] = useState<any[]>([]);
+
   const [files, setFiles] = useState<TFileData[]>([]);
+
+  // filters
+  const [filtersOptions, setFiltersOptions] = useState<any[]>([]);
+  const [selectedFilters, setSelectedFilters] = useState<any[]>([]);
+
+  const [selectedCategory, setSelectedCategory] = useState<ICategory>();
+
   const {
     control,
     register,
@@ -120,7 +117,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     if (type === "edit") {
       if (id) getDataById(id?.toString());
     }
-  }, [type, id]);
+  }, [type]);
 
   useEffect(() => {
     if (token) getCategories();
@@ -150,7 +147,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         }));
         setLabelsData(labels);
       }
-      //obetener solo los ide y pasarlo a labels
+
       if (product.labels && product.labels.length > 0) {
         const labels = product.labels.map((label: any) => Number(label.id));
         setValue("labels", labels || []);
@@ -176,41 +173,111 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   }, [product]);
 
   useEffect(() => {
-    if (watch("category_id")) {
-      getFiles(watch("category_id"));
-      getLabels(watch("category_id"));
+    const id = watch("category_id");
+    if (id) {
+      handleCategoryChange(id);
     }
-
-    const labelsIds = product?.labels?.map((label) => Number(label.id));
-    setValue("labels", labelsIds || []);
   }, [categoriesData, watch("category_id")]);
 
+  useEffect(() => {
+    if (selectedCategory) {
+      setFiltersOptions([]);
+      setSelectedFilters([]);
+      setSelectedLabels([]);
+
+      getFiles();
+      getLabels();
+      getFilters();
+    }
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    if (filtersOptions.length > 0) {
+      const filters = product?.filter_options.reduce(
+        (acc: any, filter: any) => {
+          const index = acc.findIndex(
+            (item: any) => item.filter_id === filter.filter_id
+          );
+          if (index === -1) {
+            acc.push({ filter_id: filter.filter_id, options: [filter] });
+          } else {
+            acc[index].options.push(filter);
+          }
+          return acc;
+        },
+        []
+      );
+      const filtersOptions = filters.map((filter: any) => {
+        const options = filter.options.map((option: any) => ({
+          value: option.id,
+          label: option.option_name,
+        }));
+        return options;
+      });
+      setSelectedFilters(filtersOptions);
+    }
+  }, [filtersOptions, product]);
+  useEffect(() => {
+    if (product?.labels && product?.labels.length > 0) {
+      const labels = product.labels.map((label) => ({
+        value: label.id,
+        label: label.name,
+      }));
+      setLabelsData(labels);
+
+      // Mapear los IDs
+      const labelsIds = product.labels.map((label) => Number(label.id));
+      setValue("labels", labelsIds || []);
+    }
+  }, [categoriesData, selectedCategory]);
+
   // get labels
-  const getLabels = (categoryId: string) => {
-    const category = categoriesData.find(
-      (item) => item.id === Number(categoryId)
-    );
+  const getLabels = () => {
     setSelectedLabels([]);
-    return setSelectedLabels(category?.labels || []);
+    return setSelectedLabels(selectedCategory?.labels || []);
   };
 
-  const getFiles = (categoryId: string) => {
-    const category = categoriesData.find(
-      (item) => item.id === Number(categoryId)
+  const getFiles = () => {
+    setFilesData(selectedCategory?.files || []);
+
+    const filesInput = selectedCategory?.files?.map(
+      (file: any, index: number) => ({
+        id: index,
+        file_label: file.file_label || "",
+        file_type: file.file_label || file.file_type || "",
+      })
     );
-    setFilesData(category?.files || []);
-
-    const filesInput = category?.files?.map((file: any, index: number) => ({
-      id: index,
-      file_label: file.file_label || "",
-      file_type: file.file_label || file.file_type || "",
-    }));
-    setValue("files", filesInput);
+    if (filesInput) {
+      setValue("files", filesInput);
+    }
   };
-  const handleChange = (selected: any) => {
-    const labels = selected.map((item: any) => item.value);
-    setLabelsData(selected);
-    setValue("labels", labels || []);
+  const getFilters = async () => {
+    setFiltersOptions([]);
+    setSelectedFilters([]);
+
+    const filtersId = selectedCategory?.filters?.map(
+      (filter: any) => filter.id
+    );
+
+    console.log("filtersId", filtersId);
+    if (filtersId && filtersId?.length > 0) {
+      filtersId.forEach(async (filter: any) => {
+        console.log("filter", filter);
+        try {
+          const res = await axios.get(
+            apiUrls.filter.getOne(filter.toString()),
+            {
+              headers: {
+                Authorization: "Bearer " + token,
+              },
+            }
+          );
+          setFiltersOptions((prevOptions) => [...prevOptions, res.data]);
+        } catch (error) {
+          console.log("error", error);
+        }
+      });
+    }
   };
 
   const getCategories = async () => {
@@ -237,7 +304,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           Authorization: `Bearer ${token}`,
         },
       });
-
       setProduct(res.data);
     } catch (error) {
       toast.error("Error al obtener los datos del producto");
@@ -248,6 +314,11 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
+
+    const filtersValue = selectedFilters
+      .flat()
+      .map((filter: any) => filter.value);
+
     const dataSend = new FormData();
     if (!user?.company_id) {
       toast.error("No se ha podido obtener su id, recargue la página ");
@@ -269,6 +340,12 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     data.labels.forEach((label: number) => {
       dataSend.append("labels[]", label.toString());
     });
+    if (filtersValue.length > 0) {
+      filtersValue.forEach((filter: number) => {
+        dataSend.append("filter_options[]", filter.toString());
+      });
+    }
+
     data.specifications.map((spec: any, index: number) => {
       dataSend.append(`specifications[${index}][title]`, spec.title);
       dataSend.append(
@@ -337,9 +414,17 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
+    setSubmitting(false);
   };
 
+  const handleCategoryChange = (categoryId: string) => {
+    const category = categoriesData.find(
+      (item) => item.id === Number(categoryId)
+    );
+    setSelectedCategory(category);
+  };
   const handleFileChange = (index: number, file_type: string) => (e: any) => {
+    setFiltersOptions([]);
     const file = e.target.files?.[0];
     if (files) {
       const newFileEntry = {
@@ -413,7 +498,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           name="Estado"
           options={[
             { id: "pending", name: "Pendiente" },
-            { id: "approved", name: "Aprbado" },
+            { id: "approved", name: "Aprobado" },
             { id: "rejected", name: "Rechazado" },
           ]}
           placeholder="Seleccione un estado"
@@ -447,10 +532,52 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           error={errors.category_id}
           onChange={(option) => {
             const value = option.target.value;
-            getFiles(value);
-            getLabels(value);
+            handleCategoryChange(value);
           }}
         />
+        <SelectTag
+          data={labelsData}
+          setData={setLabelsData}
+          selectedItems={SelectedLabels}
+          // error={errors.labels}
+          setValue={setValue}
+          value="labels"
+          text="Etiquetas"
+          placeholder="etiquetas"
+          displayField="name"
+        />
+        <>
+          <h2 className=" font-medium text-green-800">Filtros</h2>
+          <div className="flex flex-col gap-4 border border-zinc-300 rounded-md p-4">
+            {filtersOptions.length > 0 ? (
+              filtersOptions.map((filter, index) => (
+                <SelectTag
+                  key={index}
+                  data={selectedFilters[index] || []}
+                  setData={(newSelectedItems: any) => {
+                    // Crear una copia del array actual
+                    const updatedFilters = [...selectedFilters];
+
+                    // Actualizar solo el índice correspondiente
+                    updatedFilters[index] = newSelectedItems;
+
+                    // Establecer el nuevo array en el estado
+                    setSelectedFilters(updatedFilters);
+                  }}
+                  selectedItems={filter.options}
+                  // error={errors.labels}
+                  value="filters"
+                  text={filter.name}
+                  placeholder="opciones"
+                  displayField="option_name"
+                />
+              ))
+            ) : (
+              <p>Este categoría no requiere filtros</p>
+            )}
+          </div>
+        </>
+
         <InputZodField
           id="name"
           name="Producto"
@@ -474,7 +601,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           error={errors.description}
         />
         <div className="flex flex-col gap-2">
-          <h2 className=" font-medium text-zinc-500">Especificaciones</h2>
+          <h2 className=" font-medium text-green-800">Especificaciones</h2>
           {SpecificationsField.map((item, index) => (
             <div
               key={item.id}
@@ -572,55 +699,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
             <p className="text-zinc-700 text-xs text-center">
               No se requiere archivos
             </p>
-          )}
-        </div>
-
-        <div>
-          <label className="text-green-800 text-base font-medium">
-            Etiquetas
-          </label>
-          <div className="mt-1">
-            <Select
-              isDisabled={SelectedLabels.length === 0}
-              placeholder={
-                SelectedLabels.length === 0
-                  ? "No se requiere etiquetas"
-                  : "Seleccione etiquetas"
-              }
-              components={animatedComponents}
-              isMulti
-              options={SelectedLabels.map((label) => ({
-                value: label.id,
-                label: label.name,
-              }))}
-              classNamePrefix="custom-select"
-              onChange={handleChange}
-              closeMenuOnSelect={false}
-              required={false}
-              value={labelsData}
-              styles={{
-                control: (provided, state) => ({
-                  ...provided,
-                  backgroundColor: "transparent",
-                  borderColor: state.isFocused ? "#166534" : "#d4d4d8",
-                  boxShadow: state.isFocused ? "none" : "none",
-                  borderRadius: "6px",
-                  paddingBlock: "4px",
-                  paddingInline: "12px",
-                  fontSize: "16px",
-                  color: "#52525b",
-                }),
-                menu: (provided) => ({
-                  ...provided,
-                  zIndex: 9999,
-                  fontSize: "14px",
-                  color: "#52525b",
-                }),
-              }}
-            />
-          </div>
-          {errors.labels && (
-            <p className="mt-1 text-sm text-red-600">{errors.labels.message}</p>
           )}
         </div>
 

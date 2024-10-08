@@ -1,8 +1,6 @@
-import { ICategory } from "@/types/api";
-import { useEffect, useState } from "react";
 import { BiSolidEdit } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";
-import { FaRegImage } from "react-icons/fa6";
+import { FaArrowDown } from "react-icons/fa";
 
 import {
   ColumnDef,
@@ -11,94 +9,81 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { imgUrl } from "@/utils/img/imgUrl";
+import Link from "next/link";
+import { BootstrapTooltip } from "../ui/tooltip";
 
-interface CategoryTableProps {
-  dataTable: ICategory[];
-  onEdit: (id: number) => void;
-  onDelete: (id: number) => void;
+interface FilesTableProps {
+  dataTable: any[];
+  onEdit?: (id: number) => void;
+  onDelete?: (id: number) => void;
 }
-const CategoryTable: React.FC<CategoryTableProps> = ({
+const FilesTable: React.FC<FilesTableProps> = ({
   dataTable,
   onEdit,
   onDelete,
 }) => {
-  const data: ICategory[] = dataTable;
+  const data: any[] = dataTable;
 
   // colums
-  const columns: ColumnDef<ICategory, any>[] = [
+  const columns: ColumnDef<any, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
     },
     {
-      accessorKey: "icon",
-      header: "Ícono",
-      cell: (info) =>
-        info.row.original.icon ? (
-          <img
-            className="w-8 h-8 object-contain"
-            src={imgUrl(info.row.original.icon)}
-            alt="icon"
-          />
-        ) : (
-          <div className="w-8 h-8 rounded flex justify-center items-center border border-green-800  text-green-800">
-            <FaRegImage />
-          </div>
-        ),
+      accessorKey: "product",
+      header: "Producto",
+      cell: (info) => info.row.original.product.name,
     },
-
     {
-      accessorKey: "name",
+      accessorKey: "category",
       header: "Categoría",
       cell: (info) => (
         <span
           style={{
-            backgroundColor: info.row.original.background_color,
-            color: info.row.original.text_color,
+            backgroundColor: info.row.original.product.category.background_color,
+            color: info.row.original.product.category.text_color,
           }}
           className={`rounded-full px-2 py-0.5 text-xs font-medium `}
         >
-          {info.row.original.name}
+          {info.row.original.product.category.name}
         </span>
       ),
     },
     {
-      accessorKey: "filter",
-      header: "Filtros",
-      cell: (info) =>
-        info.row.original.filters && info.row.original.filters.length > 0 ? (
-          <div className="flex flex-wrap flex-row gap-1">
-            {info.row.original.filters.map((filter, index) => (
-              <span
-                key={index}
-                className="rounded-full px-2 py-0.5 text-xs font-medium bg-gray-200 text-zinc-700"
-              >
-                {filter.name}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <span className="text-xs font-medium">Sin filtros</span>
-        ),
+      accessorKey: "file_type",
+      header: "Tipo de archivo",
     },
-
     {
       accessorKey: "actions",
       header: "Acciones",
       cell: (info) => (
         <div className="flex justify-center items-center gap-2">
-          <button
-            onClick={() => onEdit(Number(info.row.original.id))}
-            className="bg-teal-400 hover:bg-teal-500 text-white p-1 aspect-square rounded transition-all duration-500"
-          >
-            <BiSolidEdit className="text-lg" />
-          </button>
-          <button
-            onClick={() => onDelete(Number(info.row.original.id))}
-            className="bg-yellow-400 hover:bg-yellow-500 text-white  p-1 rounded aspect-square transition-all duration-500"
-          >
-            <FiTrash className="text-lg" />
-          </button>
+          <BootstrapTooltip title="Descargar" placement="top">
+            <Link
+              target="_blank"
+              href={imgUrl(info.row.original.file_url)}
+              className="bg-purple-400 hover:bg-purple-500 text-white p-1 aspect-square rounded transition-all duration-500"
+            >
+              <FaArrowDown className="text-lg" />
+            </Link>
+          </BootstrapTooltip>
+          {onEdit && (
+            <button
+              onClick={() => onEdit(Number(info.row.original.id))}
+              className="bg-teal-400 hover:bg-teal-500 text-white p-1 aspect-square rounded transition-all duration-500"
+            >
+              <BiSolidEdit className="text-lg" />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={() => onDelete(Number(info.row.original.id))}
+              className="bg-yellow-400 hover:bg-yellow-500 text-white  p-1 rounded aspect-square transition-all duration-500"
+            >
+              <FiTrash className="text-lg" />
+            </button>
+          )}
         </div>
       ),
     },
@@ -163,4 +148,4 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
   );
 };
 
-export default CategoryTable;
+export default FilesTable;

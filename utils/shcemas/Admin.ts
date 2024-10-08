@@ -127,7 +127,11 @@ export const courseSaveSchema = z.object({
 });
 
 export const filterSaveSchema = z.object({
-  icon: z.any().nullable(),
+  icon: z
+    .custom<FileList>((files) => files?.length > 0, {
+      message: "La imagen es requerida",
+    })
+    .nullable(),
   name: z.string().min(1, "El nombre del filtro es requerido"),
   options: z.array(
     z.object({
@@ -152,7 +156,7 @@ export const categorySaveSchema = z.object({
     )
     .nullable(),
   type: z.string().min(1, "El tipo es requerido"),
-  // filter_ids: z.array(z.number().nullable()).nullable(),
+  filter_ids: z.array(z.number().nullable()).nullable(),
   files: z
     .array(
       z.object({

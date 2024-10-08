@@ -47,6 +47,7 @@ const Index = () => {
         toast.warning("No tienes permisos para acceder");
         return;
       }
+
       router.push(
         user.type === "admin"
           ? "/admin"
@@ -66,6 +67,7 @@ const Index = () => {
         <div className="flex md:flex-1 flex-col md:items-start gap-4">
           <div className="bg-[#023719] rounded-lg px-5 py-3 flex-1">
             <Image
+              priority
               className=" h-full w-full object-contain"
               src={"/img/logoh.png"}
               width={177}

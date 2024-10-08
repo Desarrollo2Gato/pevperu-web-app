@@ -1,9 +1,6 @@
 "use client";
 import AddButton from "@/components/ui/addBtn";
-import {
-  MainContainer,
-  SafeAreaContainer,
-} from "@/components/ui/containers";
+import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
 import { ICategory, ICompany, IProduct } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
@@ -253,6 +250,7 @@ const Content = () => {
             },
           }
         );
+
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
@@ -287,15 +285,14 @@ const Content = () => {
           apiUrls.product.getAll +
             "?status=" +
             status +
-            "&" +
-            pagination(pageIndex, pageSize),
+            `&per_page=${Number(pageSize)}&page=${Number(pageIndex)}`,
+
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        console.log(res.data.data);
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
@@ -316,6 +313,7 @@ const Content = () => {
     });
   };
   const getProductsByProvider = async (provider: "all" | string) => {
+    console.log(pageIndex, pageSize, "provider");
     if (provider === "all") {
       setSelectedAction("data");
       return;
@@ -333,7 +331,6 @@ const Content = () => {
             },
           }
         );
-        console.log(res.data.data);
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
@@ -398,27 +395,27 @@ const Content = () => {
     if (token && selectedAction === "data") {
       getData();
     }
-  }, [token, selectedAction, pageIndex]);
+  }, [token, selectedAction, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "search") {
       getProductsBySearch(searchQuery);
     }
-  }, [token, selectedAction, pageIndex]);
+  }, [token, selectedAction, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "status") {
       getProdByStatus(statusFilter);
     }
-  }, [token, selectedAction, statusFilter, pageIndex]);
+  }, [token, selectedAction, statusFilter, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "provider") {
       getProductsByProvider(providerFilter);
     }
-  }, [token, selectedAction, providerFilter, pageIndex]);
+  }, [token, selectedAction, providerFilter, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "category") {
       getProductsByCategory(categoryFilter);
     }
-  }, [token, selectedAction, categoryFilter, pageIndex]);
+  }, [token, selectedAction, categoryFilter, pageIndex, pageSize]);
   return (
     <>
       <SafeAreaContainer isTable>
@@ -510,19 +507,22 @@ const Content = () => {
           </div>
         </MainContainer>
       </SafeAreaContainer>
-      <FormModal
-        title={`${selectedType === "edit" ? "Editar" : "Crear"} producto`}
-        openModal={openModal}
-        setOpenModal={() => setOpenModal(false)}
-      >
-        <ProductForm
-          closeModal={handleCloseModal}
-          type={selectedType}
-          id={selectedId}
-          token={token}
-          getData={getData}
-        />
-      </FormModal>
+      {openModal && (
+        <FormModal
+          title={`${selectedType === "edit" ? "Editar" : "Crear"} producto`}
+          openModal={openModal}
+          setOpenModal={() => setOpenModal(false)}
+        >
+          <ProductForm
+            closeModal={handleCloseModal}
+            type={selectedType}
+            id={selectedId}
+            token={token}
+            getData={getData}
+          />
+        </FormModal>
+      )}
+
       <ConfirmModal
         openModal={statusModal}
         setOpenModal={() => setStatusModal(false)}

@@ -28,6 +28,7 @@ type TOption = {
   option_name: string;
 };
 type TFile = {
+  id: number;
   file_type: string;
   file_url: string;
   file_label: string;
@@ -158,6 +159,7 @@ export interface IProduct {
   files: TFile[];
   featured_product: boolean;
   specifications: TSpecification[];
+  filter_options: TOption[];
 }
 
 export interface IEvents {

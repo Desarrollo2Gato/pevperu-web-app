@@ -1,22 +1,17 @@
 "use client";
-import AddButton from "@/components/ui/addBtn";
-import {
-  MainContainer,
-  SafeAreaContainer,
-} from "@/components/ui/containers";
+import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
-import { useAuthContext } from "@/context/authContext";
 import { IUser } from "@/types/api";
-import { apiUrls } from "@/utils/api/apiUrls";
+import { apiUrls, pagination } from "@/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Modal, Box, Typography } from "@mui/material";
+import { Pagination } from "@mui/material";
 
 import UsersTable from "@/components/tables/usersTable";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/modals";
+import SelectRows from "@/components/ui/selectRows";
 
 const Content = () => {
   const [token, setToken] = useState("");
@@ -24,8 +19,8 @@ const Content = () => {
   // pagination
   const [total, setTotal] = useState(0);
   const [pageIndex, setPageIndex] = useState(1);
-  const pageSize = 10;
-  const [pageCoutn, setPageCount] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [pageCount, setPageCount] = useState(0);
 
   // data
   const [data, setData] = useState<IUser[]>([]);
@@ -36,8 +31,15 @@ const Content = () => {
   // modal
   const [confirmModal, setConfirmModal] = useState(false);
 
+  //search
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+
+  const [selectedAction, setSelectedAction] = useState<"data" | "search">(
+    "data"
+  );
 
   useEffect(() => {
     const token = getTokenFromCookie();
@@ -45,12 +47,6 @@ const Content = () => {
       setToken(token);
     }
   }, []);
-
-  useEffect(() => {
-    if (token) {
-      getData();
-    }
-  }, [pageIndex, token]);
 
   const getData = async () => {
     setLoading(true);
@@ -63,15 +59,53 @@ const Content = () => {
           },
         }
       );
-      console.log(response.data.data);
       setData(response.data.data);
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
     } catch (error) {
-      toast.error("Error al obtener los datos");
+      console.error(error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const getUserBySearch = (query: string) => {
+    setSelectedAction("search");
+    setSearchQuery(query);
+    setLoading(true);
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        const res = await axios.get(
+          apiUrls.user.getAll +
+            "?like=" +
+            query +
+            "&" +
+            pagination(pageIndex, pageSize),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setData(res.data.data);
+        setPageCount(res.data.last_page);
+        setTotal(res.data.total);
+        resolve({ message: "Busqueda exitosa" });
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+        }
+        reject({ message: "Error al buscar productos" });
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    toast.promise(promise, {
+      loading: "Buscando productos...",
+      success: (data: any) => `${data.message}`,
+      error: (error: any) => `${error.message}`,
+    });
   };
 
   const handleConfirmModal = async (id: number, status: string) => {
@@ -123,6 +157,36 @@ const Content = () => {
       error: (error: any) => error.message,
     });
   };
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    newPage: number
+  ) => {
+    setPageIndex(newPage);
+  };
+  const handlePageSizeChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const selectedValue = event.target.value;
+    console.log(selectedValue);
+    setPageSize(parseInt(selectedValue, 10));
+    setPageIndex(1);
+  };
+
+  useEffect(() => {
+    setData([]);
+  }, [selectedAction]);
+
+  useEffect(() => {
+    if (token && selectedAction === "data") {
+      getData();
+    }
+  }, [token, selectedAction, pageIndex, pageSize]);
+
+  useEffect(() => {
+    if (token && selectedAction === "search") {
+      getUserBySearch(searchQuery);
+    }
+  }, [token, selectedAction, pageIndex, pageSize]);
 
   return (
     <>
@@ -133,9 +197,16 @@ const Content = () => {
               Registros ({total})
             </h2>{" "}
           </div>
-          <div className="flex justify-end mb-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">
+            <SelectRows
+              pageSize={pageSize.toString()}
+              handlePageSizeChange={handlePageSizeChange}
+            />
             <div className="w-full sm:w-auto flex flex-row self-end">
-              <SearchInput />
+              <SearchInput
+                placeholder="Buscar producto"
+                onClick={(query) => getUserBySearch(query)}
+              />
             </div>
           </div>
           <div className=" overflow-x-auto">
@@ -143,6 +214,14 @@ const Content = () => {
               dataTable={data}
               onSuspend={(id) => handleConfirmModal(id, "approved")}
               onUnsuspend={(id) => handleConfirmModal(id, "suspend")}
+            />
+          </div>
+          <div className="mt-4 justify-center flex">
+            <Pagination
+              count={pageCount}
+              page={pageIndex}
+              boundaryCount={2}
+              onChange={handlePageChange}
             />
           </div>
         </MainContainer>
