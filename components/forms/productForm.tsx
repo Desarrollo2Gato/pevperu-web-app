@@ -192,29 +192,31 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   }, [selectedCategory]);
 
   useEffect(() => {
-    if (filtersOptions.length > 0) {
-      const filters = product?.filter_options.reduce(
-        (acc: any, filter: any) => {
-          const index = acc.findIndex(
-            (item: any) => item.filter_id === filter.filter_id
-          );
-          if (index === -1) {
-            acc.push({ filter_id: filter.filter_id, options: [filter] });
-          } else {
-            acc[index].options.push(filter);
-          }
-          return acc;
-        },
-        []
-      );
-      const filtersOptions = filters.map((filter: any) => {
-        const options = filter.options.map((option: any) => ({
-          value: option.id,
-          label: option.option_name,
-        }));
-        return options;
-      });
-      setSelectedFilters(filtersOptions);
+    if (product?.filter_options && product?.filter_options.length > 0) {
+      if (filtersOptions.length > 0) {
+        const filters = product?.filter_options.reduce(
+          (acc: any, filter: any) => {
+            const index = acc.findIndex(
+              (item: any) => item.filter_id === filter.filter_id
+            );
+            if (index === -1) {
+              acc.push({ filter_id: filter.filter_id, options: [filter] });
+            } else {
+              acc[index].options.push(filter);
+            }
+            return acc;
+          },
+          []
+        );
+        const filtersOptions = filters.map((filter: any) => {
+          const options = filter.options.map((option: any) => ({
+            value: option.id,
+            label: option.option_name,
+          }));
+          return options;
+        });
+        setSelectedFilters(filtersOptions);
+      }
     }
   }, [filtersOptions, product]);
   useEffect(() => {
@@ -573,7 +575,9 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
                 />
               ))
             ) : (
-              <p>Este categoría no requiere filtros</p>
+              <p className="text-zinc-500 text-sm">
+                Esta categoría no requiere filtros
+              </p>
             )}
           </div>
         </>

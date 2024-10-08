@@ -27,7 +27,6 @@ const SelectTag: React.FC<SelectTagProps> = ({
   placeholder,
   displayField,
 }) => {
-  
   const handleChange = (selected: any) => {
     const labels = selected.map((item: any) => item.value);
     setData(selected);
@@ -67,7 +66,7 @@ const SelectTag: React.FC<SelectTagProps> = ({
               borderRadius: "6px",
               paddingBlock: "4px",
               paddingInline: "12px",
-              fontSize: "16px",
+              fontSize: "14px",
               color: "#52525b",
             }),
             menu: (provided) => ({
