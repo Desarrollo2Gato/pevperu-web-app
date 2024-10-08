@@ -56,7 +56,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
       cell: (info) => (
         <>
           {info.row.original.status === "approved" ? (
-            <BootstrapTooltip title="Banear" placement="right" >
+            <BootstrapTooltip title="Banear" placement="top">
               <button
                 onClick={() => onSuspend(Number(info.row.original.id))}
                 className="bg-red-500 hover:bg-red-600 text-white p-1 aspect-square rounded transition-all duration-500"
@@ -65,7 +65,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
               </button>
             </BootstrapTooltip>
           ) : (
-            <BootstrapTooltip title="Desbanear">
+            <BootstrapTooltip title="Desbanear" placement="top">
               <button
                 onClick={() => onUnsuspend(Number(info.row.original.id))}
                 className="bg-green-400 hover:bg-green-500 text-white p-1 aspect-square rounded transition-all duration-500"
