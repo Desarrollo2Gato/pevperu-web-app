@@ -1,9 +1,6 @@
 "use client";
 import AddButton from "@/components/ui/addBtn";
-import {
-  MainContainer,
-  SafeAreaContainer,
-} from "@/components/ui/containers";
+import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
 import { ICompany, INews } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
@@ -163,6 +160,7 @@ const Content = () => {
   };
 
   const getNewsBySearch = (query: string) => {
+    setSelectedAction("search");
     if (!user) {
       toast.error("No se ha podido obtener el id de la empresa");
       return;
@@ -256,17 +254,17 @@ const Content = () => {
     if (token && selectedAction === "data") {
       getData();
     }
-  }, [token, selectedAction, pageIndex]);
+  }, [token, selectedAction, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "search") {
       getNewsBySearch(searchQuery);
     }
-  }, [token, selectedAction, pageIndex]);
+  }, [token, selectedAction, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "status") {
       getNewsByStatus(statusFilter);
     }
-  }, [token, selectedAction, statusFilter, pageIndex]);
+  }, [token, selectedAction, statusFilter, pageIndex, pageSize]);
 
   return (
     <>

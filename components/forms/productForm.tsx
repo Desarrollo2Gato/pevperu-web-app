@@ -15,6 +15,7 @@ import { useAuthContext } from "@/context/authContext";
 import { ImgField } from "../ui/imgField";
 import EditorText from "../ui/editorText";
 import SelectTag from "../ui/selectTag";
+import { ConfirmModal } from "../ui/modals";
 
 type ProdcutFormProps = {
   type: "create" | "edit";
@@ -73,6 +74,10 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
 
   const [selectedCategory, setSelectedCategory] = useState<ICategory>();
 
+  //modal
+  const [openModal, setOpenModal] = useState(false);
+  const [fileIdDelete, setFileIdDelete] = useState<number | null>(null);
+
   const {
     control,
     register,
@@ -112,12 +117,11 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     control,
     name: "files",
   });
-
   useEffect(() => {
     if (type === "edit") {
       if (id) getDataById(id?.toString());
     }
-  }, [type]);
+  }, [type, id]);
 
   useEffect(() => {
     if (token) getCategories();
@@ -133,7 +137,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       }
       if (product.files && product.files.length > 0) {
         const FilesToDownload = product.files.map((file, index) => ({
-          id: index,
+          id: file.id,
           file_url: imgUrl(file.file_url) || "",
           file_type: file.file_label || "",
         }));
@@ -152,6 +156,9 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         const labels = product.labels.map((label: any) => Number(label.id));
         setValue("labels", labels || []);
       }
+      if (product?.category.id) {
+        getFiles();
+      }
       reset({
         name: product.name || "",
         description: product.description || "",
@@ -165,19 +172,28 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         img2: null,
         img3: null,
         img4: null,
-        files: [{ file_type: "", file_label: "" }],
         status:
           product.status || user?.type === "admin" ? "approved" : "pending",
       });
     }
   }, [product]);
 
+  // useEffect(() => {
+  //   const id = product?.category.id.toString();
+  //   if (id) {
+  //     handleCategoryChange(id);
+  //     console.log("handlecategory");
+  //   }
+  // }, [product?.category.id]);
+
   useEffect(() => {
-    const id = watch("category_id");
+    console.log("watch category_id", watch("category_id"));
+    console.log(product?.category.id, "product?.category.id");
+    const id = product?.category.id.toString();
     if (id) {
       handleCategoryChange(id);
     }
-  }, [ watch("category_id")]);
+  }, [product?.category.id]);
 
   useEffect(() => {
     if (selectedCategory) {
@@ -219,6 +235,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       }
     }
   }, [filtersOptions, product]);
+
   useEffect(() => {
     if (product?.labels && product?.labels.length > 0) {
       const labels = product.labels.map((label) => ({
@@ -241,18 +258,24 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
 
   const getFiles = () => {
     setFilesData(selectedCategory?.files || []);
-
-    const filesInput = selectedCategory?.files?.map(
-      (file: any, index: number) => ({
-        id: index,
-        file_label: file.file_label || "",
-        file_type: file.file_label || file.file_type || "",
-      })
-    );
-    if (filesInput) {
-      setValue("files", filesInput);
+    if (selectedCategory?.files && selectedCategory?.files.length > 0) {
+      const filesInput = selectedCategory?.files?.map(
+        (file: any, index: number) => ({
+          id: index,
+          file_label: file.file_label || file.file_type || "",
+          file_type: file.file_type || "",
+        })
+      );
+      if (filesInput && filesInput.length > 0) {
+        setValue("files", filesInput);
+      }
     }
   };
+
+  useEffect(() => {
+    console.log("files watch", watch("files"));
+  }, [watch("files")]);
+
   const getFilters = async () => {
     setFiltersOptions([]);
     setSelectedFilters([]);
@@ -261,10 +284,8 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       (filter: any) => filter.id
     );
 
-    console.log("filtersId", filtersId);
     if (filtersId && filtersId?.length > 0) {
       filtersId.forEach(async (filter: any) => {
-        console.log("filter", filter);
         try {
           const res = await axios.get(
             apiUrls.filter.getOne(filter.toString()),
@@ -420,6 +441,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   };
 
   const handleCategoryChange = (categoryId: string) => {
+    console.log("obtener categoria");
     const category = categoriesData.find(
       (item) => item.id === Number(categoryId)
     );
@@ -439,6 +461,29 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         updatedFiles[index] = newFileEntry;
         return updatedFiles;
       });
+    }
+  };
+
+  const handleRemovefile = async (id: number) => {
+    console.log("id", id);
+    setOpenModal(true);
+    setFileIdDelete(id);
+  };
+
+  const removeFile = async () => {
+    console.log("fileIdDelete", fileIdDelete);
+    if (!fileIdDelete) return;
+    try {
+      await axios.delete(apiUrls.product_file.delete(fileIdDelete.toString()), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success("Archivo eliminado exitosamente");
+      closeModal();
+      setOpenModal(false);
+    } catch (error) {
+      toast.error("Error al eliminar el archivo");
     }
   };
 
@@ -649,19 +694,28 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
               {filesInitialData.map((file, index) => (
                 <div
                   key={index}
-                  className="flex flex-row justify-between items-center gap-2 p-2 border border-zinc-300 rounded-md"
+                  className="flex flex-row justify-between items-center gap-2 py-2 px-4 border border-zinc-300 rounded-md"
                 >
                   <p className="text-zinc-500 text-xs font-medium">
                     {file.file_type}
                   </p>
-                  <a
-                    href={file.file_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-blue-500"
-                  >
-                    Ver
-                  </a>
+                  <div className="flex-row flex gap-2 text-sm">
+                    <button
+                      type="button"
+                      className="text-red-500"
+                      onClick={() => handleRemovefile(file.id)}
+                    >
+                      Eliminar
+                    </button>
+                    <a
+                      href={file.file_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-500"
+                    >
+                      Ver
+                    </a>
+                  </div>
                 </div>
               ))}
             </div>
@@ -724,6 +778,13 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           />
         </div>
       </form>
+      <ConfirmModal
+        openModal={openModal}
+        title="Eliminar Archivo"
+        text="¿Está seguro que desea eliminar este archivo?"
+        onAction={removeFile}
+        setOpenModal={setOpenModal}
+      />
     </>
   );
 };

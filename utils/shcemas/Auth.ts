@@ -170,10 +170,9 @@ export const CompanyUpdateSchema = z.object({
         province: z.string().min(1, "La provincia es requerida"),
         district: z.string().min(1, "El distrito es requerido"),
         name: z.string().min(1, "El nombre del encargado es requerido"),
+        rol: z.string().min(1, "El rol es requerido"),
         phone: z.nullable(
-          z
-            .string()
-            .regex(/^\d{9}$/, "El número debe contener solo 9 dígitos")
+          z.string().regex(/^\d{9}$/, "El número debe contener solo 9 dígitos")
         ),
         email: z.string().nullable(),
       })

@@ -186,18 +186,18 @@ const Content = () => {
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
-        resolve({ message: "Productos filtrados" });
+        resolve({ message: "Archivos filtrados" });
       } catch (error) {
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
         }
-        reject({ message: "Error al filtrar productos por categoría" });
+        reject({ message: "Error al filtrar archivos por categoría" });
       } finally {
         setLoading(false);
       }
     });
     toast.promise(promise, {
-      loading: "Filtrando productos...",
+      loading: "Filtrando archivos...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
@@ -230,38 +230,38 @@ const Content = () => {
     setSelectedAction("category");
   };
 
-  const handleDelete = (id: number) => {
-    setSelectedId(id);
-    setDeleteModal(true);
-  };
+  // const handleDelete = (id: number) => {
+  //   setSelectedId(id);
+  //   setDeleteModal(true);
+  // };
 
-  const onDelete = () => {
-    if (!selectedId) return;
-    const promise = new Promise(async (resolve, reject) => {
-      try {
-        await axios.delete(apiUrls.category.delete(selectedId?.toString()), {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        resolve({ message: "Archivo eliminado" });
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
-        reject({ message: "No se pudo eliminar la archivo" });
-      } finally {
-        getData();
-        setDeleteModal(false);
-      }
-    });
+  // const onDelete = () => {
+  //   if (!selectedId) return;
+  //   const promise = new Promise(async (resolve, reject) => {
+  //     try {
+  //       await axios.delete(apiUrls.category.delete(selectedId?.toString()), {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       });
+  //       resolve({ message: "Archivo eliminado" });
+  //     } catch (error) {
+  //       if (axios.isAxiosError(error)) {
+  //         console.log(error.response?.data);
+  //       }
+  //       reject({ message: "No se pudo eliminar la archivo" });
+  //     } finally {
+  //       getData();
+  //       setDeleteModal(false);
+  //     }
+  //   });
 
-    toast.promise(promise, {
-      loading: "Eliminando archivo...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
-  };
+  //   toast.promise(promise, {
+  //     loading: "Eliminando archivo...",
+  //     success: (data: any) => `${data.message}`,
+  //     error: (error: any) => `${error.message}`,
+  //   });
+  // };
 
   const handleCloseModal = () => {
     setOpenModal(false);
@@ -412,12 +412,12 @@ const Content = () => {
           getData={getData}
         />
       </FormModal>
-      <ConfirmModal
+      {/* <ConfirmModal
         openModal={deleteModal}
         setOpenModal={() => setDeleteModal(false)}
         onAction={onDelete}
         title="Eliminar Archivo"
-      />
+      /> */}
     </>
   );
 };

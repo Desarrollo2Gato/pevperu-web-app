@@ -5,6 +5,7 @@ import { apiUrls } from "../utils/api/apiUrls";
 import { INotification } from "../types/api";
 import { useAuthContext } from "./authContext";
 import { getTokenFromCookie } from "../utils/api/getToken";
+import { toast } from "sonner";
 
 interface NotificationContextType {
   notifications: INotification[];
@@ -71,7 +72,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         ...prevNotifications,
         message.data,
       ]);
-
+      toast.info("Tienes una nueva notificación");
       // Actualizar el contador de notificaciones no leídas
       setUnreadCount((prevCount) => Math.min(prevCount + 1, 99));
     }
@@ -100,7 +101,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       };
 
       ws.onmessage = (event) => {
-        // console.log("Mensaje recibido del WebSocket:", event.data); 
+        // console.log("Mensaje recibido del WebSocket:", event.data);
         handleWebSocketMessage(event);
       };
 

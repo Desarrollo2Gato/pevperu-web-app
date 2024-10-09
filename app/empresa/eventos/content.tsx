@@ -1,9 +1,6 @@
 "use client";
 import AddButton from "@/components/ui/addBtn";
-import {
-  MainContainer,
-  SafeAreaContainer,
-} from "@/components/ui/containers";
+import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
 import { IEvents } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
@@ -305,27 +302,27 @@ const Content = () => {
     setTypeFilter("all");
     setStatusFilter("all");
   }, [selectedAction]);
-  
+
   useEffect(() => {
     if (token && selectedAction === "data") {
       getData();
     }
-  }, [token, selectedAction, pageIndex]);
+  }, [token, selectedAction, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "search") {
       getEventsBySearch(searchQuery);
     }
-  }, [token, selectedAction, pageIndex]);
+  }, [token, selectedAction, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "status") {
       getEventByStatus(statusFilter);
     }
-  }, [token, selectedAction, statusFilter, pageIndex]);
+  }, [token, selectedAction, statusFilter, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "type") {
       getEventsByType(typeFilter);
     }
-  }, [token, selectedAction, typeFilter, pageIndex]);
+  }, [token, selectedAction, typeFilter, pageIndex, pageSize]);
 
   return (
     <>

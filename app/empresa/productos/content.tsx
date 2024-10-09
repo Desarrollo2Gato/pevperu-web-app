@@ -1,11 +1,8 @@
 "use client";
 import AddButton from "@/components/ui/addBtn";
-import {
-  MainContainer,
-  SafeAreaContainer,
-} from "@/components/ui/containers";
+import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
-import { ICategory, ICompany, IProduct } from "@/types/api";
+import { IProduct } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
@@ -15,7 +12,6 @@ import ProductForm from "@/components/forms/productForm";
 import ProductTable from "@/components/tables/productTable";
 import SelectRows from "@/components/ui/selectRows";
 import { toast } from "sonner";
-import RejectForm from "@/components/forms/rejectedForm";
 import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import SelectComponent from "@/components/ui/select";
 import { useAuthContext } from "@/context/authContext";
@@ -256,17 +252,17 @@ const Content = () => {
     if (token && selectedAction === "data") {
       getData();
     }
-  }, [token, selectedAction, pageIndex]);
+  }, [token, selectedAction, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "search") {
       getProductsBySearch(searchQuery);
     }
-  }, [token, selectedAction, pageIndex]);
+  }, [token, selectedAction, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "status") {
       getProdByStatus(statusFilter);
     }
-  }, [token, selectedAction, statusFilter, pageIndex]);
+  }, [token, selectedAction, statusFilter, pageIndex, pageSize]);
   return (
     <>
       <SafeAreaContainer isTable>

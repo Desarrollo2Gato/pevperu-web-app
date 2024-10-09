@@ -207,6 +207,7 @@ export const apiUrls = {
   },
   product_file:{
     getAll: `${BASE_URL}/product-files`,
+    delete: (id: string) => `${BASE_URL}/product-files/${id}`,
     update: (id: string) => `${BASE_URL}/product-files/${id}/approve`,
-  }
+  },
 };

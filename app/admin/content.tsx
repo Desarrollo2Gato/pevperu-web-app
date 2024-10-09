@@ -1,6 +1,9 @@
 "use client";
 import { useAuthContext } from "@/context/authContext";
-import { InputZodField, TextAreaZodField } from "../../components/ui/inputField";
+import {
+  InputZodField,
+  TextAreaZodField,
+} from "../../components/ui/inputField";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CompanyUpdateSchema } from "../../utils/shcemas/Auth";
@@ -10,7 +13,10 @@ import axios from "axios";
 import { IUser, TDepartment, TProfession } from "../../types/api";
 import { getTokenFromCookie } from "../../utils/api/getToken";
 import { SelectZodField } from "../../components/ui/selectField";
-import { MainContainer, SafeAreaContainer } from "../../components/ui/containers";
+import {
+  MainContainer,
+  SafeAreaContainer,
+} from "../../components/ui/containers";
 import ButtonArrayForm from "../../components/ui/buttonArrayFrom";
 import Image from "next/image";
 
@@ -75,6 +81,7 @@ const ContentAdmin = () => {
           name: "",
           phone: "",
           email: "",
+          rol: "",
         },
       ],
     },
@@ -127,6 +134,7 @@ const ContentAdmin = () => {
             name: "",
             phone: "",
             email: "",
+            rol: "",
           },
         ],
       });
@@ -236,6 +244,7 @@ const ContentAdmin = () => {
       formData.append(`branches_info[${index}][district]`, branch.district);
       formData.append(`branches_info[${index}][address]`, branch.address);
       formData.append(`branches_info[${index}][name]`, branch.name);
+      formData.append(`branches_info[${index}][rol]`, branch.rol);
       formData.append(
         `branches_info[${index}][phone]`,
         branch.phone ? branch.phone : ""
@@ -281,8 +290,6 @@ const ContentAdmin = () => {
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
-
-
   };
   useEffect(() => {
     if (watch("logo")) {
@@ -482,6 +489,13 @@ const ContentAdmin = () => {
                     error={errors.branchesInfo?.[index]?.name}
                   />
                   <InputZodField
+                    id={`branchesInfo.${index}.rol`}
+                    name="Rol del encargado"
+                    placeholder="Rol del encargado"
+                    register={register(`branchesInfo.${index}.rol`)}
+                    error={errors.branchesInfo?.[index]?.rol}
+                  />
+                  <InputZodField
                     id={`branchesInfo.${index}.phone`}
                     name="Teléfono"
                     placeholder="Teléfono"
@@ -523,6 +537,7 @@ const ContentAdmin = () => {
                   name: "",
                   phone: "",
                   email: "",
+                  rol: "",
                 })
               }
             />
