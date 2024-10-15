@@ -166,9 +166,9 @@ const NewsForm: React.FC<NewsFormProps> = ({
         getData();
         closeModal();
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al guardar los datos" });
       } finally {
         setSubmitting(false);

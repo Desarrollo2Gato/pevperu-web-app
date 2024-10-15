@@ -116,20 +116,12 @@ const Content = () => {
     }
   };
   const getFilesByProvider = async (provider: "all" | string) => {
-    console.log(pageIndex, pageSize, "provider");
     if (provider === "all") {
       setSelectedAction("data");
       return;
     }
     setLoading(true);
-    console.log(
-      "url",
-      apiUrls.product_file.getAll +
-        "?company_id=" +
-        provider +
-        "&" +
-        pagination(pageIndex, pageSize)
-    );
+
     const promise = new Promise(async (resolve, reject) => {
       try {
         const res = await axios.get(
@@ -149,9 +141,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Archivos filtrados" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al filtrar archivos por proveedor" });
       } finally {
         setLoading(false);
@@ -289,9 +281,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Archivos filtradas" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error" });
       } finally {
         setLoading(false);

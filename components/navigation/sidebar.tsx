@@ -24,7 +24,8 @@ import { BootstrapTooltip } from "../ui/tooltip";
 import { TbLockCog } from "react-icons/tb";
 import { LuFilter } from "react-icons/lu";
 import { PiFilesBold } from "react-icons/pi";
-
+import { FaRegBuilding } from "react-icons/fa";
+import { toast } from "sonner";
 
 interface SidebarProps {
   active: boolean;
@@ -63,7 +64,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
         return;
       }
     } catch (error) {
-      console.log("Error al cerrar sesión", error);
+      toast.error("Error al cerrar sesión");
     } finally {
       logout();
 
@@ -75,7 +76,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
     <div
       className={`${
         active ? " w-[70px] md:w-[250px]" : "w-0 md:w-[70px]"
-      } fixed h-screen bg-gradient-to-b from-[#0f502b] via-[#072514] to-[#05130b]  flex flex-col items-center top-0 left-0 z-10 transform transition-all duration-700 `}
+      } fixed h-screen bg-gradient-to-b px-[1px] from-[#0f502b] via-[#072514] to-[#05130b]  flex flex-col items-center top-0 left-0 z-10 transform transition-all duration-700 `}
     >
       {" "}
       {/* sideber */}
@@ -91,8 +92,8 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
           width={60}
         />
       </Link>
-      <nav className="w-full h-full overflow-y-auto ">
-        <ul className="flex flex-col text-white text-2xl ">
+      <nav className="w-full h-full overflow-y-auto">
+        <ul className="flex flex-col text-white text-2xl  ">
           <li
             className={`w-full justify-center flex items-center py-4 group ${
               active ? "px-4 md:px-8" : "px-4 "
@@ -490,6 +491,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -497,28 +499,28 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
               >
                 <BootstrapTooltip
                   placement="right"
-                  title={active ? "" : "Atención al cliente"}
+                  title={active ? "" : "Empresas"}
                 >
                   <Link
-                    href={"/admin/atencion-cliente"}
+                    href={"/admin/empresas"}
                     className={`flex flex-row items-center relative ${
                       !active
                         ? "justify-center"
                         : "justify-center md:justify-start"
                     } w-full  hover:opacity-100 ${
-                      pathname === "/admin/atencion-cliente"
+                      pathname === "/admin/empresas"
                         ? "opacity-100"
                         : " opacity-30"
                     } transition-all duration-500`}
                   >
-                    <RiCustomerService2Line className="text-2xl" />
+                    <FaRegBuilding className="text-2xl" />
 
                     <span
                       className={`${
                         !active ? "hidden" : "hidden md:inline-block"
                       } ml-2 text-base inline-block transform transition-all duration-700`}
                     >
-                      Atención al cliente
+                      Empresas
                     </span>
                   </Link>
                 </BootstrapTooltip>
@@ -589,6 +591,39 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              <li
+                className={`w-full justify-center flex items-center py-4 group ${
+                  active ? "px-4 md:px-8" : "px-4 "
+                } `}
+              >
+                <BootstrapTooltip
+                  placement="right"
+                  title={active ? "" : "Atención al cliente"}
+                >
+                  <Link
+                    href={"/admin/atencion-cliente"}
+                    className={`flex flex-row items-center relative ${
+                      !active
+                        ? "justify-center"
+                        : "justify-center md:justify-start"
+                    } w-full  hover:opacity-100 ${
+                      pathname === "/admin/atencion-cliente"
+                        ? "opacity-100"
+                        : " opacity-30"
+                    } transition-all duration-500`}
+                  >
+                    <RiCustomerService2Line className="text-2xl" />
+
+                    <span
+                      className={`${
+                        !active ? "hidden" : "hidden md:inline-block"
+                      } ml-2 text-base inline-block transform transition-all duration-700`}
+                    >
+                      Atención al cliente
+                    </span>
+                  </Link>
+                </BootstrapTooltip>
+              </li>
             </>
           )}
           <li
@@ -626,6 +661,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
               </Link>
             </BootstrapTooltip>
           </li>
+
           <li
             className={`w-full justify-center flex items-center py-4 group ${
               active ? "px-4 md:px-8" : "px-4 "

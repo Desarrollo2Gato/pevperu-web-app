@@ -68,7 +68,6 @@ const Content = () => {
           },
         }
       );
-      console.log(JSON.stringify(response.data.data, null, 2));
       setData(response.data.data);
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
@@ -115,9 +114,9 @@ const Content = () => {
         });
         resolve({ message: "Categoría eliminado" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "No se pudo eliminar la categoría" });
       } finally {
         getData();
@@ -163,9 +162,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Categorías filtradas" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error" });
       } finally {
         setLoading(false);

@@ -20,11 +20,12 @@ export const helpUpdateSchema = z.object({
   phone: z.string().regex(/^\d{9}$/, "El número debe contener solo 9 dígitos"),
   telephone: z
     .string()
-    .regex(/^\d{7}$/, "El número debe contener solo 7 dígitos"),
+    // .regex(/^\d{7}$/, "El número debe contener solo 7 dígitos"),
+    .nullable(),
   email: z.string().email("El email no es válido"),
-  emailSuscription: z.string().email("El email no es válido"),
-  emailCourse: z.string().email("El email no es válido"),
-  emailSupport: z.string().email("El email no es válido"),
+  emailSuscription: z.string().nullable(),
+  emailCourse: z.string().nullable(),
+  emailSupport: z.string().nullable(),
   address: z
     .string()
     .min(1, "La dirección es requerida")
@@ -168,12 +169,14 @@ export const categorySaveSchema = z.object({
 });
 
 export const productSaveSchema = z.object({
+  company_id: z.string().min(1, "La empresa es requerida"),
   name: z.string().min(1, "El nombre del producto es requerido"),
   description: z.string().min(1, "La descripción es requerida"),
   featured_product: z.string({
     required_error: "Por favor, seleccione si es un producto destacado",
   }),
-  labels: z.array(z.number().nullable()).nullable(),
+  // labels: z.array(z.number().nullable()).nullable(),
+  labels: z.any().nullable(),
   category_id: z.string().min(1, "La categoría es requerida"),
   specifications: z
     .array(
@@ -203,13 +206,19 @@ export const productSaveSchema = z.object({
       message: "La imagen es requerida",
     })
     .nullable(),
-  files: z.array(
-    z.object({
-      file_type: z.string().nullable(),
-      file_label: z.string().nullable(),
-    })
-  ),
+  // files: z
+  //   .array(
+  //     z.object({
+  //       file_type: z.string().nullable(),
+  //       file_label: z.string().nullable(),
+  //     })
+  //   )
+  //   .nullable(),
+  files: z.any().nullable(),
   status: z.string().min(1, "El estado es requerido"),
+  // senasa_title: z.string().nullable(),
+  senasa_number: z.string().nullable(),
+  senasa_link: z.string().nullable(),
 });
 
 export const rejectedMessage = z.object({

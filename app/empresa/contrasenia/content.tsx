@@ -68,9 +68,9 @@ const Content = () => {
         reset();
         resolve({ message: "contraseña actualizada" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al actualizar contraseña" });
       } finally {
         setLoading(false);

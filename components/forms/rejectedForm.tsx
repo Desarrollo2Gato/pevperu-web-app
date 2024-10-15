@@ -59,9 +59,9 @@ const RejectForm: React.FC<RejectedFormPros> = ({
         resolve({ message: "Rechazado" });
       } catch (error) {
         console.error(error);
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "No se pudo rechazar" });
       } finally {
         closeModal();

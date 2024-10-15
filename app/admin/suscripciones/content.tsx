@@ -124,9 +124,9 @@ const Content = () => {
         );
         resolve({ message: "Suscripción eliminada" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "No se pudo eliminar la suscripción" });
       } finally {
         getData();
@@ -212,9 +212,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Suscripciones filtradas" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "No se pudo filtrar por estado" });
       } finally {
         setDeleteModal(false);
@@ -251,9 +251,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Suscripciones filtradas" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "No se pudo filtrar por plan" });
       } finally {
         setDeleteModal(false);
@@ -288,9 +288,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Suscripciones filtradas" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "No se pudo filtrar por fecha" });
       } finally {
         setDeleteModal(false);
@@ -421,7 +421,7 @@ const Content = () => {
           <div className=" overflow-x-auto mt-4">
             <SubsTable
               dataTable={data}
-              onDelete={(id: number) => handleDelete(id)}
+              // onDelete={(id: number) => handleDelete(id)}
               onEdit={(id: number) => handleEdit(id)}
               onRenew={(id: number) => handleRenew(id)}
             />

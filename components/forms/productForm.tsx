@@ -3,7 +3,7 @@ import { InputZodField, TextAreaZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productSaveSchema } from "@/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
-import { ICategory, IProduct } from "@/types/api";
+import { ICategory, ICompany, IProduct } from "@/types/api";
 import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
 import { toast } from "sonner";
@@ -29,12 +29,14 @@ type TFile = {
   id: number;
   file_url: any;
   file_type: string;
+  show: boolean;
 };
 
 type TFileData = {
   id: number;
   file: File;
   file_type: string;
+  show: boolean;
 };
 
 const ProductForm: React.FC<ProdcutFormProps> = ({
@@ -48,6 +50,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
 
   const [product, setProduct] = useState<IProduct>();
   const [categoriesData, setCategoriesData] = useState<any[]>([]);
+  const [companiesData, setCompaniesData] = useState<ICompany[]>([]);
 
   const [image, setImage] = useState<any | string>(null);
   const [image2, setImage2] = useState<any | null>(null);
@@ -76,7 +79,10 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
 
   //modal
   const [openModal, setOpenModal] = useState(false);
-  const [fileIdDelete, setFileIdDelete] = useState<number | null>(null);
+  const [selectFileId, setSelectFileId] = useState<number | null>(null);
+
+  const [openModalShow, setOpenModalShow] = useState(false);
+  const [selectFileStatus, setSelectFileStatus] = useState<boolean>(false);
 
   const {
     control,
@@ -102,6 +108,9 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       img4: null,
       files: [{ file_type: "", file_label: "" }],
       featured_product: "false",
+      company_id: user?.company_id || "",
+      senasa_number: "",
+      senasa_link: "",
     },
   });
 
@@ -124,7 +133,10 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   }, [type, id]);
 
   useEffect(() => {
-    if (token) getCategories();
+    if (token) {
+      getCategories();
+      getCompanies();
+    }
   }, [token]);
 
   useEffect(() => {
@@ -140,6 +152,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           id: file.id,
           file_url: imgUrl(file.file_url) || "",
           file_type: file.file_label || "",
+          show: file.show === 1 ? true : false,
         }));
         setFilesInitialData(FilesToDownload);
       }
@@ -172,8 +185,11 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         img2: null,
         img3: null,
         img4: null,
+        company_id: product.companies[0].id.toString() || user?.company_id,
         status:
           product.status || user?.type === "admin" ? "approved" : "pending",
+        senasa_link: product.senasa_url || "",
+        senasa_number: product.senasa_number || "",
       });
     }
   }, [product]);
@@ -187,8 +203,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   // }, [product?.category.id]);
 
   useEffect(() => {
-    console.log("watch category_id", watch("category_id"));
-    console.log(product?.category.id, "product?.category.id");
     const id = product?.category.id.toString();
     if (id) {
       handleCategoryChange(id);
@@ -272,10 +286,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     }
   };
 
-  useEffect(() => {
-    console.log("files watch", watch("files"));
-  }, [watch("files")]);
-
   const getFilters = async () => {
     setFiltersOptions([]);
     setSelectedFilters([]);
@@ -297,7 +307,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           );
           setFiltersOptions((prevOptions) => [...prevOptions, res.data]);
         } catch (error) {
-          console.log("error", error);
+          toast.error("Error al obtener los filtros");
         }
       });
     }
@@ -335,6 +345,19 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     }
   };
 
+  const getCompanies = async () => {
+    try {
+      const res = await axios.get(apiUrls.company.getAll, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCompaniesData(res.data);
+    } catch (error) {
+      toast.error("Error al obtener las empresas");
+    }
+  };
+
   const onSubmit = async (data: any) => {
     setSubmitting(true);
 
@@ -347,22 +370,24 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       toast.error("No se ha podido obtener su id, recargue la página ");
       return;
     }
-    if (product) {
-      dataSend.append("company_id", product?.companies[0].id.toString());
-    } else {
-      dataSend.append("company_id", user?.company_id.toString());
-    }
+
+    dataSend.append("company_id", data.company_id);
+
     dataSend.append("status", data.status);
     dataSend.append("name", data.name);
     dataSend.append("description", data.description);
     dataSend.append("category_id", data.category_id);
+    dataSend.append("senasa_number", data.senasa_number);
+    dataSend.append("senasa_url", data.senasa_link);
     dataSend.append(
       "featured_product",
       data.featured_product === "true" ? "1" : "0"
     );
-    data.labels.forEach((label: number) => {
-      dataSend.append("labels[]", label.toString());
-    });
+    if (data.labels && data.labels.length > 0) {
+      data.labels.forEach((label: number) => {
+        dataSend.append("labels[]", label.toString());
+      });
+    }
     if (filtersValue.length > 0) {
       filtersValue.forEach((filter: number) => {
         dataSend.append("filter_options[]", filter.toString());
@@ -391,16 +416,18 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     }
 
     // files
-    files.forEach((file: any) => {
-      if (file.file) {
-        dataSend.append(`${file.file_type}`, file.file);
-      }
-    });
+    if (files && files.length > 0) {
+      files.forEach((file: any) => {
+        if (file.file) {
+          dataSend.append(`${file.file_type}`, file.file);
+        }
+      });
+    }
 
     const promise = new Promise(async (resolve, reject) => {
       try {
         if (type === "create") {
-          await axios.post(apiUrls.product.create, dataSend, {
+          const res = await axios.post(apiUrls.product.create, dataSend, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "multipart/form-data",
@@ -410,12 +437,16 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         }
         if (type === "edit") {
           if (id) {
-            await axios.post(apiUrls.product.update(id?.toString()), dataSend, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-              },
-            });
+            const res = await axios.post(
+              apiUrls.product.update(id?.toString()),
+              dataSend,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            );
             resolve({ message: "Producto actualizado exitosamente" });
           } else {
             reject({ message: "No se pudo actualizar el producto" });
@@ -423,9 +454,9 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         }
         closeModal();
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al guardar los datos" });
       } finally {
         getData();
@@ -441,40 +472,39 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    console.log("obtener categoria");
     const category = categoriesData.find(
       (item) => item.id === Number(categoryId)
     );
     setSelectedCategory(category);
   };
-  const handleFileChange = (index: number, file_type: string) => (e: any) => {
-    setFiltersOptions([]);
-    const file = e.target.files?.[0];
-    if (files) {
-      const newFileEntry = {
-        id: index,
-        file: file,
-        file_type,
-      };
-      setFiles((prevFiles) => {
-        const updatedFiles = [...prevFiles];
-        updatedFiles[index] = newFileEntry;
-        return updatedFiles;
-      });
-    }
-  };
+  const handleFileChange =
+    (index: number, file_type: string, show: boolean) => (e: any) => {
+      setFiltersOptions([]);
+      const file = e.target.files?.[0];
+      if (files) {
+        const newFileEntry = {
+          id: index,
+          file: file,
+          file_type,
+          show: show,
+        };
+        setFiles((prevFiles) => {
+          const updatedFiles = [...prevFiles];
+          updatedFiles[index] = newFileEntry;
+          return updatedFiles;
+        });
+      }
+    };
 
   const handleRemovefile = async (id: number) => {
-    console.log("id", id);
     setOpenModal(true);
-    setFileIdDelete(id);
+    setSelectFileId(id);
   };
 
   const removeFile = async () => {
-    console.log("fileIdDelete", fileIdDelete);
-    if (!fileIdDelete) return;
+    if (!selectFileId) return;
     try {
-      await axios.delete(apiUrls.product_file.delete(fileIdDelete.toString()), {
+      await axios.delete(apiUrls.product_file.delete(selectFileId.toString()), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -487,6 +517,37 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     }
   };
 
+  const toggleFile = async (id: number, status: boolean) => {
+    setSelectFileId(id);
+    setOpenModalShow(true);
+    setSelectFileStatus(status);
+  };
+
+  const changeFileStatus = async () => {
+    if (!selectFileId) return;
+    try {
+      await axios.put(
+        apiUrls.product_file.showUpdate(
+          selectFileId.toString(),
+          selectFileStatus ? "0" : "1"
+        ),
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success("Estado del archivo actualizado");
+      if (id) getDataById(id?.toString());
+      setOpenModalShow(false);
+    } catch (error) {
+      // if (axios.isAxiosError(error)) {
+      //   console.log(error.response?.data);
+      // }
+      toast.error("Error al actualizar el estado del archivo");
+    }
+  };
   return (
     <>
       <form className="flex flex-col gap-2 mt-4">
@@ -562,12 +623,25 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
             { id: "true", name: "Si" },
             { id: "false", name: "No" },
           ]}
-          placeholder="Seleccione una opoción"
+          placeholder="Seleccione una opción"
           getOptionValue={(option) => option.id}
           getOptionLabel={(option) => option.name}
           register={register("featured_product")}
           error={errors.featured_product}
         />
+        {user?.type === "admin" && (
+          <SelectZodField
+            id="company_id"
+            name="Empresa"
+            options={companiesData}
+            placeholder="Seleccione una empresa"
+            getOptionValue={(option) => option.id}
+            getOptionLabel={(option) => option.name}
+            register={register("company_id")}
+            error={errors.company_id}
+          />
+        )}
+
         <SelectZodField
           id="category_id"
           name="Categoría"
@@ -651,6 +725,22 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         />
         <div className="flex flex-col gap-2">
           <h2 className=" font-medium text-green-800">Especificaciones</h2>
+          <div className="flex flex-col gap-2 border border-zinc-300 rounded-md p-4">
+            <InputZodField
+              id={`senasa_number`}
+              name="N° Registro SENASA"
+              placeholder="Senasa Numero"
+              register={register(`senasa_number`)}
+              error={errors.senasa_number}
+            />
+            <InputZodField
+              id={`senasa_link`}
+              name="Registro SENASA url"
+              placeholder="https://pev.com.pe/"
+              register={register(`senasa_link`)}
+              error={errors.senasa_link}
+            />
+          </div>
           {SpecificationsField.map((item, index) => (
             <div
               key={item.id}
@@ -665,6 +755,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
                 error={errors.specifications?.[index]?.title}
               />
               <TextAreaZodField
+                rows={2}
                 id={`specifications.${index}.description`}
                 name="Descripción"
                 placeholder="Descripción de la especificación"
@@ -694,15 +785,106 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
               {filesInitialData.map((file, index) => (
                 <div
                   key={index}
-                  className="flex flex-row justify-between items-center gap-2 py-2 px-4 border border-zinc-300 rounded-md"
+                  className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 py-2 px-4 border border-zinc-300 rounded-md"
                 >
                   <p className="text-zinc-500 text-xs font-medium">
                     {file.file_type}
                   </p>
-                  <div className="flex-row flex gap-2 text-sm">
+                  <div className="flex-row flex items-center justify-end gap-2 text-sm">
+                    <button
+                    type="button"
+                      onClick={() => toggleFile(file.id, file.show)}
+                      className={` px-2 py-1 ${
+                        file.show
+                          ? "bg-zinc-200 hover:bg-zinc-300 text-zinc-800"
+                          : "bg-green-700 hover:bg-green-900 text-white"
+                      }  rounded text-xs transition-all duration-500 flex justify-center items-center gap-1  `}
+                    >
+                      {file.show ? (
+                        <>
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M12.1083 7.89453L7.8916 12.1112C7.34994 11.5695 7.0166 10.8279 7.0166 10.0029C7.0166 8.35286 8.34993 7.01953 9.99993 7.01953C10.8249 7.01953 11.5666 7.35286 12.1083 7.89453Z"
+                              stroke="#52525B"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M14.8499 4.80937C13.3915 3.70937 11.7249 3.10938 9.99987 3.10938C7.0582 3.10938 4.31654 4.84271 2.4082 7.84271C1.6582 9.01771 1.6582 10.9927 2.4082 12.1677C3.06654 13.201 3.8332 14.0927 4.66654 14.8094"
+                              stroke="#52525B"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M7.0166 16.276C7.9666 16.676 8.97493 16.8927 9.99993 16.8927C12.9416 16.8927 15.6833 15.1594 17.5916 12.1594C18.3416 10.9844 18.3416 9.00937 17.5916 7.83437C17.3166 7.40104 17.0166 6.99271 16.7083 6.60938"
+                              stroke="#52525B"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M12.9252 10.582C12.7085 11.757 11.7502 12.7154 10.5752 12.932"
+                              stroke="#52525B"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M7.89199 12.1094L1.66699 18.3344"
+                              stroke="#52525B"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M18.3334 1.66797L12.1084 7.89297"
+                              stroke="#52525B"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                          Ocultar
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M12.9833 10.0029C12.9833 11.6529 11.6499 12.9862 9.99993 12.9862C8.34993 12.9862 7.0166 11.6529 7.0166 10.0029C7.0166 8.35286 8.34993 7.01953 9.99993 7.01953C11.6499 7.01953 12.9833 8.35286 12.9833 10.0029Z"
+                              stroke="white"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M9.99987 16.8893C12.9415 16.8893 15.6832 15.156 17.5915 12.156C18.3415 10.981 18.3415 9.00599 17.5915 7.83099C15.6832 4.83099 12.9415 3.09766 9.99987 3.09766C7.0582 3.09766 4.31654 4.83099 2.4082 7.83099C1.6582 9.00599 1.6582 10.981 2.4082 12.156C4.31654 15.156 7.0582 16.8893 9.99987 16.8893Z"
+                              stroke="white"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                          Mostrar
+                        </>
+                      )}
+                    </button>
                     <button
                       type="button"
-                      className="text-red-500"
+                      className="text-red-500 rounded text-xs transition-all duration-500 bg-red-200 hover:bg-red-500 hover:text-white px-2 py-1"
                       onClick={() => handleRemovefile(file.id)}
                     >
                       Eliminar
@@ -711,7 +893,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
                       href={file.file_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-blue-500"
+                      className="text-blue-500 rounded text-xs transition-all duration-500 bg-blue-200 hover:bg-blue-500 hover:text-white px-2 py-1"
                     >
                       Ver
                     </a>
@@ -734,23 +916,22 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
               //   name={item.file_type}
               //   onChange={handleFileChange(index, item.file_type)}
               // />
-              <div
-                className="w-full relative flex flex-col gap-1"
-                key={item.id}
-              >
-                <label
-                  htmlFor={`files${index}`}
-                  className="text-zinc-500 font-medium text-base "
-                >
-                  {item.file_label ? item.file_label : item.file_type}
-                </label>
-                <input
-                  type="file"
-                  id={`files${index}`}
-                  accept=".pdf"
-                  className="w-full text-xs border border-zinc-200 rounded-sm px-2"
-                  onChange={handleFileChange(index, item.file_type)}
-                />
+              <div key={index}>
+                <div className="w-full relative flex flex-col gap-1">
+                  <label
+                    htmlFor={`files${index}`}
+                    className="text-zinc-500 font-medium text-base "
+                  >
+                    {item.file_label ? item.file_label : item.file_type}
+                  </label>
+                  <input
+                    type="file"
+                    id={`files${index}`}
+                    accept=".pdf"
+                    className="w-full text-xs border border-zinc-200 rounded-sm px-2"
+                    onChange={handleFileChange(index, item.file_type, true)}
+                  />
+                </div>
               </div>
             ))
           ) : (
@@ -784,6 +965,16 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         text="¿Está seguro que desea eliminar este archivo?"
         onAction={removeFile}
         setOpenModal={setOpenModal}
+      />
+      <ConfirmModal
+        openModal={openModalShow}
+        title="Visualizar Archivo"
+        text={`¿Está seguro que desar ${
+          selectFileStatus ? "ocultar" : "mostrar "
+        } el archivo?`}
+        textButton="Cambiar"
+        onAction={changeFileStatus}
+        setOpenModal={setOpenModalShow}
       />
     </>
   );

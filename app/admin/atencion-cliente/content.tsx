@@ -81,7 +81,7 @@ const Content = () => {
       });
       setDataHelp(res.data);
     } catch (error) {
-      console.log(error);
+      toast.error("Error al obtener los datos");
     } finally {
       setLoading(false);
     }
@@ -89,7 +89,6 @@ const Content = () => {
 
   const onSubmit = async (data: any) => {
     setLoading(true);
-    console.log(data);
     const promise = new Promise(async (resolve, reject) => {
       try {
         const res = await axios.put(
@@ -116,9 +115,9 @@ const Content = () => {
         setDataHelp(res.data);
         resolve({ message: "Cambios guardados" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al guardar cambios" });
       } finally {
         setLoading(false);
@@ -141,7 +140,6 @@ const Content = () => {
               name="Número de celular"
               register={register("phone")}
               error={errors.phone}
-              min={9}
               max={9}
             />
             <InputZodField
@@ -149,7 +147,6 @@ const Content = () => {
               name="Número de teléfono"
               register={register("telephone")}
               error={errors.telephone}
-              min={7}
               max={7}
             />
             <InputZodField
@@ -176,7 +173,7 @@ const Content = () => {
           />
         </MainContainer>
 
-        <MainContainer title="Emails">
+        <MainContainer title="Correos">
           <div className="flex flex-col gap-4">
             <InputZodField
               id="emailSuscription"

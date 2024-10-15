@@ -114,9 +114,9 @@ const Content = () => {
         });
         resolve({ message: "Producto eliminado" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "No se pudo eliminar el producto" });
       } finally {
         getData();
@@ -184,9 +184,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Busqueda exitosa" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al buscar productos" });
       } finally {
         setLoading(false);
@@ -225,15 +225,14 @@ const Content = () => {
             },
           }
         );
-        console.log(res.data.data);
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
         resolve({ message: "Productos filtrados" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al filtrar productos por estado" });
       } finally {
         setLoading(false);

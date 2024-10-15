@@ -144,9 +144,9 @@ const Content = () => {
         );
         resolve({ message: "Producto aprobado" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         rejects({ message: "No se pudo aprobar el producto" });
       } finally {
         getData();
@@ -170,9 +170,9 @@ const Content = () => {
         });
         resolve({ message: "Producto eliminado" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "No se pudo eliminar el producto" });
       } finally {
         getData();
@@ -256,9 +256,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Busqueda exitosa" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al buscar productos" });
       } finally {
         setLoading(false);
@@ -298,9 +298,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Productos filtrados" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al filtrar productos por estado" });
       } finally {
         setLoading(false);
@@ -313,7 +313,6 @@ const Content = () => {
     });
   };
   const getProductsByProvider = async (provider: "all" | string) => {
-    console.log(pageIndex, pageSize, "provider");
     if (provider === "all") {
       setSelectedAction("data");
       return;
@@ -336,9 +335,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Productos filtrados" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al filtrar productos por proveedor" });
       } finally {
         setLoading(false);
@@ -373,9 +372,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Productos filtrados" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al filtrar productos por categoría" });
       } finally {
         setLoading(false);

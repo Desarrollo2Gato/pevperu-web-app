@@ -13,6 +13,7 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import { apiUrls } from "../utils/api/apiUrls";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type User = {
   email: string;
@@ -94,12 +95,11 @@ export default function AuthContextProvider({
         setAuthTokens(newAuthTokens);
         Cookies.set("authTokens", newAuthTokens);
         Cookies.set("user", JSON.stringify(userInfo));
-        console.log("Token refreshed");
       } else {
         logout();
       }
     } catch (error) {
-      console.log("Error refreshing token", error);
+      toast.info("Su sesión ha expirado, por favor inicie sesión nuevamente");
       logout();
     }
   }, []);
@@ -112,7 +112,7 @@ export default function AuthContextProvider({
         await refreshToken();
         return true;
       } catch (error) {
-        console.log("Token is invalid, logging out", error);
+        toast.info("Su sesión ha expirado, por favor inicie sesión nuevamente");
         logout();
         return false;
       }
@@ -120,7 +120,7 @@ export default function AuthContextProvider({
     logout();
     return false;
   }, [logout, refreshToken]);
-  
+
   useEffect(() => {
     const checkToken = async () => {
       const isValid = await validateToken();
@@ -151,8 +151,7 @@ export default function AuthContextProvider({
     if (authTokens) {
       const refreshInterval = setInterval(() => {
         refreshToken();
-        console.log("Refreshing token interval");
-      }, 55 * 60 * 1000); // 1 minute
+      }, 60 * 60 * 1000); 
       return () => clearInterval(refreshInterval);
     }
   }, [authTokens, refreshToken]);

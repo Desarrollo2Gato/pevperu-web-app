@@ -33,7 +33,6 @@ export const ImgField: React.FC<ImgFieldProps> = ({
       if (file === null) return;
       const imgUrl = URL.createObjectURL(file[0]);
       setImgLogo(imgUrl);
-      console.log(watch);
     }
   }, [watch]);
 

@@ -57,14 +57,15 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         setUnreadCount(unreadCount);
       }
     } catch (error) {
-      console.log("Error fetching notifications:", error);
+      // console.log("Error fetching notifications:", error);
+      
     }
   };
 
   // Función para escuchar mensajes del WebSocket
   const handleWebSocketMessage = (event: MessageEvent) => {
     const message = JSON.parse(event.data);
-    console.log("Mensaje recibido del WebSocket: ", message);
+    // console.log("Mensaje recibido del WebSocket: ", message);
 
     if (message.event === "new-notification") {
       // Actualizar la lista de notificaciones con la nueva notificación

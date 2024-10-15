@@ -151,9 +151,6 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     }
   };
 
-  useEffect(() => {
-    console.log("filtersData", watch("filter_ids"));
-  }, [watch("filter_ids")]);
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
@@ -184,13 +181,13 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     if (data.icon_url) {
       dataSend.append("icon", data.icon_url[0]);
     }
-
     const promise = new Promise(async (resolve, reject) => {
       try {
         if (type === "create") {
           await axios.post(apiUrls.category.create, dataSend, {
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
             },
           });
           resolve({ message: "Categoría creada exitosamente" });
@@ -203,6 +200,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
+                  "Content-Type": "multipart/form-data",
                 },
               }
             );
@@ -213,9 +211,10 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         }
         closeModal();
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log("error api", error);
+        //   console.log("error api", error.response?.data);
+        // }
         reject({ message: "Error al guardar los datos" });
       } finally {
         setSubmitting(false);

@@ -115,9 +115,9 @@ const Content = () => {
         });
         resolve({ message: "Plan eliminado" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "No se pudo eliminar el plan" });
       } finally {
         getData();

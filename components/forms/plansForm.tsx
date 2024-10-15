@@ -127,7 +127,6 @@ const PlanForm: React.FC<PlanFormProps> = ({
         }
         if (type === "edit") {
           if (id) {
-            console.log("id", id);
             await axios.put(apiUrls.plan.update(id?.toString()), dataSend, {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -142,9 +141,9 @@ const PlanForm: React.FC<PlanFormProps> = ({
         }
       } catch (error) {
         console.error(error);
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "No se pudo registrar el plan" });
       } finally {
         closeModal();

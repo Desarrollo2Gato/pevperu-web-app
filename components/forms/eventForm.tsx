@@ -165,10 +165,9 @@ const EventForm: React.FC<EventFormProps> = ({
         closeModal();
         getData();
       } catch (error) {
-        console.error(error);
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al guardar los datos" });
       } finally {
         setSubmitting(false);

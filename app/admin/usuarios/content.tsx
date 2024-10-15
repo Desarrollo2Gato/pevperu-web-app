@@ -92,9 +92,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Busqueda exitosa" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al buscar productos" });
       } finally {
         setLoading(false);
@@ -167,7 +167,6 @@ const Content = () => {
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const selectedValue = event.target.value;
-    console.log(selectedValue);
     setPageSize(parseInt(selectedValue, 10));
     setPageIndex(1);
   };

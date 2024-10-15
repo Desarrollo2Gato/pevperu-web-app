@@ -32,6 +32,7 @@ type TFile = {
   file_type: string;
   file_url: string;
   file_label: string;
+  show: number;
 };
 type TPhotos = {
   id: number;
@@ -80,6 +81,8 @@ export interface ICompany {
   website: string;
   schedule: string;
   business_hours: string;
+  full_name: string;
+  owner_full_name: string;
 }
 
 export interface IUser {
@@ -160,6 +163,9 @@ export interface IProduct {
   featured_product: boolean;
   specifications: TSpecification[];
   filter_options: TOption[];
+  senasa_title: string;
+  senasa_number:string;
+  senasa_url: string;
 }
 
 export interface IEvents {

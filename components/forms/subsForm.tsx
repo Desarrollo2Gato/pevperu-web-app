@@ -64,7 +64,6 @@ const SubsForm: React.FC<SubsFormProps> = ({
 
   useEffect(() => {
     if (data) {
-      console.log(data.is_active);
       reset({
         companyId: data.company ? data.company.id.toString() : "",
         plan: data.plan ? data.plan.id.toString() : "",
@@ -130,7 +129,6 @@ const SubsForm: React.FC<SubsFormProps> = ({
   };
 
   const onSubmit = async (data: any) => {
-    console.log("data", data)
     setSubmitting(true);
     const dataSend = {
       company_id: data.companyId,
@@ -152,7 +150,6 @@ const SubsForm: React.FC<SubsFormProps> = ({
         }
         if (type === "edit") {
           if (id) {
-            console.log("id", id);
             await axios.put(
               apiUrls.subscription.update(id?.toString()),
               dataSend,
@@ -162,7 +159,6 @@ const SubsForm: React.FC<SubsFormProps> = ({
                 },
               }
             );
-            console.log("editado");
             resolve({ message: "Suscripción actualizada exitosamente" });
           } else {
             reject("No se ha podido obtener el id de la suscripción");
@@ -171,9 +167,9 @@ const SubsForm: React.FC<SubsFormProps> = ({
         closeModal();
       } catch (error) {
         console.error(error);
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject(error);
       } finally {
         getData();

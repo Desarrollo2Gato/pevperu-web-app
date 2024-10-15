@@ -38,7 +38,7 @@ export const SelectZodField: React.FC<SelectZodProps> = ({
         disabled={isdisabled}
         required
         {...register}
-        onChange={onChange}
+        {...(onChange && { onChange })}
 
       >
         <option value="" disabled>

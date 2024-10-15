@@ -81,7 +81,7 @@ export const InputZodField: React.FC<InputZodProps> = ({
   register,
   error,
   isPassword = false,
-  isrequired = true,
+  isrequired = false,
   min,
   max,
 }) => {
@@ -105,7 +105,7 @@ export const InputZodField: React.FC<InputZodProps> = ({
               ? "border-red-500 focus:ring-red-500"
               : "border-zinc-300 focus:ring-green-800"
           }`}
-          
+          {...(max && { maxLength: max })}
           placeholder={placeholder}
           {...(isrequired && { required: true })}
           {...register}
@@ -140,7 +140,7 @@ export const TextAreaZodField: React.FC<InputZodProps> = ({
       </label>
       <textarea
         id={id}
-        className={`w-full resize-none bg-transparent rounded-lg border-[0.5px]  text-zinc-600 text-sm px-4 py-3 placeholder-zinc-300 outline-none focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-opacity-50  ${
+        className={`w-full resize-none mt-1 bg-transparent rounded-lg border-[0.5px]  text-zinc-600 text-sm px-4 py-3 placeholder-zinc-300 outline-none focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-opacity-50  ${
           error
             ? "border-red-500 focus:ring-red-500"
             : "border-zinc-300 focus:ring-green-800"
@@ -177,10 +177,10 @@ export const InputFileZod: React.FC<InputFileProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    console.log(id);
-    // setValue("files.0.file_url", selectedFile, { shouldValidate: true });
-  }, [selectedFile]);
+  // useEffect(() => {
+  //   console.log(id);
+  //   // setValue("files.0.file_url", selectedFile, { shouldValidate: true });
+  // }, [selectedFile]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -150,9 +150,9 @@ const Content = () => {
         );
         resolve({ message: "Evento aprobado" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         rejects({ message: "No se pudo aprobar el evento" });
       } finally {
         getData();
@@ -176,9 +176,9 @@ const Content = () => {
         });
         resolve({ message: "Evento eliminado" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "No se pudo eliminar el evento" });
       } finally {
         getData();
@@ -248,9 +248,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Busqueda exitosa" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al buscar eventos" });
       } finally {
         setLoading(false);
@@ -290,9 +290,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Eventos filtrados" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al filtrar eventos por estado" });
       } finally {
         setLoading(false);
@@ -329,9 +329,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Eventos filtrados" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al filtrar eventos por tipo" });
       } finally {
         setLoading(false);
@@ -348,7 +348,6 @@ const Content = () => {
       setSelectedAction("data");
       return;
     }
-    console.log(provider);
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
@@ -362,15 +361,14 @@ const Content = () => {
             },
           }
         );
-        console.log(res.data.data);
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
         resolve({ message: "Eventos filtrados" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al filtrar eventos por proveedor" });
       } finally {
         setLoading(false);

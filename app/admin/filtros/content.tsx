@@ -111,9 +111,9 @@ const Content = () => {
         });
         resolve({ message: "Filtro eliminado" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "No se pudo eliminar el filtro" });
       } finally {
         getData();
@@ -159,9 +159,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Filtros filtradas" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error" });
       } finally {
         setLoading(false);

@@ -39,8 +39,6 @@ const RenewModal: React.FC<RenewModalProps> = ({
 
   const onSubmit = async (data: any) => {
     if (!id) return;
-    console.log(data);
-    console.log(id);
     setSubmitting(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
@@ -59,9 +57,9 @@ const RenewModal: React.FC<RenewModalProps> = ({
         resolve({ message: "Suscripción renovada" });
       } catch (error) {
         console.error(error);
-        if(axios.isAxiosError(error)){
-          console.log(error.response?.data);
-        }
+        // if(axios.isAxiosError(error)){
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al renovar la suscripción" });
       } finally {
         setSubmitting(false);
@@ -97,9 +95,9 @@ const RenewModal: React.FC<RenewModalProps> = ({
           Renovar Suscripción
         </Typography>
         <form
-          onSubmit={handleSubmit((data) => {
-            console.log(data);
-          })}
+          // onSubmit={handleSubmit((data) => {
+          //   console.log(data);
+          // })}
           className="mt-4"
         >
           <InputZodField

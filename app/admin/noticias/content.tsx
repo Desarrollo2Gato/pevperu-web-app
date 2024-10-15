@@ -139,9 +139,9 @@ const Content = () => {
         );
         resolve({ message: "Noticia aprobado" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         rejects({ message: "No se pudo aprobar la noticia" });
       } finally {
         getData();
@@ -165,9 +165,9 @@ const Content = () => {
         });
         resolve({ message: "Noticia eliminado" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "No se pudo eliminar la noticia" });
       } finally {
         getData();
@@ -237,9 +237,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Busqueda exitosa" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al buscar noticias" });
       } finally {
         setLoading(false);
@@ -279,9 +279,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Noticias filtradas" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al filtrar noticias por estado" });
       } finally {
         setLoading(false);
@@ -311,15 +311,14 @@ const Content = () => {
             },
           }
         );
-        console.log(res.data.data);
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
         resolve({ message: "Noticias filtradas" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al filtrar noticias por proveedor" });
       } finally {
         setLoading(false);

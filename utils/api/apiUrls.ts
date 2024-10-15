@@ -1,7 +1,7 @@
 // const BASE_URL = 'https://pevperu-server-production.up.railway.app/api/V1';
 
-export const BASE_URL = "https://pevperu-server.jocargames.com/api/V1";
-// export const BASE_URL = "http://127.0.0.1:8001/api/V1";
+// export const BASE_URL = "https://pevperu-server.jocargames.com/api/V1";
+export const BASE_URL = "https://api.pev.com.pe/api/V1";
 
 export const pagination = (page: number, per_page: number) => {
   return `per_page=${per_page}&page=${page}`;
@@ -25,7 +25,7 @@ export const apiUrls = {
     logout: `${BASE_URL}/logout`,
     me: `${BASE_URL}/me`,
     refresh: `${BASE_URL}/refresh`,
-    expoToken:  `${BASE_URL}/update-expo-token`,
+    expoToken: `${BASE_URL}/update-expo-token`,
   },
   profession: {
     create: `${BASE_URL}/professions`,
@@ -205,9 +205,11 @@ export const apiUrls = {
     read: (id: string) => `${BASE_URL}/notifications/${id}/read`,
     observation: (id: string) => `${BASE_URL}/notifications/${id}/observation`,
   },
-  product_file:{
+  product_file: {
     getAll: `${BASE_URL}/product-files`,
     delete: (id: string) => `${BASE_URL}/product-files/${id}`,
     update: (id: string) => `${BASE_URL}/product-files/${id}/approve`,
+    showUpdate: (id: string, status: string) =>
+      `${BASE_URL}/product-files/${id}/show/${status}`,
   },
 };

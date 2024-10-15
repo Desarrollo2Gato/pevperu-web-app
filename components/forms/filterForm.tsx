@@ -97,7 +97,6 @@ const FilterForm: React.FC<FilterFormProps> = ({
   };
 
   const onSubmit = async (data: any) => {
-    console.log(data);
     setSubmitting(true);
     const optionArray: string[] = data.options.map(
       (option: any) => option.option_name
@@ -110,7 +109,6 @@ const FilterForm: React.FC<FilterFormProps> = ({
    
     // icon
     if (data.icon) {
-      console.log(data.icon[0]);
       dataSend.append("icon", data.icon[0]);
     }
 
@@ -122,12 +120,10 @@ const FilterForm: React.FC<FilterFormProps> = ({
               Authorization: `Bearer ${token}`,
             },
           });
-          console.log("creado");
           resolve({ message: "Filtro creado exitosamente" });
         }
         if (type === "edit") {
           if (id) {
-            console.log("id", id);
             await axios.post(
               apiUrls.filter.update(id?.toString()),
               dataSend,
@@ -137,7 +133,6 @@ const FilterForm: React.FC<FilterFormProps> = ({
                 },
               }
             );
-            console.log("editado");
             resolve({ message: "Filtro actualizado exitosamente" });
           } else {
             reject("No se ha podido obtener el id del filtro");
@@ -145,9 +140,9 @@ const FilterForm: React.FC<FilterFormProps> = ({
         }
         closeModal();
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
         reject({ message: "Error al guardar los datos" });
       } finally {
         setSubmitting(false);

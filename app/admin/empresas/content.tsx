@@ -2,17 +2,19 @@
 import AddButton from "@/components/ui/addBtn";
 import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
-import { ICategory, ICourse } from "@/types/api";
+import { ICompany } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import CourseForm from "@/components/forms/courseForm";
-import CoursesTable from "@/components/tables/coursesTable";
 import SelectRows from "@/components/ui/selectRows";
 import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { toast } from "sonner";
+import CompanyForm from "@/components/forms/companyForm";
+import CompanyTable from "@/components/tables/companiesTable";
+import { BiSolidCopy } from "react-icons/bi";
+import { BootstrapTooltip } from "@/components/ui/tooltip";
 
 const Content = () => {
   const [token, setToken] = useState("");
@@ -24,24 +26,22 @@ const Content = () => {
   const [pageCount, setPageCount] = useState(0);
 
   // data
-  const [data, setData] = useState<ICourse[]>([]);
+  const [data, setData] = useState<ICompany[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
 
   // modal
   const [openModal, setOpenModal] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
 
-  // search
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
-
-  const [selectedAction, setSelectedAction] = useState<
-    "data" | "search" | "date"
-  >("data");
+  const [selectedAction, setSelectedAction] = useState<"data" | "search">(
+    "data"
+  );
 
   useEffect(() => {
     const token = getTokenFromCookie();
@@ -50,69 +50,17 @@ const Content = () => {
     }
   }, []);
 
-  const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
-    newPage: number
-  ) => {
-    setPageIndex(newPage);
-  };
-  const handlePageSizeChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const selectedValue = event.target.value;
-    setPageSize(parseInt(selectedValue, 10));
-    setPageIndex(1);
-  };
-  const handleAdd = () => {
-    setOpenModal(true);
-    setSelectedType("create");
-  };
-  const handleDelete = (id: number) => {
-    setDeleteModal(true);
-    setSelectedId(id);
-  };
-  const handleEdit = (id: number) => {
-    setOpenModal(true);
-    setSelectedId(id);
-    setSelectedType("edit");
-  };
-  const handleCloseModal = () => {
-    setOpenModal(false);
-  };
-
-  const onDelete = () => {
-    if (!selectedId) return;
-    const promise = new Promise(async (resolve, reject) => {
-      try {
-        await axios.delete(apiUrls.courses.delete(selectedId?.toString()), {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        resolve({ message: "Curso eliminado" });
-      } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "No se pudo eliminar el curso" });
-      } finally {
-        getData();
-        setDeleteModal(false);
-      }
-    });
-
-    toast.promise(promise, {
-      loading: "Eliminando curso...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
-  };
+  useEffect(() => {
+    if (token) {
+      getData();
+    }
+  }, [pageIndex, token]);
 
   const getData = async () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        apiUrls.courses.pagination(pageIndex, pageSize),
+        apiUrls.company.pagination(pageIndex, pageSize),
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -123,19 +71,81 @@ const Content = () => {
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
     } catch (error) {
-      console.error(error);
+      toast.error("Error al obtener los datos");
     } finally {
       setLoading(false);
     }
   };
-  const getCoursesBySearch = (query: string) => {
-    setSelectedAction("search");
+
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    newPage: number
+  ) => {
+    setPageIndex(newPage);
+  };
+
+  const handlePageSizeChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const selectedValue = event.target.value;
+    setPageSize(parseInt(selectedValue, 10));
+    setPageIndex(1);
+  };
+
+  const handleAdd = () => {
+    setOpenModal(true);
+    setSelectedType("create");
+  };
+
+  const handleDelete = (id: number) => {
+    setSelectedId(id);
+    setDeleteModal(true);
+  };
+
+  const onDelete = () => {
+    if (!selectedId) return;
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        await axios.delete(apiUrls.company.delete(selectedId?.toString()), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        resolve({ message: "Empresa eliminada" });
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+        }
+        reject({ message: "No se pudo eliminar la empresa" });
+      } finally {
+        getData();
+        setDeleteModal(false);
+      }
+    });
+
+    toast.promise(promise, {
+      loading: "Eliminando empresa...",
+      success: (data: any) => `${data.message}`,
+      error: (error: any) => `${error.message}`,
+    });
+  };
+
+  const handleEdit = (id: number) => {
+    setOpenModal(true);
+    setSelectedId(id);
+    setSelectedType("edit");
+  };
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  const getCompaniesBySearch = (query: string) => {
     setSearchQuery(query);
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
         const res = await axios.get(
-          apiUrls.courses.getAll +
+          apiUrls.company.getAll +
             "?like=" +
             query +
             "&" +
@@ -149,19 +159,19 @@ const Content = () => {
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
-        resolve({ message: "Busqueda exitosa" });
+        resolve({ message: "Empresas filtradas" });
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
-        reject({ message: "Error al buscar cursos" });
+        // if (axios.isAxiosError(error)) {
+        //   console.log(error.response?.data);
+        // }
+        reject({ message: "Error" });
       } finally {
         setLoading(false);
       }
     });
 
     toast.promise(promise, {
-      loading: "Buscando cursos...",
+      loading: "Filtrando empresas...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
@@ -171,16 +181,28 @@ const Content = () => {
     setData([]);
     setPageIndex(1);
   }, [selectedAction]);
+
   useEffect(() => {
     if (token && selectedAction === "data") {
       getData();
     }
   }, [token, selectedAction, pageIndex, pageSize]);
+
+  // status
   useEffect(() => {
     if (token && selectedAction === "search") {
-      getCoursesBySearch(searchQuery);
+      getCompaniesBySearch(searchQuery);
     }
-  }, [token, selectedAction, pageIndex, pageSize, searchQuery]);
+  }, [token, selectedAction, searchQuery, pageIndex, pageSize]);
+
+  const handleCopy = () => {
+    try {
+      navigator.clipboard.writeText("password123");
+      toast.success("Contraseña inicial copiada");
+    } catch (error) {
+      toast.error("Error al copiar la contraseña inicial");
+    }
+  };
   return (
     <>
       <SafeAreaContainer isTable>
@@ -190,27 +212,41 @@ const Content = () => {
               Registros ({total})
             </h2>{" "}
             <div className="w-full md:w-auto flex justify-end">
-              <AddButton text="Agregar Curso" onClick={handleAdd} />
+              <AddButton text="Agregar Empresa" onClick={handleAdd} />
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">
-            <SelectRows
-              pageSize={pageSize.toString()}
-              handlePageSizeChange={handlePageSizeChange}
-            />
+            <div className="flex gap-4 flex-col sm:flex-row">
+              <SelectRows
+                pageSize={pageSize.toString()}
+                handlePageSizeChange={handlePageSizeChange}
+              />
+              <div className="w-fit px-4 py-1 rounded-md bg-yellow-50 border border-zinc-100 flex gap-2">
+                <span className="text-sm text-zinc-400">password123</span>
+                <BootstrapTooltip placement="top" title="Copiar">
+                  <button type="button" onClick={handleCopy}>
+                    <BiSolidCopy className="text-zinc-400 text-lg" />
+                  </button>
+                </BootstrapTooltip>
+              </div>
+            </div>
             <div className="w-full sm:w-auto flex flex-row self-end">
               <SearchInput
-                placeholder="Buscar curso"
-                onClick={(query) => getCoursesBySearch(query)}
+                placeholder="Buscar empresa"
+                onClick={(query) => getCompaniesBySearch(query)}
               />
             </div>
           </div>
           <div className=" overflow-x-auto">
-            <CoursesTable
-              dataTable={data}
-              onDelete={(id: number) => handleDelete(id)}
-              onEdit={(id: number) => handleEdit(id)}
-            />
+            {loading ? (
+              <div>Cargando...</div>
+            ) : (
+              <CompanyTable
+                dataTable={data}
+                onDelete={(id: number) => handleDelete(id)}
+                onEdit={(id: number) => handleEdit(id)}
+              />
+            )}
           </div>
           <div className="mt-4 justify-center flex">
             <Pagination
@@ -223,11 +259,11 @@ const Content = () => {
         </MainContainer>
       </SafeAreaContainer>
       <FormModal
-        title={`${selectedType === "edit" ? "Editar" : "Crear"} curso`}
+        title={`${selectedType === "edit" ? "Editar" : "Crear"} empresa`}
         openModal={openModal}
         setOpenModal={() => setOpenModal(false)}
       >
-        <CourseForm
+        <CompanyForm
           closeModal={handleCloseModal}
           type={selectedType}
           id={selectedId}
@@ -235,12 +271,11 @@ const Content = () => {
           getData={getData}
         />
       </FormModal>
-      {/* delete modal */}
       <ConfirmModal
         openModal={deleteModal}
         setOpenModal={() => setDeleteModal(false)}
         onAction={onDelete}
-        title="Eliminar Curso"
+        title="Eliminar Empresa"
       />
     </>
   );

@@ -55,7 +55,6 @@ const Notifications: React.FC<NotificationsProps> = ({
           break;
       }
     } else{
-      console.log("company_owner");
       switch (type) {
         case "Event":
           router.push(`/empresa/eventos`);
