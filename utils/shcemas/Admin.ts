@@ -32,6 +32,9 @@ export const helpUpdateSchema = z.object({
     .max(255, "La dirección no puede tener más de 255 caracteres"),
   link_web: z.string().nullable(),
   link_admin_app: z.string().nullable(),
+  fb_link: z.string().nullable(),
+  ig_link: z.string().nullable(),
+  lkdin_link: z.string().nullable(),
 });
 
 export const planSaveSchema = z.object({

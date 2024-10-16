@@ -46,6 +46,9 @@ const Content = () => {
       address: "",
       link_web: "",
       link_admin_app: "",
+      fb_link: "",
+      ig_link: "",
+      lkdin_link: "",
     },
   });
   useEffect(() => {
@@ -67,6 +70,9 @@ const Content = () => {
         address: dataHelp.help_address || "",
         link_web: dataHelp.link_web || "",
         link_admin_app: dataHelp.link_admin_app || "",
+        fb_link: dataHelp.fb_link || "",
+        ig_link: dataHelp.ig_link || "",
+        lkdin_link: dataHelp.lkdin_link || "",
       });
     }
   }, [dataHelp]);
@@ -104,6 +110,9 @@ const Content = () => {
             help_address: data.address,
             link_web: data.link_web,
             link_admin_app: data.link_admin_app,
+            fb_link: data.fb_link,
+            ig_link: data.ig_link,
+            lkdin_link: data.lkdin_link,
             company_id: 1,
           },
           {
@@ -216,6 +225,31 @@ const Content = () => {
               placeholder="https://www.example.com"
               register={register("link_admin_app")}
               error={errors.link_admin_app}
+            />
+          </div>
+        </MainContainer>
+        <MainContainer title="Redes sociales">
+          <div className="flex flex-col gap-4">
+            <InputZodField
+              id="fb_link"
+              name="Link de Facebook"
+              placeholder="https://www.example.com"
+              register={register("fb_link")}
+              error={errors.fb_link}
+            />
+            <InputZodField
+              id="ig_link"
+              name="Link de Instagram"
+              placeholder="https://www.example.com"
+              register={register("ig_link")}
+              error={errors.ig_link}
+            />
+            <InputZodField
+              id="lkdin_link"
+              name="Link de LinkedIn"
+              placeholder="https://www.example.com"
+              register={register("lkdin_link")}
+              error={errors.lkdin_link}
             />
           </div>
         </MainContainer>

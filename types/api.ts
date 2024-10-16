@@ -164,7 +164,7 @@ export interface IProduct {
   specifications: TSpecification[];
   filter_options: TOption[];
   senasa_title: string;
-  senasa_number:string;
+  senasa_number: string;
   senasa_url: string;
 }
 
@@ -222,4 +222,7 @@ export interface IHelpCompany {
   id: number;
   link_web: string;
   link_admin_app: string;
+  fb_link: string;
+  ig_link: string;
+  lkdin_link: string;
 }

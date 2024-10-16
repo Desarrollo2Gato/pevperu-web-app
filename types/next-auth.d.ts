@@ -5,24 +5,24 @@ declare module "next-auth" {
   interface Session {
     accessToken?: string;
     user: {
-      type?: string; // Can be string or undefined
-      company_id?: string | null; // Can be string or null
-      logo?: string | null; // Can be string or null
+      type?: string;
+      company_id?: string | null;
+      logo?: string | null;
     };
   }
 
   interface User {
     accessToken?: string;
     type?: string;
-    company_id?: string | null; // Can be string or null
-    logo?: string | null; // Can be string or null
+    company_id?: string | null;
+    logo?: string | null;
   }
 
   interface JWT {
     accessToken?: string;
     type?: string;
-    company_id?: string | null; // Can be string or null
-    logo?: string | null; // Can be string or null
-    exp?: number; // Expiration
+    company_id?: string | null;
+    logo?: string | null;
+    exp?: number;
   }
 }
