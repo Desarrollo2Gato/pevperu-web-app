@@ -812,44 +812,44 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
                             <path
                               d="M12.1083 7.89453L7.8916 12.1112C7.34994 11.5695 7.0166 10.8279 7.0166 10.0029C7.0166 8.35286 8.34993 7.01953 9.99993 7.01953C10.8249 7.01953 11.5666 7.35286 12.1083 7.89453Z"
                               stroke="#52525B"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
                             <path
                               d="M14.8499 4.80937C13.3915 3.70937 11.7249 3.10938 9.99987 3.10938C7.0582 3.10938 4.31654 4.84271 2.4082 7.84271C1.6582 9.01771 1.6582 10.9927 2.4082 12.1677C3.06654 13.201 3.8332 14.0927 4.66654 14.8094"
                               stroke="#52525B"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
                             <path
                               d="M7.0166 16.276C7.9666 16.676 8.97493 16.8927 9.99993 16.8927C12.9416 16.8927 15.6833 15.1594 17.5916 12.1594C18.3416 10.9844 18.3416 9.00937 17.5916 7.83437C17.3166 7.40104 17.0166 6.99271 16.7083 6.60938"
                               stroke="#52525B"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
                             <path
                               d="M12.9252 10.582C12.7085 11.757 11.7502 12.7154 10.5752 12.932"
                               stroke="#52525B"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
                             <path
                               d="M7.89199 12.1094L1.66699 18.3344"
                               stroke="#52525B"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
                             <path
                               d="M18.3334 1.66797L12.1084 7.89297"
                               stroke="#52525B"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
                           </svg>
                           Ocultar
@@ -866,16 +866,16 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
                             <path
                               d="M12.9833 10.0029C12.9833 11.6529 11.6499 12.9862 9.99993 12.9862C8.34993 12.9862 7.0166 11.6529 7.0166 10.0029C7.0166 8.35286 8.34993 7.01953 9.99993 7.01953C11.6499 7.01953 12.9833 8.35286 12.9833 10.0029Z"
                               stroke="white"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
                             <path
                               d="M9.99987 16.8893C12.9415 16.8893 15.6832 15.156 17.5915 12.156C18.3415 10.981 18.3415 9.00599 17.5915 7.83099C15.6832 4.83099 12.9415 3.09766 9.99987 3.09766C7.0582 3.09766 4.31654 4.83099 2.4082 7.83099C1.6582 9.00599 1.6582 10.981 2.4082 12.156C4.31654 15.156 7.0582 16.8893 9.99987 16.8893Z"
                               stroke="white"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
                           </svg>
                           Mostrar

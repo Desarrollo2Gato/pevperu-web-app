@@ -44,10 +44,10 @@ import { NotificationProvider } from "../context/notificationContext";
 
 export const metadata: Metadata = {
   title: {
-    default: "Admin - PevPeru",
-    template: "%s - PevPeru",
+    default: "Admin - Pev Perú",
+    template: "%s - Pev Perú",
   },
-  description: "Admin - PevPeru",
+  description: "Plataforma para administrar contenido de la app de Pev Perú",
   icons: {
     icon: "/favicon.png",
   },

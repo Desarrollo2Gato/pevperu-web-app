@@ -3,10 +3,6 @@ import { FieldError, UseFormSetValue } from "react-hook-form";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Toolbar } from "../editor/toolbar";
-import BulletList from "@tiptap/extension-bullet-list";
-import OrderedList from "@tiptap/extension-ordered-list";
-import ListItem from "@tiptap/extension-list-item";
-
 type EditorHtmlProps = {
   id: string;
   value?: string;
@@ -36,23 +32,23 @@ const EditorText: React.FC<EditorHtmlProps> = ({
         heading: {
           levels: [1, 2, 3],
           HTMLAttributes: {
-            class: "text-xl font-medium ",
+            class: "text-xl font-medium",
           },
         },
-      }),
-      OrderedList.configure({
-        HTMLAttributes: {
-          class: "list-decimal ml-1",
+        orderedList: {
+          HTMLAttributes: {
+            class: "list-decimal ml-1",
+          },
         },
-      }),
-      BulletList.configure({
-        HTMLAttributes: {
-          class: "list-disc ml-1",
+        bulletList: {
+          HTMLAttributes: {
+            class: "list-disc ml-1",
+          },
         },
-      }),
-      ListItem.configure({
-        HTMLAttributes: {
-          class: "ml-2",
+        listItem: {
+          HTMLAttributes: {
+            class: "ml-2",
+          },
         },
       }),
     ],
@@ -71,7 +67,7 @@ const EditorText: React.FC<EditorHtmlProps> = ({
 
   useEffect(() => {
     if (editor && value) {
-      editor.commands.setContent(value); 
+      editor.commands.setContent(value);
     }
   }, [editor, value]);
 

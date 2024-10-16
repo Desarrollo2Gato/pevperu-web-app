@@ -2,7 +2,7 @@ import { useAuthContext } from "@/context/authContext";
 import { imgUrl } from "@/utils/img/imgUrl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { HiOutlineMenuAlt1 } from "react-icons/hi";
 import { HiOutlineUserCircle } from "react-icons/hi2";
 import { LuMoveRight } from "react-icons/lu";
@@ -39,8 +39,6 @@ const Header: React.FC<HeaderProps> = ({ handleSidebar, active }) => {
     setShowNotification(false);
   };
 
-
-
   return (
     <div
       className={`fixed z-10 top-0 h-[70px] shadow transform transition-all duration-700 bg-white flex justify-between items-center flex-row p-4  ${
@@ -74,9 +72,12 @@ const Header: React.FC<HeaderProps> = ({ handleSidebar, active }) => {
             type="button"
           >
             <LuBell className="text-xl text-zinc-500 mx-auto block" />
-            <span className="text-[10px] font-medium bg-red-500 rounded-full py-[3.5px] px-[6.5px]  min-w-[16px] text-white absolute top-0 right-0 leading-[9.5px] text-center">
-              {unreadCount}
-            </span>
+
+            {unreadCount > 0 && (
+              <span className="text-[10px] font-medium bg-red-500 rounded-full py-[3.5px] px-[6.5px]  min-w-[16px] text-white absolute top-0 right-0 leading-[9.5px] text-center">
+                {unreadCount}
+              </span>
+            )}
           </button>
           {showNotification && (
             <div className="absolute z-20 right-0 mt-[14px] w-80 md:w-[350px] bg-white shadow-lg rounded-b-md">
