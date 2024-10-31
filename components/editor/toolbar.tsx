@@ -19,22 +19,38 @@ export function Toolbar({ editor }: Props) {
 
   return (
     <div className="border border-zinc-200 rounded-t-md flex flex-row flex-wrap gap-4 p-2">
-      <button onClick={() => editor.chain().focus().toggleBold().run()}>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBold().run()}
+      >
         <LuBold size={20} />
       </button>
-      <button onClick={() => editor.chain().focus().toggleItalic().run()}>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+      >
         <LuItalic size={20} />
       </button>
-      <button onClick={() => editor.chain().focus().toggleStrike().run()}>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+      >
         <LuStrikethrough size={20} />
       </button>
-      <button onClick={() => editor.chain().focus().toggleBulletList().run()}>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+      >
         <LuList size={20} />
       </button>
-      <button onClick={() => editor.chain().focus().toggleOrderedList().run()}>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+      >
         <LuListOrdered size={20} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
       >
         <LuHeading2 size={20} />

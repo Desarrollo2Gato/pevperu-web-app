@@ -1,4 +1,4 @@
-import { ICategory } from "@/types/api";
+import { IAds } from "@/types/api";
 import { useEffect, useState } from "react";
 import { BiSolidEdit } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";
@@ -12,33 +12,29 @@ import {
 } from "@tanstack/react-table";
 import { imgUrl } from "@/utils/img/imgUrl";
 
-interface CategoryTableProps {
-  dataTable: ICategory[];
+interface AdsTableProps {
+  dataTable: IAds[];
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
 }
-const CategoryTable: React.FC<CategoryTableProps> = ({
-  dataTable,
-  onEdit,
-  onDelete,
-}) => {
-  const data: ICategory[] = dataTable;
+const AdsTable: React.FC<AdsTableProps> = ({ dataTable, onEdit, onDelete }) => {
+  const data: IAds[] = dataTable;
 
   // colums
-  const columns: ColumnDef<ICategory, any>[] = [
+  const columns: ColumnDef<IAds, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
     },
     {
-      accessorKey: "icon",
-      header: "Ícono",
+      accessorKey: "banner_url",
+      header: "Imagen",
       cell: (info) =>
-        info.row.original.icon ? (
+        info.row.original.banner_url ? (
           <img
-            className="w-8 h-8 object-contain"
-            src={imgUrl(info.row.original.icon)}
-            alt="icon"
+            className="h-20  object-contain"
+            src={imgUrl(info.row.original.banner_url)}
+            alt={`publicidad ${info.row.original.id}`}
           />
         ) : (
           <div className="w-8 h-8 rounded flex justify-center items-center border border-green-800  text-green-800">
@@ -46,31 +42,22 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
           </div>
         ),
     },
-
     {
-      accessorKey: "name",
-      header: "Categoría",
-    },
-    {
-      accessorKey: "filter",
-      header: "Filtros",
+      accessorKey: "type",
+      header: "Tipo",
       cell: (info) =>
-        info.row.original.filters && info.row.original.filters.length > 0 ? (
-          <div className="flex flex-wrap flex-row gap-1">
-            {info.row.original.filters.map((filter, index) => (
-              <span
-                key={index}
-                className="rounded-full px-2 py-0.5 text-xs font-medium bg-gray-200 text-zinc-700"
-              >
-                {filter.name}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <span className="text-xs font-medium">Sin filtros</span>
-        ),
+        info.row.original.type === "intern"
+          ? "Entre vistas"
+          : info.row.original.type === "home"
+          ? "Inicio"
+          : "Producto",
     },
-
+    {
+      accessorKey: "product_id",
+      header: "Producto",
+      cell: (info) =>
+        info.row.original.product_id ? info.row.original.product_id: "N/A",
+    },
     {
       accessorKey: "actions",
       header: "Acciones",
@@ -152,4 +139,4 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
   );
 };
 
-export default CategoryTable;
+export default AdsTable;

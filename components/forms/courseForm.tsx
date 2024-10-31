@@ -10,6 +10,8 @@ import ButtonForm from "../ui/buttonForm";
 import { ICourse } from "@/types/api";
 import { useAuthContext } from "@/context/authContext";
 import EditorText from "../ui/editorText";
+import { imgUrl } from "@/utils/img/imgUrl";
+import { ImgField } from "../ui/imgField";
 
 type CourseFormProps = {
   type: "create" | "edit";
@@ -29,6 +31,10 @@ const CourseForm: React.FC<CourseFormProps> = ({
   const { user } = useAuthContext();
 
   const [course, setCourse] = useState<ICourse>();
+
+  // img
+  const [imgMain, setImgMain] = useState<any>(null);
+  const [imgSecond, setImgSecond] = useState<any>(null);
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -61,7 +67,14 @@ const CourseForm: React.FC<CourseFormProps> = ({
   }, [type, id]);
 
   useEffect(() => {
+
     if (course) {
+      if (course.photos && course.photos.length > 0) {
+        setImgMain(imgUrl(course.photos[0].photo_url));
+        if (course.photos.length > 1) {
+          setImgSecond(imgUrl(course.photos[1].photo_url));
+        }
+      }
       reset({
         title: course.title || "",
         language: course.language || "",
@@ -111,6 +124,13 @@ const CourseForm: React.FC<CourseFormProps> = ({
     dataSend.append("content", data.content);
     dataSend.append("link", data.link);
     dataSend.append("published_at", new Date().toISOString());
+    if (data.main_img) {
+      dataSend.append("photos[]", data.main_img[0]);
+    }
+
+    if (data.second_img) {
+      dataSend.append("photos[]", data.second_img[0]);
+    }
 
     const promise = new Promise(async (resolve, reject) => {
       try {
@@ -169,6 +189,26 @@ const CourseForm: React.FC<CourseFormProps> = ({
             </p>
           </div>
         )}
+        <div className="flex flex-row flex-wrap gap-4 w-full justify-center">
+          <ImgField
+            id="main_img"
+            imgLogo={imgMain || ""}
+            setImgLogo={setImgMain}
+            error={errors.main_img}
+            register={register("main_img")}
+            watch={watch("main_img")}
+            isPost
+          />
+          <ImgField
+            id="second_img"
+            imgLogo={imgSecond || ""}
+            setImgLogo={setImgSecond}
+            error={errors.second_img}
+            register={register("second_img")}
+            watch={watch("second_img")}
+            isPost
+          />
+        </div>
 
         <InputZodField
           id="title"

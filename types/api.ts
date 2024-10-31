@@ -11,6 +11,8 @@ export type Tbenefit = {
 export type TLabel = {
   id: string;
   name: string;
+  background_color: string;
+  text_color: string;
 };
 
 export type TSubCategory = {
@@ -54,6 +56,10 @@ export type TDepartment = {
   id: number;
   name: string;
   provinces: TProvince[];
+};
+export type TIngredient = {
+  ingredient: string;
+  percentage: string;
 };
 // Interfaces
 
@@ -118,6 +124,8 @@ export interface IPlan {
   events_limit: number;
   news_limit: number;
   benefits: Tbenefit[];
+  banners_intern_limit: number;
+  banners_product_limit: number;
 }
 export interface ISubscription {
   company: ICompany;
@@ -142,8 +150,6 @@ export interface ICategory {
   id: number;
   name: string;
   icon: string | null;
-  background_color: string;
-  text_color: string;
   labels: TLabel[];
   type: string;
   filters: IFilter[] | null;
@@ -166,6 +172,10 @@ export interface IProduct {
   senasa_title: string;
   senasa_number: string;
   senasa_url: string;
+  chemical_classification_code: string;
+  chemical_classification_title: string;
+  chemical_classification_url: string;
+  ingredients: TIngredient[];
 }
 
 export interface IEvents {
@@ -173,7 +183,8 @@ export interface IEvents {
   company_id: number;
   name: string;
   description: string;
-  date: string;
+  date: Date | string;
+  end_date: Date | string;
   location: string | null;
   photos: TPhotos[];
   content: string;
@@ -225,4 +236,13 @@ export interface IHelpCompany {
   fb_link: string;
   ig_link: string;
   lkdin_link: string;
+}
+
+export interface IAds {
+  id: string;
+  banner_url: string;
+  company_id: number;
+  type: string;
+  product_id: string;
+  // home_ads: Tphotos[];
 }

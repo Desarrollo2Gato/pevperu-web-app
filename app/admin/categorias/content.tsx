@@ -68,6 +68,7 @@ const Content = () => {
           },
         }
       );
+      console.log("response", response.data);
       setData(response.data.data);
       setPageCount(response.data.last_page);
       setTotal(response.data.total);

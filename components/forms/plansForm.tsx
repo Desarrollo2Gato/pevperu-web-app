@@ -51,6 +51,8 @@ const PlanForm: React.FC<PlanFormProps> = ({
       num_features_events: "",
       num_features_news: "",
       benefits: [{ title: "", description: "" }],
+      banners_intern: "",
+      banners_product: "",
     },
   });
 
@@ -80,6 +82,8 @@ const PlanForm: React.FC<PlanFormProps> = ({
         num_features_events: data.events_limit.toString() || "",
         num_features_news: data.news_limit.toString() || "",
         benefits: data.benefits || [{ title: "", description: "" }],
+        banners_intern: data.banners_intern_limit.toString() || "",
+        banners_product: data.banners_product_limit.toString() || "",
       });
     }
   }, [data]);
@@ -112,6 +116,8 @@ const PlanForm: React.FC<PlanFormProps> = ({
       events_limit: Number(data.num_features_events),
       news_limit: Number(data.num_features_news),
       benefits: data.benefits,
+      banners_intern_limit: Number(data.banners_intern),
+      banners_product_limit: Number(data.banners_product),
     };
 
     const promise = new Promise(async (resolve, reject) => {
@@ -219,6 +225,20 @@ const PlanForm: React.FC<PlanFormProps> = ({
           placeholder="5"
           register={register("num_features_news")}
           error={errors.num_features_news}
+        />
+        <InputZodField
+          id="banner_intern"
+          name="Número de anuncios en la navegación"
+          placeholder="5"
+          register={register("banners_intern")}
+          error={errors.banners_intern}
+        />
+        <InputZodField
+          id="banners_product"
+          name="Número anuncios para productos"
+          placeholder="5"
+          register={register("banners_product")}
+          error={errors.banners_product}
         />
         {/* benefits */}
         <div className="flex flex-col gap-2">

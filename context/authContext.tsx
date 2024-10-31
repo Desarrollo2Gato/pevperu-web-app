@@ -15,12 +15,26 @@ import { apiUrls } from "../utils/api/apiUrls";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+
+type TypePlan = {
+  id: number;
+  name: string;
+  price: number;
+  events_limit: number;
+  news_limit: number;
+  featured_prodcuts: number;
+  products_limit: number;
+  start_date?: string;
+  end_date?: string;
+};
+
 type User = {
   email: string;
   type: string;
   name: string;
   logo: string | null;
   company_id: number;
+  plan?: TypePlan | undefined | null;
 };
 type AuthContextType = {
   user: User | null;

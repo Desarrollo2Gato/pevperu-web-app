@@ -39,6 +39,11 @@ type TFileData = {
   show: boolean;
 };
 
+type TFilterOptions = {
+  filter_id: number;
+  name: string;
+  options: any[];
+};
 const ProductForm: React.FC<ProdcutFormProps> = ({
   type,
   id,
@@ -54,8 +59,8 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
 
   const [image, setImage] = useState<any | string>(null);
   const [image2, setImage2] = useState<any | null>(null);
-  const [image3, setImage3] = useState<any | null>(null);
-  const [image4, setImage4] = useState<any | null>(null);
+  // const [image3, setImage3] = useState<any | null>(null);
+  // const [image4, setImage4] = useState<any | null>(null);
 
   // files
   const [filesInitialData, setFilesInitialData] = useState<TFile[]>([]);
@@ -72,8 +77,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   const [files, setFiles] = useState<TFileData[]>([]);
 
   // filters
-  const [filtersOptions, setFiltersOptions] = useState<any[]>([]);
-  const [selectedFilters, setSelectedFilters] = useState<any[]>([]);
+  // const [filtersOptions, setFiltersOptions] = useState<TFilterOptions[]>([]);
 
   const [selectedCategory, setSelectedCategory] = useState<ICategory>();
 
@@ -83,6 +87,14 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
 
   const [openModalShow, setOpenModalShow] = useState(false);
   const [selectFileStatus, setSelectFileStatus] = useState<boolean>(false);
+  const [isFiltersOptionsLoaded, setIsFiltersOptionsLoaded] = useState(false);
+
+  const [filterOptionData, setFilterOptionData] = useState<TFilterOptions[]>(
+    []
+  );
+  const [optionSelectedData, setOptionSelectedData] = useState<
+    TFilterOptions[]
+  >([]);
 
   const {
     control,
@@ -104,13 +116,15 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       specifications: [{ title: "", description: "" }],
       img1: null,
       img2: null,
-      img3: null,
-      img4: null,
       files: [{ file_type: "", file_label: "" }],
       featured_product: "false",
-      company_id: user?.company_id || "",
+      company_id: "",
       senasa_number: "",
       senasa_link: "",
+      active_ingts: [{ ingredient: "", percentage: "" }],
+      chemical_class_title: "Clasificación química",
+      chemical_class_text: "",
+      chemical_class_url: "",
     },
   });
 
@@ -122,10 +136,19 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     control,
     name: "specifications",
   });
+  const {
+    fields: activeIngtField,
+    append: activeIngtAppend,
+    remove: activeIngtRemove,
+  } = useFieldArray({
+    control,
+    name: "active_ingts",
+  });
   const { fields: filesField } = useFieldArray({
     control,
     name: "files",
   });
+
   useEffect(() => {
     if (type === "edit") {
       if (id) getDataById(id?.toString());
@@ -139,13 +162,14 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     }
   }, [token]);
 
+  // obtener datos del producto para actualizar
   useEffect(() => {
     if (product) {
       if (product?.photos && product?.photos.length > 0) {
         setImage(product.photos[0] && imgUrl(product?.photos[0].photo_url));
         setImage2(product.photos[1] && imgUrl(product?.photos[1].photo_url));
-        setImage3(product.photos[2] && imgUrl(product?.photos[2].photo_url));
-        setImage4(product.photos[3] && imgUrl(product?.photos[3].photo_url));
+        // setImage3(product.photos[2] && imgUrl(product?.photos[2].photo_url));
+        // setImage4(product.photos[3] && imgUrl(product?.photos[3].photo_url));
       }
       if (product.files && product.files.length > 0) {
         const FilesToDownload = product.files.map((file, index) => ({
@@ -172,6 +196,14 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       if (product?.category.id) {
         getFiles();
       }
+
+      if (product?.ingredients && product?.ingredients.length > 0) {
+        const activeIngts = product.ingredients.map((ing) => ({
+          ingredient: ing.ingredient,
+          percentage: ing.percentage,
+        }));
+        setValue("active_ingts", activeIngts || []);
+      }
       reset({
         name: product.name || "",
         description: product.description || "",
@@ -181,38 +213,42 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           product.specifications.length > 0
             ? product.specifications
             : [{ title: "", description: "" }],
+        active_ingts:
+          product.ingredients.length > 0
+            ? product.ingredients
+            : [{ ingredient: "", percentage: "" }],
         img1: null,
         img2: null,
-        img3: null,
-        img4: null,
-        company_id: product.companies[0].id.toString() || user?.company_id,
+        // img3: null,
+        // img4: null,
+        company_id:
+          product.companies[0].id.toString() ||
+          user?.company_id.toString() ||
+          "",
         status:
           product.status || user?.type === "admin" ? "approved" : "pending",
         senasa_link: product.senasa_url || "",
         senasa_number: product.senasa_number || "",
+        chemical_class_title: product.chemical_classification_code || "",
+        chemical_class_text: product.chemical_classification_title || "",
+        chemical_class_url: product.chemical_classification_url || "",
       });
     }
   }, [product]);
 
-  // useEffect(() => {
-  //   const id = product?.category.id.toString();
-  //   if (id) {
-  //     handleCategoryChange(id);
-  //     console.log("handlecategory");
-  //   }
-  // }, [product?.category.id]);
-
+  // seleccionar categoria si hay un producto
   useEffect(() => {
-    const id = product?.category.id.toString();
-    if (id) {
-      handleCategoryChange(id);
+    if (product) {
+      const id = product?.category.id.toString();
+      if (id) {
+        handleCategoryChange(id);
+      }
     }
-  }, [product?.category.id]);
+  }, [product]);
 
   useEffect(() => {
     if (selectedCategory) {
-      setFiltersOptions([]);
-      setSelectedFilters([]);
+      setFilterOptionData([]);
       setSelectedLabels([]);
 
       getFiles();
@@ -222,36 +258,32 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   }, [selectedCategory]);
 
   useEffect(() => {
-    if (product?.filter_options && product?.filter_options.length > 0) {
-      if (filtersOptions.length > 0) {
-        const filters = product?.filter_options.reduce(
-          (acc: any, filter: any) => {
-            const index = acc.findIndex(
-              (item: any) => item.filter_id === filter.filter_id
-            );
-            if (index === -1) {
-              acc.push({ filter_id: filter.filter_id, options: [filter] });
-            } else {
-              acc[index].options.push(filter);
-            }
-            return acc;
-          },
-          []
+    if (product?.filter_options && filterOptionData.length > 0) {
+      const updatedOptionSelectedData = [...optionSelectedData];
+
+      product.filter_options.forEach((filterOption: any) => {
+        const selectedData = optionSelectedData.find(
+          (item) => item.filter_id === filterOption.filter_id
         );
-        const filtersOptions = filters.map((filter: any) => {
-          const options = filter.options.map((option: any) => ({
-            value: option.id,
-            label: option.option_name,
-          }));
-          return options;
-        });
-        setSelectedFilters(filtersOptions);
-      }
+
+        if (selectedData) {
+          const isAlreadySelected = selectedData.options.some(
+            (option) => option.value === filterOption.id
+          );
+          if (!isAlreadySelected) {
+            selectedData.options.push({
+              value: filterOption.id,
+              label: filterOption.option_name,
+            });
+          }
+        }
+      });
+      setOptionSelectedData(updatedOptionSelectedData);
     }
-  }, [filtersOptions, product]);
+  }, [product, filterOptionData]);
 
   useEffect(() => {
-    if (product?.labels && product?.labels.length > 0) {
+    if (product?.labels && SelectedLabels.length > 0) {
       const labels = product.labels.map((label) => ({
         value: label.id,
         label: label.name,
@@ -262,11 +294,13 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       const labelsIds = product.labels.map((label) => Number(label.id));
       setValue("labels", labelsIds || []);
     }
-  }, [categoriesData, selectedCategory]);
+  }, [product, SelectedLabels]);
 
   // get labels
   const getLabels = () => {
     setSelectedLabels([]);
+    setLabelsData([]);
+    setValue("labels", []);
     return setSelectedLabels(selectedCategory?.labels || []);
   };
 
@@ -287,29 +321,49 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   };
 
   const getFilters = async () => {
-    setFiltersOptions([]);
-    setSelectedFilters([]);
+    // test
+    setFilterOptionData([]);
+    setOptionSelectedData([]);
+    setIsFiltersOptionsLoaded(false);
+
+    if (!selectedCategory) return;
 
     const filtersId = selectedCategory?.filters?.map(
       (filter: any) => filter.id
     );
 
     if (filtersId && filtersId?.length > 0) {
-      filtersId.forEach(async (filter: any) => {
-        try {
-          const res = await axios.get(
-            apiUrls.filter.getOne(filter.toString()),
-            {
-              headers: {
-                Authorization: "Bearer " + token,
-              },
-            }
-          );
-          setFiltersOptions((prevOptions) => [...prevOptions, res.data]);
-        } catch (error) {
-          toast.error("Error al obtener los filtros");
-        }
-      });
+      const filtersData: TFilterOptions[] = [];
+      const optionsSelectedData: TFilterOptions[] = [];
+      await Promise.all(
+        filtersId.map(async (filter: any) => {
+          try {
+            const res = await axios.get(
+              apiUrls.filter.getOne(filter.toString()),
+              {
+                headers: {
+                  Authorization: "Bearer " + token,
+                },
+              }
+            );
+            filtersData.push({
+              filter_id: res.data.id,
+              name: res.data.name,
+              options: res.data.options,
+            });
+            optionsSelectedData.push({
+              filter_id: res.data.id,
+              name: res.data.name,
+              options: [],
+            });
+          } catch (error) {
+            toast.error("Error al obtener los filtros");
+          }
+        })
+      );
+      setFilterOptionData(filtersData);
+      setOptionSelectedData(optionsSelectedData);
+      setIsFiltersOptionsLoaded(true);
     }
   };
 
@@ -358,20 +412,45 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     }
   };
 
+
   const onSubmit = async (data: any) => {
     setSubmitting(true);
 
-    const filtersValue = selectedFilters
-      .flat()
-      .map((filter: any) => filter.value);
+    // const filtersValue = selectedFilters
+    //   .flat()
+    //   .map((filter: any) => filter.value);
 
     const dataSend = new FormData();
     if (!user?.company_id) {
       toast.error("No se ha podido obtener su id, recargue la página ");
       return;
     }
-
-    dataSend.append("company_id", data.company_id);
+    if (product) {
+      if (product?.companies[0].id.toString() !== data.company_id) {
+        try {
+          await axios.post(
+            apiUrls.product.linkCompany(product.id),
+            {
+              company_ids: [data.company_id],
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          toast.success("Empresa actualizada exitosamente");
+        } catch (error) {
+          if (axios.isAxiosError(error)) {
+            console.log(error.response?.data);
+          }
+          toast.error("No se pudo actualizar la empresa");
+        }
+      }
+      // dataSend.append("company_id", data.company_id);
+    } else {
+      dataSend.append("company_id", data.company_id);
+    }
 
     dataSend.append("status", data.status);
     dataSend.append("name", data.name);
@@ -388,9 +467,44 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         dataSend.append("labels[]", label.toString());
       });
     }
-    if (filtersValue.length > 0) {
-      filtersValue.forEach((filter: number) => {
-        dataSend.append("filter_options[]", filter.toString());
+    let selectedOptions: string[] = [];
+    // if (optionSelectedData.length > 0) {
+    //   console.log("optionSelectedData", optionSelectedData);
+
+    //   optionSelectedData.forEach((filter) => {
+    //     if (Array.isArray(filter.options) && filter.options.length > 0) {
+    //       filter.options.forEach((option) => {
+    //         console.log("option", option.value);
+    //         dataSend.append("filter_options[]", option.value.toString());
+    //       });
+    //     }
+    //   });
+    // }
+
+    if (optionSelectedData.length > 0) {
+      optionSelectedData.forEach((filter) => {
+        if (Array.isArray(filter.options)) {
+          filter.options.forEach((option) => {
+            selectedOptions.push(option.value.toString());
+          });
+        }
+      });
+    }
+
+    if (selectedOptions.length > 0) {
+      // Envía todos los valores seleccionados como una cadena JSON
+      dataSend.append("filter_options", JSON.stringify(selectedOptions));
+    } else {
+      // Envía un array vacío como cadena JSON
+      dataSend.append("filter_options", "[]");
+    }
+
+    if (data.active_ingts && data.active_ingts.length > 0) {
+      data.active_ingts.map((ing: any, index: number) => {
+        if (ing.ingredient && ing.percentage) {
+          dataSend.append(`ingredients[${index}][ingredient]`, ing.ingredient);
+          dataSend.append(`ingredients[${index}][percentage]`, ing.percentage);
+        }
       });
     }
 
@@ -417,12 +531,16 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
 
     // files
     if (files && files.length > 0) {
+      console.log("si hay archivos");
       files.forEach((file: any) => {
+        console.log("tipo de archivo", file.file_type);
+        console.log("archivo", file.file);
         if (file.file) {
           dataSend.append(`${file.file_type}`, file.file);
         }
       });
     }
+
 
     const promise = new Promise(async (resolve, reject) => {
       try {
@@ -434,6 +552,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
             },
           });
           resolve({ message: "Producto creado exitosamente" });
+          console.log(res.data);
         }
         if (type === "edit") {
           if (id) {
@@ -454,9 +573,9 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         }
         closeModal();
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+        }
         reject({ message: "Error al guardar los datos" });
       } finally {
         getData();
@@ -479,7 +598,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   };
   const handleFileChange =
     (index: number, file_type: string, show: boolean) => (e: any) => {
-      setFiltersOptions([]);
+      // setFiles([]);
       const file = e.target.files?.[0];
       if (files) {
         const newFileEntry = {
@@ -548,6 +667,11 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       toast.error("Error al actualizar el estado del archivo");
     }
   };
+
+  useEffect(() => {
+    console.log("ingredientes", watch("active_ingts"));
+  }, [watch("active_ingts")]);
+
   return (
     <>
       <form className="flex flex-col gap-2 mt-4">
@@ -580,24 +704,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
             error={errors.img2}
             register={register("img2")}
             watch={watch("img2")}
-            isPost
-          />
-          <ImgField
-            id="img3"
-            imgLogo={image3 || ""}
-            setImgLogo={setImage3}
-            error={errors.img3}
-            register={register("img3")}
-            watch={watch("img3")}
-            isPost
-          />
-          <ImgField
-            id="img4"
-            imgLogo={image4 || ""}
-            setImgLogo={setImage4}
-            error={errors.img4}
-            register={register("img4")}
-            watch={watch("img4")}
             isPost
           />
         </div>
@@ -641,7 +747,21 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
             error={errors.company_id}
           />
         )}
-
+        <InputZodField
+          id="name"
+          name="Producto"
+          placeholder="Nombre del producto"
+          register={register("name")}
+          error={errors.name}
+        />
+        <EditorText
+          id="description"
+          value={getValues("description")}
+          setValue={setValue}
+          onChange={(value: string) => setValue("description", value)}
+          text="Descripción"
+          error={errors.description}
+        />
         <SelectZodField
           id="category_id"
           name="Categoría"
@@ -663,68 +783,94 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           // error={errors.labels}
           setValue={setValue}
           value="labels"
-          text="Etiquetas"
-          placeholder="etiquetas"
+          text="Clase"
+          placeholder="clase"
           displayField="name"
         />
         <>
-          <h2 className=" font-medium text-green-800">Filtros</h2>
+          <h2 className=" font-medium text-zinc-500">Filtros</h2>
           <div className="flex flex-col gap-4 border border-zinc-300 rounded-md p-4">
-            {filtersOptions.length > 0 ? (
-              filtersOptions.map((filter, index) => (
-                <SelectTag
-                  key={index}
-                  data={selectedFilters[index] || []}
-                  setData={(newSelectedItems: any) => {
-                    // Crear una copia del array actual
-                    const updatedFilters = [...selectedFilters];
+            {filterOptionData.length > 0 ? (
+              filterOptionData.map((filter, index) => {
+                const selectedFilter = optionSelectedData.find(
+                  (item) => item.filter_id === filter.filter_id
+                );
+                return (
+                  <SelectTag
+                    key={index}
+                    data={selectedFilter ? selectedFilter?.options : []}
+                    setData={(newSelectedItems: any) => {
+                      // Actualizar `optionSelectedData` usando `filter_id`
+                      const updatedFilters = optionSelectedData.map((f) => {
+                        if (f.filter_id === filter.filter_id) {
+                          return {
+                            ...f,
+                            options: newSelectedItems,
+                          };
+                        }
+                        return f;
+                      });
 
-                    // Actualizar solo el índice correspondiente
-                    updatedFilters[index] = newSelectedItems;
-
-                    // Establecer el nuevo array en el estado
-                    setSelectedFilters(updatedFilters);
-                  }}
-                  selectedItems={filter.options}
-                  // error={errors.labels}
-                  value="filters"
-                  text={filter.name}
-                  placeholder="opciones"
-                  displayField="option_name"
-                />
-              ))
+                      setOptionSelectedData(updatedFilters);
+                    }}
+                    selectedItems={filter.options}
+                    value="filters"
+                    text={filter.name}
+                    placeholder="opciones"
+                    displayField="option_name"
+                  />
+                );
+              })
             ) : (
               <p className="text-zinc-500 text-sm">
-                Esta categoría no requiere filtros
+                No se encontraron filtros para esta categoría
               </p>
             )}
           </div>
         </>
-
-        <InputZodField
-          id="name"
-          name="Producto"
-          placeholder="Nombre del producto"
-          register={register("name")}
-          error={errors.name}
-        />
-        {/* <EditorHtml
-          text="Descripción"
-          id="description"
-          value={getValues("description")}
-          setValue={setValue}
-          error={errors.description}
-        /> */}
-        <EditorText
-          id="description"
-          value={getValues("description")}
-          setValue={setValue}
-          onChange={(value: string) => setValue("description", value)}
-          text="Descripción"
-          error={errors.description}
-        />
-        <div className="flex flex-col gap-2">
-          <h2 className=" font-medium text-green-800">Especificaciones</h2>
+        {/* ingredietnes activos */}
+        <div className="flex flex-col gap-2 mt-4">
+          <h2 className=" font-medium text-zinc-500">Ingredientes activos</h2>
+          {activeIngtField.map((item, index) => (
+            <div
+              key={item.id}
+              className="flex flex-col gap-2 border border-zinc-300 rounded-md p-4"
+            >
+              <InputZodField
+                id={`active_ingts.${index}.title`}
+                name="Título"
+                type="text"
+                placeholder="Título del ingrediente activo"
+                register={register(`active_ingts.${index}.ingredient`)}
+                error={errors.active_ingts?.[index]?.ingredient}
+              />
+              <InputZodField
+                id={`active_ingts.${index}.percentage`}
+                name="Porcentaje"
+                type="text"
+                placeholder="Porcentaje del ingrediente activo"
+                register={register(`active_ingts.${index}.percentage`)}
+                error={errors.active_ingts?.[index]?.percentage}
+              />
+              <div className="flex items-center gap-2">
+                {activeIngtField.length > 1 && (
+                  <ButtonArrayForm
+                    text="Eliminar"
+                    onClick={() => activeIngtRemove(index)}
+                    isDelete
+                  />
+                )}
+              </div>
+            </div>
+          ))}
+          <ButtonArrayForm
+            text="Agregar"
+            onClick={() => activeIngtAppend({ ingredient: "", percentage: "" })}
+          />
+        </div>
+        {/* especificaciones */}
+        <div className="flex flex-col gap-2 mt-4">
+          <h2 className=" font-medium text-zinc-500">Especificaciones</h2>
           <div className="flex flex-col gap-2 border border-zinc-300 rounded-md p-4">
             <InputZodField
               id={`senasa_number`}
@@ -739,6 +885,29 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
               placeholder="https://pev.com.pe/"
               register={register(`senasa_link`)}
               error={errors.senasa_link}
+            />
+          </div>
+          <div className="flex flex-col gap-2 border border-zinc-300 rounded-md p-4">
+            <InputZodField
+              id={`chemical_class_title`}
+              name="Clasificación química Título"
+              placeholder="Título de la clasificación química"
+              register={register(`chemical_class_title`)}
+              error={errors.chemical_class_title}
+            />
+            <InputZodField
+              id={`chemical_class_text`}
+              name="Clasificación química"
+              placeholder="Clasificación química"
+              register={register(`chemical_class_text`)}
+              error={errors.chemical_class_text}
+            />
+            <InputZodField
+              id={`chemical_class_url`}
+              name="Clasificación química url"
+              placeholder="https://pev.com.pe/"
+              register={register(`chemical_class_url`)}
+              error={errors.chemical_class_url}
             />
           </div>
           {SpecificationsField.map((item, index) => (
@@ -792,7 +961,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
                   </p>
                   <div className="flex-row flex items-center justify-end gap-2 text-sm">
                     <button
-                    type="button"
+                      type="button"
                       onClick={() => toggleFile(file.id, file.show)}
                       className={` px-2 py-1 ${
                         file.show

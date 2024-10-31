@@ -1,24 +1,21 @@
 "use client";
 import AddButton from "@/components/ui/addBtn";
 import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
-import SearchInput from "@/components/ui/searchInput";
-import { IEvents } from "@/types/api";
+import { IAds, ICompany } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import EventsTable from "@/components/tables/eventsTable";
 import SelectRows from "@/components/ui/selectRows";
-import EventForm from "@/components/forms/eventForm";
-import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { toast } from "sonner";
-import RejectForm from "@/components/forms/rejectedForm";
+import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import SelectComponent from "@/components/ui/select";
 import { useAuthContext } from "@/context/authContext";
+import AdsForm from "@/components/forms/adsForm";
+import AdsTable from "@/components/tables/adsTable";
 
 const Content = () => {
-  // token
   const [token, setToken] = useState("");
   const { user } = useAuthContext();
 
@@ -29,34 +26,32 @@ const Content = () => {
   const [pageCount, setPageCount] = useState(0);
 
   // data
-  const [data, setData] = useState<IEvents[]>([]);
+  const [data, setData] = useState<IAds[]>([]);
+  const [companiesData, setCompaniesData] = useState<ICompany[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
 
-  // modal
-  const [openModal, setOpenModal] = useState(false);
-  const [rejectedModal, setRejectedModal] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
-
   // search
   const [searchQuery, setSearchQuery] = useState<string>("");
   // filters
+
   const [typeFilter, setTypeFilter] = useState<
-    "all" | "Nacional" | "Internacional"
+    "home" | "intern" | "product" | "all"
   >("all");
-  const [statusFilter, setStatusFilter] = useState<
-    "pending" | "approved" | "rejected" | "all"
-  >("all");
+
+  // modal
+  const [openModal, setOpenModal] = useState(false);
+  const [statusModal, setStatusModal] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<"delete">("delete");
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
-  const [selectedStatus, setSelectedStatus] = useState<"delete" | "approved">(
-    "delete"
-  );
+
+  const [companyFilter, setCompanyFilter] = useState<string | "all">("all");
 
   const [selectedAction, setSelectedAction] = useState<
-    "data" | "search" | "status" | "type"
+    "data" | "search" | "type" | "company"
   >("data");
 
   useEffect(() => {
@@ -65,6 +60,10 @@ const Content = () => {
       setToken(token);
     }
   }, []);
+
+  useEffect(() => {
+    if (token) getCompanies();
+  }, [token]);
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -83,10 +82,17 @@ const Content = () => {
     setOpenModal(true);
     setSelectedType("create");
   };
-  const handleStatus = (id: number, status: "delete" | "approved") => {
+
+  const handleStatus = (id: number, status: "delete") => {
     setSelectedId(id);
     setSelectedStatus(status);
-    setDeleteModal(true);
+    setStatusModal(true);
+  };
+  const handleChangeStatus = () => {
+    if (!selectedId) return;
+    if (selectedStatus === "delete") {
+      onDelete();
+    }
   };
   const handleEdit = (id: number) => {
     setOpenModal(true);
@@ -96,50 +102,41 @@ const Content = () => {
   const handleCloseModal = () => {
     setOpenModal(false);
   };
-  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setStatusFilter("all");
-    const newType = e.target.value as "Nacional" | "Internacional";
-    newType;
-    setTypeFilter(newType);
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newStatus = e.target.value as "home" | "intern" | "product";
+    newStatus;
+    setTypeFilter(newStatus);
     setSelectedAction("type");
   };
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setTypeFilter("all");
-    const newStatus = e.target.value as "pending" | "approved" | "rejected";
-    newStatus;
-    setStatusFilter(newStatus);
-    setSelectedAction("status");
-  };
+
   const onDelete = () => {
     if (!selectedId) return;
     const promise = new Promise(async (resolve, reject) => {
       try {
-        await axios.delete(apiUrls.event.delete(selectedId?.toString()), {
+        await axios.delete(apiUrls.banner.delete(selectedId?.toString()), {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        resolve({ message: "Evento eliminado" });
+        resolve({ message: "Publicidad eliminado" });
       } catch (error) {
         // if (axios.isAxiosError(error)) {
         //   console.log(error.response?.data);
         // }
-        reject({ message: "No se pudo eliminar el evento" });
+        reject({ message: "No se pudo eliminar la publicidad" });
       } finally {
         getData();
-        setDeleteModal(false);
+        setStatusModal(false);
       }
     });
 
     toast.promise(promise, {
-      loading: "Eliminando evento...",
+      loading: "Eliminando publicidad...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
   };
-  useEffect(() => {
-    getData();
-  }, [token]);
 
   const getData = async () => {
     if (!user) {
@@ -149,37 +146,55 @@ const Content = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        apiUrls.event.myEvents(user.company_id.toString()) +
-          "?" +
-          pagination(pageIndex, pageSize),
+        apiUrls.banner.getAll + "?" + pagination(pageIndex, pageSize),
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      console.log('hola')
-      console.log(response.data);
+      console.log("data", response.data.data);
       setData(response.data.data);
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
     } catch (error) {
-      toast.error("Error al obtener los eventos");
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
-  const getEventsBySearch = (query: string) => {
-    setSearchQuery(query);
+  const getCompanies = async () => {
     setLoading(true);
+    try {
+      const response = await axios.get(apiUrls.company.getAll, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // ordenar by name
+      response.data.sort((a: ICompany, b: ICompany) =>
+        a.name.localeCompare(b.name)
+      );
+      setCompaniesData(response.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getNewsBySearch = (query: string) => {
+    setSelectedAction("search");
     if (!user) {
       toast.error("No se ha podido obtener el id de la empresa");
       return;
     }
+    setSearchQuery(query);
+    setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
         const res = await axios.get(
-          apiUrls.event.myEvents(user?.company_id.toString()) +
+          apiUrls.news.myNews(user.company_id.toString()) +
             "?like=" +
             query +
             "&" +
@@ -198,34 +213,32 @@ const Content = () => {
         // if (axios.isAxiosError(error)) {
         //   console.log(error.response?.data);
         // }
-        reject({ message: "Error al buscar eventos" });
+        reject({ message: "Error al buscar publicidad" });
       } finally {
         setLoading(false);
       }
     });
 
     toast.promise(promise, {
-      loading: "Buscando eventos...",
+      loading: "Buscando publicidad...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
   };
-  const getEventByStatus = (
-    status: "pending" | "approved" | "rejected" | "all"
-  ) => {
+  const getNewsByStatus = (status: "home" | "intern" | "product" | "all") => {
     if (status === "all") {
       setSelectedAction("data");
       return;
     }
     setLoading(true);
-    if (!user) {
-      toast.error("No se ha podido obtener el id de la empresa");
-      return;
-    }
     const promise = new Promise(async (resolve, reject) => {
       try {
+        if (!user) {
+          toast.error("No se ha podido obtener el id de la empresa");
+          return;
+        }
         const res = await axios.get(
-          apiUrls.event.myEvents(user.company_id.toString()) +
+          apiUrls.news.myNews(user?.company_id.toString()) +
             "?status=" +
             status +
             "&" +
@@ -239,75 +252,25 @@ const Content = () => {
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
-        resolve({ message: "Eventos filtrados" });
+        resolve({ message: "Publicidad filtrados" });
       } catch (error) {
         // if (axios.isAxiosError(error)) {
         //   console.log(error.response?.data);
         // }
-        reject({ message: "Error al filtrar eventos por estado" });
+        reject({ message: "Error al filtrar publicidads por estado" });
       } finally {
         setLoading(false);
       }
     });
     toast.promise(promise, {
-      loading: "Filtrando eventos...",
+      loading: "Filtrando publicidads...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
   };
-  const getEventsByType = (type: "Nacional" | "Internacional" | "all") => {
-    if (type === "all") {
-      setSelectedAction("data");
-      return;
-    }
-    if (!user) {
-      toast.error("No se ha podido obtener el id de la empresa");
-      return;
-    }
-    setLoading(true);
-    const promise = new Promise(async (resolve, reject) => {
-      try {
-        const res = await axios.get(
-          apiUrls.event.myEvents(user.company_id.toString()) +
-            "?type=" +
-            type +
-            "&" +
-            pagination(pageIndex, pageSize),
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setData(res.data.data);
-        setPageCount(res.data.last_page);
-        setTotal(res.data.total);
-        resolve({ message: "Eventos filtrados" });
-      } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al filtrar eventos por tipo" });
-      } finally {
-        setLoading(false);
-      }
-    });
-    toast.promise(promise, {
-      loading: "Filtrando eventos...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
-  };
-
   useEffect(() => {
-    // limpiar data
     setData([]);
-    setPageIndex(1);
-    setSearchQuery("");
-    setTypeFilter("all");
-    setStatusFilter("all");
   }, [selectedAction]);
-
   useEffect(() => {
     if (token && selectedAction === "data") {
       getData();
@@ -315,17 +278,12 @@ const Content = () => {
   }, [token, selectedAction, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "search") {
-      getEventsBySearch(searchQuery);
+      getNewsBySearch(searchQuery);
     }
   }, [token, selectedAction, pageIndex, pageSize]);
   useEffect(() => {
-    if (token && selectedAction === "status") {
-      getEventByStatus(statusFilter);
-    }
-  }, [token, selectedAction, statusFilter, pageIndex, pageSize]);
-  useEffect(() => {
     if (token && selectedAction === "type") {
-      getEventsByType(typeFilter);
+      getNewsByStatus(typeFilter);
     }
   }, [token, selectedAction, typeFilter, pageIndex, pageSize]);
 
@@ -336,27 +294,31 @@ const Content = () => {
           <MainContainer title="Filtros">
             <div className="flex gap-1 flex-wrap justify-between mb-4 flex-row w-full">
               <SelectComponent
-                label="Estado"
-                id="statusFilter"
-                options={[
-                  { value: "all", label: "Todos" },
-                  { value: "pending", label: "Pendientes" },
-                  { value: "approved", label: "Aprobados" },
-                  { value: "rejected", label: "Rechazados" },
-                ]}
-                onChange={handleStatusChange}
-                defaultValue={statusFilter}
-              />
-              <SelectComponent
                 label="Tipo"
                 id="typeFilter"
                 options={[
                   { value: "all", label: "Todos" },
-                  { value: "Nacional", label: "Nacional" },
-                  { value: "Internacional", label: "Internacional" },
+                  ...(user?.type === "admin"
+                    ? [{ value: "home", label: "Inicio" }]
+                    : []),
+                  { value: "intern", label: "Entre vistas" },
+                  { value: "product", label: "Producto" },
                 ]}
-                onChange={handleTypeChange}
+                onChange={handleStatusChange}
                 defaultValue={typeFilter}
+              />
+              <SelectComponent
+                label="Empresa"
+                id="companyFilter"
+                options={[
+                  { value: "all", label: "Todos" },
+                  ...companiesData.map((company) => ({
+                    value: company.id,
+                    label: `${company.name}`,
+                  })),
+                ]}
+                onChange={handleStatusChange}
+                defaultValue={companyFilter}
               />
             </div>
           </MainContainer>
@@ -367,7 +329,7 @@ const Content = () => {
               Registros ({total})
             </h2>{" "}
             <div className="w-full md:w-auto flex justify-end">
-              <AddButton text="Agregar Evento" onClick={handleAdd} />
+              <AddButton text="Agregar Publicidad" onClick={handleAdd} />
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">
@@ -375,24 +337,20 @@ const Content = () => {
               pageSize={pageSize.toString()}
               handlePageSizeChange={handlePageSizeChange}
             />
-            <div className="w-full sm:w-auto flex flex-row self-end">
+            {/* <div className="w-full sm:w-auto flex flex-row self-end">
               <SearchInput
-                placeholder="Buscar evento"
-                onClick={(query) => getEventsBySearch(query)}
+                placeholder="Buscar publicidads"
+                onClick={(query) => getNewsBySearch(query)}
               />
-            </div>
+            </div> */}
           </div>
-          {loading ? (
-            <div className="w-full h-60 animate-pulse bg-gray-100 rounded-md duration-500"></div>
-          ) : (
-            <div className=" overflow-x-auto">
-              <EventsTable
-                dataTable={data}
-                onDelete={(id: number) => handleStatus(id, "delete")}
-                onEdit={(id: number) => handleEdit(id)}
-              />
-            </div>
-          )}
+          <div className=" overflow-x-auto">
+            <AdsTable
+              dataTable={data}
+              onDelete={(id: number) => handleStatus(id, "delete")}
+              onEdit={(id: number) => handleEdit(id)}
+            />
+          </div>
           <div className="mt-4 justify-center flex">
             <Pagination
               count={pageCount}
@@ -404,11 +362,11 @@ const Content = () => {
         </MainContainer>
       </SafeAreaContainer>
       <FormModal
-        title={`${selectedType === "edit" ? "Editar" : "Crear"} evento`}
+        title={`${selectedType === "edit" ? "Editar" : "Crear"} publicidad`}
         openModal={openModal}
         setOpenModal={() => setOpenModal(false)}
       >
-        <EventForm
+        <AdsForm
           closeModal={handleCloseModal}
           type={selectedType}
           id={selectedId}
@@ -417,34 +375,21 @@ const Content = () => {
         />
       </FormModal>
       <ConfirmModal
-        openModal={deleteModal}
-        setOpenModal={() => setDeleteModal(false)}
-        onAction={onDelete}
+        openModal={statusModal}
+        setOpenModal={() => setStatusModal(false)}
+        onAction={handleChangeStatus}
         title={
-          selectedStatus === "delete" ? "Eliminar Evento" : "Aprobar Evento"
+          selectedStatus === "delete"
+            ? "Eliminar Publicidad"
+            : "Aprobar Publicidad"
         }
         text={
           selectedStatus === "delete"
-            ? "¿Está seguro que desea eliminar este evento?"
-            : "¿Está seguro que desea rechazar este evento?"
+            ? "¿Está seguro que desea eliminar esta publicidad?"
+            : "¿Está seguro que desea rechazar esta publicidad?"
         }
         textButton={selectedStatus === "delete" ? "Eliminar" : "Aprobar"}
       />
-      {selectedId && (
-        <FormModal
-          title={`Rechazar evento`}
-          openModal={rejectedModal}
-          setOpenModal={() => setRejectedModal(false)}
-        >
-          <RejectForm
-            closeModal={() => setRejectedModal(false)}
-            type="event"
-            id={selectedId}
-            token={token}
-            getData={getData}
-          />
-        </FormModal>
-      )}
     </>
   );
 };

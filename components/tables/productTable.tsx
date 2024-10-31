@@ -42,17 +42,7 @@ const ProductTable: React.FC<SubsTableProps> = ({
     {
       accessorKey: "category",
       header: "Categoría",
-      cell: (info) => (
-        <span
-          style={{
-            backgroundColor: info.row.original.category.background_color,
-            color: info.row.original.category.text_color,
-          }}
-          className={`rounded-full px-2 py-0.5 text-xs font-medium `}
-        >
-          {info.row.original.category.name}
-        </span>
-      ),
+      cell: (info) => info.row.original.category.name,
     },
     {
       accessorKey: "company",

@@ -26,6 +26,7 @@ import { LuFilter } from "react-icons/lu";
 import { PiFilesBold } from "react-icons/pi";
 import { FaRegBuilding } from "react-icons/fa";
 import { toast } from "sonner";
+import { MdOutlineCampaign } from "react-icons/md";
 
 interface SidebarProps {
   active: boolean;
@@ -222,6 +223,44 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              {
+                user?.plan?.id !== 1 && (
+                  <li
+                  className={`w-full justify-center flex items-center py-4 group ${
+                    active ? "px-4 md:px-8" : "px-4 "
+                  } `}
+                >
+                  <BootstrapTooltip
+                    placement="right"
+                    title={active ? "" : "Publicidad"}
+                  >
+                    <Link
+                      href={"/empresa/publicidad"}
+                      className={`flex flex-row items-center relative ${
+                        !active
+                          ? "justify-center"
+                          : "justify-center md:justify-start"
+                      } w-full  hover:opacity-100 ${
+                        pathname === "/empresa/publicidad" ||
+                        pathname === "/empresa/publicidad"
+                          ? "opacity-100"
+                          : " opacity-30"
+                      } transition-all duration-500`}
+                    >
+                      <MdOutlineCampaign className="text-2xl" />
+                      <span
+                        className={`${
+                          !active ? "hidden" : "hidden md:inline-block"
+                        } ml-2 text-base inline-block transform transition-all duration-700`}
+                      >
+                        Publicidad
+                      </span>
+                    </Link>
+                  </BootstrapTooltip>
+                </li>
+                )
+              }
+             
             </>
           )}
 
@@ -491,7 +530,6 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
-
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -598,6 +636,39 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
               >
                 <BootstrapTooltip
                   placement="right"
+                  title={active ? "" : "Publicidad"}
+                >
+                  <Link
+                    href={"/admin/publicidad"}
+                    className={`flex flex-row items-center relative ${
+                      !active
+                        ? "justify-center"
+                        : "justify-center md:justify-start"
+                    } w-full  hover:opacity-100 ${
+                      pathname === "/admin/publicidad" ||
+                      pathname === "/empresa/publicidad"
+                        ? "opacity-100"
+                        : " opacity-30"
+                    } transition-all duration-500`}
+                  >
+                    <MdOutlineCampaign className="text-2xl" />
+                    <span
+                      className={`${
+                        !active ? "hidden" : "hidden md:inline-block"
+                      } ml-2 text-base inline-block transform transition-all duration-700`}
+                    >
+                      Publicidad
+                    </span>
+                  </Link>
+                </BootstrapTooltip>
+              </li>
+              <li
+                className={`w-full justify-center flex items-center py-4 group ${
+                  active ? "px-4 md:px-8" : "px-4 "
+                } `}
+              >
+                <BootstrapTooltip
+                  placement="right"
                   title={active ? "" : "Atención al cliente"}
                 >
                   <Link
@@ -626,6 +697,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
               </li>
             </>
           )}
+
           <li
             className={`w-full justify-center flex items-center py-4 group ${
               active ? "px-4 md:px-8" : "px-4 "

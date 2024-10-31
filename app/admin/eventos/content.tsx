@@ -150,9 +150,9 @@ const Content = () => {
         );
         resolve({ message: "Evento aprobado" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+        }
         rejects({ message: "No se pudo aprobar el evento" });
       } finally {
         getData();
@@ -217,6 +217,8 @@ const Content = () => {
           },
         }
       );
+      console.log(response.data.data);
+
       setData(response.data.data);
       setPageCount(response.data.last_page);
       setTotal(response.data.total);

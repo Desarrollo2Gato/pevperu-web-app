@@ -11,6 +11,7 @@ type SelectZodProps = {
   placeholder: string;
   onChange?: (option: any) => void;
   isdisabled?: boolean;
+  isrequired?: boolean;
 };
 
 export const SelectZodField: React.FC<SelectZodProps> = ({
@@ -24,6 +25,7 @@ export const SelectZodField: React.FC<SelectZodProps> = ({
   getOptionLabel = (option: any) => option.label,
   onChange,
   isdisabled = false,
+  isrequired = false,
 }) => {
   return (
     <div className="w-full relative">
@@ -36,7 +38,7 @@ export const SelectZodField: React.FC<SelectZodProps> = ({
           error && "border-red-500 focus:ring-red-500"
         }`}
         disabled={isdisabled}
-        required
+        required={isrequired}
         {...register}
         {...(onChange && { onChange })}
 

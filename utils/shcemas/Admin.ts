@@ -47,15 +47,32 @@ export const planSaveSchema = z.object({
   num_features_products: z
     .string()
     .min(1, "El número de productos es requerido"),
-  num_products: z.string().min(1, "El número de productos es requerido"),
-  num_features_events: z.string().min(1, "El número de eventos es requerido"),
-  num_features_news: z.string().min(1, "El número de noticias es requerido"),
+  num_products: z
+    .string()
+    .regex(/^\d+$/, "El número de productos no es válido")
+    .min(1, "El número de productos es requerido"),
+  num_features_events: z
+    .string()
+    .regex(/^\d+$/, "El número de eventos no es válido")
+    .min(1, "El número de eventos es requerido"),
+  num_features_news: z
+    .string()
+    .regex(/^\d+$/, "El número de noticias no es válido")
+    .min(1, "El número de noticias es requerido"),
   benefits: z.array(
     z.object({
       title: z.string().min(1, "El nombre es requerido"),
       description: z.string().min(1, "La descripción es requerida"),
     })
   ),
+  banners_intern: z
+    .string()
+    .regex(/^\d+$/, "El número de banners internos no es válido")
+    .nullable(),
+  banners_product: z
+    .string()
+    .regex(/^\d+$/, "El número de banners internos no es válido")
+    .nullable(),
 });
 export const subscriptionSaveSchema = z.object({
   companyId: z.string().min(1, "El usuario es requerido"),
@@ -87,7 +104,14 @@ export const eventSaveSchema = z.object({
     .min(1, "La descripción es requerida")
     .max(150, "La descripción no puede tener más de 150 caracteres"),
   content: z.string().min(1, "El contenido es requerido"),
-  date: z.string().min(1, "La fecha es requerida"),
+  dateStart: z.coerce.date({
+    required_error: "La fecha de inicio es requerida",
+    invalid_type_error: "La fecha de inicio no es válida",
+  }),
+  dateEnd: z.coerce.date({
+    required_error: "La fecha de fin es requerida",
+    invalid_type_error: "La fecha de fin no es válida",
+  }),
   location: z.string().nullable(),
   mainImage: z
     .custom<FileList>((files) => files?.length > 0, {
@@ -150,12 +174,12 @@ export const categorySaveSchema = z.object({
       message: "La imagen es requerida",
     })
     .nullable(),
-  labelBgColor: z.string().min(1, "El color de fondo es requerido"),
-  textColor: z.string().min(1, "El color del texto es requerido"),
   labels: z
     .array(
       z.object({
         name: z.string().nullable(),
+        bgColor: z.string().nullable(),
+        textColor: z.string().nullable(),
       })
     )
     .nullable(),
@@ -189,6 +213,14 @@ export const productSaveSchema = z.object({
       })
     )
     .min(1, "Las especificaciones son requeridas"),
+  active_ingts: z
+    .array(
+      z.object({
+        ingredient: z.string().nullable(),
+        percentage: z.string().nullable(),
+      })
+    )
+    .nullable(),
   img1: z
     .custom<FileList>((files) => files?.length > 0, {
       message: "La imagen es requerida",
@@ -199,16 +231,16 @@ export const productSaveSchema = z.object({
       message: "La imagen es requerida",
     })
     .nullable(),
-  img3: z
-    .custom<FileList>((files) => files?.length > 0, {
-      message: "La imagen es requerida",
-    })
-    .nullable(),
-  img4: z
-    .custom<FileList>((files) => files?.length > 0, {
-      message: "La imagen es requerida",
-    })
-    .nullable(),
+  // img3: z
+  //   .custom<FileList>((files) => files?.length > 0, {
+  //     message: "La imagen es requerida",
+  //   })
+  //   .nullable(),
+  // img4: z
+  //   .custom<FileList>((files) => files?.length > 0, {
+  //     message: "La imagen es requerida",
+  //   })
+  //   .nullable(),
   // files: z
   //   .array(
   //     z.object({
@@ -222,6 +254,9 @@ export const productSaveSchema = z.object({
   // senasa_title: z.string().nullable(),
   senasa_number: z.string().nullable(),
   senasa_link: z.string().nullable(),
+  chemical_class_title: z.string().nullable(),
+  chemical_class_text: z.string().nullable(),
+  chemical_class_url: z.any().nullable(),
 });
 
 export const rejectedMessage = z.object({
@@ -229,4 +264,43 @@ export const rejectedMessage = z.object({
     .string()
     .min(1, "El motivo es requerido")
     .max(255, "El motivo no puede tener más de 255 caracteres"),
+});
+
+export const adsSchema = z.object({
+  company_id: z.string().min(1, "La empresa es requerida"),
+  img: z
+    .custom<FileList>((files) => files?.length > 0, {
+      message: "La imagen es requerida",
+    })
+    .nullable(),
+  type: z.string().min(1, "El tipo es requerido"),
+  id_product: z.string().nullable(),
+
+  // home_ads: z.array(
+  //   z.object({
+  //     img: z
+  //       .custom<FileList>((files) => files?.length > 0, {
+  //         message: "La imagen es requerida",
+  //       })
+  //       .nullable(),
+  //   })
+  // ),
+  // navegations_ads: z.array(
+  //   z.object({
+  //     img: z
+  //       .custom<FileList>((files) => files?.length > 0, {
+  //         message: "La imagen es requerida",
+  //       })
+  //       .nullable(),
+  //   })
+  // ),
+  // product_ads: z.array(
+  //   z.object({
+  //     img: z
+  //       .custom<FileList>((files) => files?.length > 0, {
+  //         message: "La imagen es requerida",
+  //       })
+  //       .nullable(),
+  //   })
+  // ),
 });

@@ -28,10 +28,10 @@ const SelectTag: React.FC<SelectTagProps> = ({
   displayField,
 }) => {
   const handleChange = (selected: any) => {
-    const labels = selected.map((item: any) => item.value);
+    const labels = selected ?  selected.map((item: any) => item.value): [];
     setData(selected);
     if (setValue) {
-      setValue(value, labels || []);
+      setValue(value, labels);
     }
   };
 

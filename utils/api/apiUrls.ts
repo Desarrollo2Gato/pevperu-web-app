@@ -212,4 +212,12 @@ export const apiUrls = {
     showUpdate: (id: string, status: string) =>
       `${BASE_URL}/product-files/${id}/show/${status}`,
   },
+  banner: {
+    getAll: `${BASE_URL}/banners`,
+    create: `${BASE_URL}/banners`,
+    getOne: (id: string) => `${BASE_URL}/banners/${id}`,
+    delete: (id: string) => `${BASE_URL}/banners/${id}`,
+    update: (id: string) => `${BASE_URL}/banners/${id}?_method=PUT`,
+    byCompany: (id: string) => `${BASE_URL}/banners/company/${id}`,
+  }
 };

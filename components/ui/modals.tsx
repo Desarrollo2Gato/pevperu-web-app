@@ -20,7 +20,12 @@ export const FormModal: React.FC<FormModalProps> = ({
   return (
     <Modal
       open={openModal}
-      onClose={setOpenModal}
+      onClose={(event, reason) => {
+        if (reason === "backdropClick") {
+          return;
+        }
+        setOpenModal(false);
+      }}
       aria-labelledby="custom-modal-title"
       aria-describedby="custom-modal-description"
     >
@@ -49,8 +54,8 @@ export const ConfirmModal: React.FC<FormModalProps> = ({
   setOpenModal,
   title,
   onAction,
-  text="¿Está seguro que desea eliminar este registro?",
-  textButton="Eliminar",
+  text = "¿Está seguro que desea eliminar este registro?",
+  textButton = "Eliminar",
 }) => {
   const handleClose = () => {
     setOpenModal(false);
@@ -58,7 +63,12 @@ export const ConfirmModal: React.FC<FormModalProps> = ({
   return (
     <Modal
       open={openModal}
-      onClose={setOpenModal}
+      onClose={(event, reason) => {
+        if (reason === "backdropClick") {
+          return;
+        }
+        handleClose();
+      }}
       aria-labelledby="custom-modal-title"
       aria-describedby="custom-modal-description"
     >

@@ -55,7 +55,8 @@ const EventForm: React.FC<EventFormProps> = ({
       type: "Nacional",
       status: user?.type === "admin" ? "approved" : "pending",
       content: "",
-      date: "",
+      dateStart: new Date().toISOString().split("T")[0],
+      dateEnd: new Date().toISOString().split("T")[0],
       location: "",
       mainImage: null,
       secondImage: null,
@@ -83,7 +84,12 @@ const EventForm: React.FC<EventFormProps> = ({
         type: event.type || "National",
         status: event.status || user?.type === "admin" ? "approved" : "pending",
         content: event.content || "",
-        date: event.date || "",
+        dateStart: event.date
+          ? new Date(event.date).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+        dateEnd: event.end_date
+          ? new Date(event.end_date).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
         location: event.location || "",
         mainImage: null,
         secondImage: null,
@@ -124,7 +130,8 @@ const EventForm: React.FC<EventFormProps> = ({
     dataSend.append("name", data.title);
     dataSend.append("description", data.description);
     dataSend.append("content", data.content);
-    dataSend.append("date", data.date);
+    dataSend.append("date", data.dateStart.toISOString().split("T")[0]);
+    dataSend.append("end_date", data.dateEnd.toISOString().split("T")[0]);
     dataSend.append("status", data.status);
     dataSend.append("location", data.location);
     dataSend.append("type", data.type);
@@ -165,9 +172,10 @@ const EventForm: React.FC<EventFormProps> = ({
         closeModal();
         getData();
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+          reject({ message: error.response?.data.message });
+        }
         reject({ message: "Error al guardar los datos" });
       } finally {
         setSubmitting(false);
@@ -273,10 +281,19 @@ const EventForm: React.FC<EventFormProps> = ({
         /> */}
         <InputZodField
           id="date"
-          name="Fecha"
+          name="Fecha de inicio"
+          type="date"
           placeholder="Ingrese la fecha del evento"
-          register={register("date")}
-          error={errors.date}
+          register={register("dateStart")}
+          error={errors.dateStart}
+        />
+        <InputZodField
+          id="date"
+          name="Fecha de fin"
+          type="date"
+          placeholder="Ingrese la fecha del evento"
+          register={register("dateEnd")}
+          error={errors.dateEnd}
         />
         <InputZodField
           id="location"

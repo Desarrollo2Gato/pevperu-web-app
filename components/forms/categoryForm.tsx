@@ -8,7 +8,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { SelectZodField } from "../ui/selectField";
 import ButtonForm from "../ui/buttonForm";
-import { ICategory, IFilter } from "@/types/api";
+import { ICategory } from "@/types/api";
 import ButtonArrayForm from "../ui/buttonArrayFrom";
 import { ImgField } from "../ui/imgField";
 import { imgUrl } from "@/utils/img/imgUrl";
@@ -52,9 +52,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     defaultValues: {
       name: "",
       icon_url: null,
-      labelBgColor: "#000000",
-      textColor: "#ffffff",
-      labels: [{ name: "" }],
+      labels: [{ name: "", bgColor: "#000000", textColor: "#ffffff" }],
       type: "",
       filter_ids: [] as any[],
       files: [{ file_type: "" }],
@@ -106,12 +104,20 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         }));
         setFiltersData(filters);
       }
+      let labels;
+      if (data.labels && data.labels.length > 0) {
+        labels = data.labels.map((label: any) => ({
+          name: label.name,
+          bgColor: label.background_color || "#000000",
+          textColor: label.text_color || "#ffffff",
+        }));
+      }
       reset({
         name: data.name,
         icon_url: null,
-        labelBgColor: data.background_color || "#000000",
-        textColor: data.text_color || "",
-        labels: data.labels || [{ name: "#ffffff" }],
+        labels: labels || [
+          { name: "", bgColor: "#000000", textColor: "#ffffff" },
+        ],
         type: data.type,
         filter_ids: filterIds || [],
         files: files || [{ file_type: "" }],
@@ -151,13 +157,10 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     }
   };
 
-
   const onSubmit = async (data: any) => {
     setSubmitting(true);
     const dataSend = new FormData();
     dataSend.append("name", data.name);
-    dataSend.append("background_color", data.labelBgColor);
-    dataSend.append("text_color", data.textColor);
     dataSend.append("type", data.type);
 
     //filters
@@ -172,10 +175,33 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         dataSend.append("category_files[]", file)
       );
     }
+
+    // data.specifications.map((spec: any, index: number) => {
+    //   dataSend.append(`specifications[${index}][title]`, spec.title);
+    //   dataSend.append(
+    //     `specifications[${index}][description]`,
+    //     spec.description
+    //   );
+    // });
     // labels
-    if (data.labels.length > 0 && data.labels[0].name) {
-      const labelsArray = data.labels.map((label: any) => label.name);
-      labelsArray.forEach((label: any) => dataSend.append("labels[]", label));
+    if (data.labels.length > 0) {
+      data.labels.map((label: any, index: number) => {
+        if (label.name && label.bgColor && label.textColor) {
+          dataSend.append(`labels[${index}][name]`, label.name);
+          dataSend.append(
+            `labels[${index}][background_color]`,
+            label.bgColor.toString()
+          );
+          dataSend.append(
+            `labels[${index}][text_color]`,
+            label.textColor.toString()
+          );
+        }
+      });
+      // const labelsArray = data.labels.map((label: any) => label.name);
+      // labelsArray.forEach((label: any) => dataSend.append("labels[name]", label));
+    }else{
+      dataSend.append("labels", "");
     }
     // icon
     if (data.icon_url) {
@@ -211,10 +237,10 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         }
         closeModal();
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log("error api", error);
-        //   console.log("error api", error.response?.data);
-        // }
+        if (axios.isAxiosError(error)) {
+          console.log("error api", error);
+          console.log("error api", error.response?.data);
+        }
         reject({ message: "Error al guardar los datos" });
       } finally {
         setSubmitting(false);
@@ -248,22 +274,6 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           placeholder="Nombre de la categoría"
           register={register("name")}
           error={errors.name}
-        />
-        <InputColorZodField
-          id="labelBgColor"
-          name="Color de fondo"
-          placeholder="Color de fondo"
-          type="color"
-          register={register("labelBgColor")}
-          error={errors.labelBgColor}
-        />
-        <InputColorZodField
-          id="textColor"
-          name="Color del texto"
-          placeholder="Color del texto"
-          type="color"
-          register={register("textColor")}
-          error={errors.textColor}
         />
         <SelectZodField
           id="type"
@@ -301,20 +311,42 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
                 register={register(`labels.${index}.name`)}
                 error={errors.labels?.[index]?.name}
               />
+              <InputColorZodField
+                id={`labels[${index}].bgColor`}
+                name="Color de fondo"
+                placeholder="Color de fondo"
+                type="color"
+                register={register(`labels.${index}.bgColor`)}
+                error={errors.labels?.[index]?.bgColor}
+              />
+              <InputColorZodField
+                id={`labels[${index}].textColor`}
+                name="Color del texto"
+                placeholder="Color del texto"
+                type="color"
+                register={register(`labels.${index}.textColor`)}
+                error={errors.labels?.[index]?.textColor}
+              />
               <div className="flex items-center gap-2">
-                {labelsFields.length > 1 && (
-                  <ButtonArrayForm
-                    text="Eliminar"
-                    onClick={() => removeLabel(index)}
-                    isDelete
-                  />
-                )}
+                {/* {labelsFields.length > 1 && ( */}
+                <ButtonArrayForm
+                  text="Eliminar"
+                  onClick={() => removeLabel(index)}
+                  isDelete
+                />
+                {/* )} */}
               </div>
             </div>
           ))}
           <ButtonArrayForm
             text="Agregar"
-            onClick={() => appendLabel({ name: "" })}
+            onClick={() =>
+              appendLabel({
+                name: "",
+                bgColor: "#000000",
+                textColor: "#ffffff",
+              })
+            }
           />
         </div>
         {/* files */}
@@ -357,7 +389,6 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             isdisabled={submitting}
             text="Cancelar"
             onClick={() => {
-              reset();
               closeModal();
             }}
           />
