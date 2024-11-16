@@ -235,9 +235,9 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         // img3: null,
         // img4: null,
         company_id:
-          product.companies[0].id.toString() ||
-          user?.company_id.toString() ||
-          "",
+          product.companies[0].id.toString() || (user && user?.company_id)
+            ? user?.company_id?.toString()
+            : "",
         status:
           product.status || user?.type === "admin" ? "approved" : "pending",
         senasa_link:
@@ -448,7 +448,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
 
   useEffect(() => {
     if (isAgro) {
-      console.log(isAgro, "es agro");
       getClassChemical();
     } else {
       setValue("chemical_class_title", "");
