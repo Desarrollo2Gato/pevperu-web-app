@@ -34,25 +34,7 @@ const AdsForm: React.FC<AdsFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // limit of rows
-  const [homeAdsLimit, setHomeAdsLimit] = useState(3);
-  const [navigationAdsLimit, setNavigationAdsLimit] = useState(3);
-  const [productAdsLimit, setProductAdsLimit] = useState(3);
-
   const [img, setImg] = useState("");
-
-  useEffect(() => {
-    if (user?.type === "company_owner") {
-      if (user?.plan) {
-        // setHomeAdsLimit(user.plan.home_ads_limit);
-        // setNavigationAdsLimit(user.navigation_ads_limit);
-        // setProductAdsLimit(user.product_ads_limit););
-        setHomeAdsLimit(5);
-        setNavigationAdsLimit(5);
-        setProductAdsLimit(5);
-      }
-    }
-  }, [user]);
 
   const {
     register,
@@ -64,7 +46,7 @@ const AdsForm: React.FC<AdsFormProps> = ({
   } = useForm({
     resolver: zodResolver(adsSchema),
     defaultValues: {
-      company_id: user?.company_id.toString() || "",
+      company_id: user?.company_id ? user.company_id.toString() : "",
       type: "",
       id_product: "",
       img: null,
@@ -90,16 +72,15 @@ const AdsForm: React.FC<AdsFormProps> = ({
   }, [ads]);
 
   useEffect(() => {
+    console.log(watch("type"));
     if (watch("type") === "product") {
       getProducts();
-    } else {
-      setValue("id_product", "");
     }
   }, [watch("type")]);
 
   useEffect(() => {
     if (products.length > 0) {
-      setValue("id_product", ads?.product_id ? ads.product_id.toString() : "");
+      setValue("id_product", ads ? ads.product_id.toString() : "");
     }
   }, [products]);
 
@@ -111,7 +92,6 @@ const AdsForm: React.FC<AdsFormProps> = ({
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("res", res.data);
       setAds(res.data);
     } catch (error) {
       console.error(error);
@@ -121,27 +101,40 @@ const AdsForm: React.FC<AdsFormProps> = ({
     }
   };
   const getProducts = async () => {
-    try {
-      const res = await axios.get(
-        `${apiUrls.company.getAll}/${user?.company_id}/product`,
-        {
+    if (user?.type === "admin") {
+      try {
+        const res = await axios.get(`${apiUrls.product.getAll}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
-      );
-      setProducts(res.data);
-    } catch (error) {
-      console.error(error);
-      toast.error("Error al obtener los datos");
-    } finally {
-      setLoading(false);
+        });
+        setProducts(res.data);
+      } catch (error) {
+        console.error(error);
+        toast.error("Error al obtener los datos");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      try {
+        const res = await axios.get(
+          `${apiUrls.company.getAll}/${user?.company_id}/product`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log(res.data);
+        setProducts(res.data);
+      } catch (error) {
+        console.error(error);
+        toast.error("Error al obtener los datos");
+      } finally {
+        setLoading(false);
+      }
     }
   };
-
-  useEffect(() => {
-    console.log("product", watch("id_product"));
-  }, [watch("id_product")]);
 
   const onSubmit = async (data: any) => {
     console.log("data", data);
