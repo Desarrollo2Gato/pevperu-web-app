@@ -26,6 +26,7 @@ export const apiUrls = {
     me: `${BASE_URL}/me`,
     refresh: `${BASE_URL}/refresh`,
     expoToken: `${BASE_URL}/update-expo-token`,
+    externUser: `${BASE_URL}/auth/register-extern-user`,
   },
   profession: {
     create: `${BASE_URL}/professions`,
@@ -51,6 +52,7 @@ export const apiUrls = {
   },
   user: {
     create: `${BASE_URL}/user`,
+    externType: (id: string) => `${BASE_URL}/users/${id}/extern-types`,
     getAll: `${BASE_URL}/user`,
     getOne: (id: string) => `${BASE_URL}/user/${id}`,
     update: (id: string) => `${BASE_URL}/user/${id}?_method=PUT`,
@@ -136,6 +138,7 @@ export const apiUrls = {
       `${BASE_URL}/events?per_page=${per_page}&page=${page}`,
     eventsByType: (type: string, page: number, per_page: number) =>
       `${BASE_URL}/events?type=${type}&per_page=${per_page}&page=${page}`,
+    byUser: (idUser: string) => `${BASE_URL}/extern_user/${idUser}/events`,
   },
   news: {
     create: `${BASE_URL}/news`,
@@ -148,6 +151,7 @@ export const apiUrls = {
       `${BASE_URL}/companies/${companyid}/news?per_page=${per_page}&page=${page}`,
     pagination: (page: number, per_page: number) =>
       `${BASE_URL}/news?per_page=${per_page}&page=${page}`,
+    byUser: (idUser: string) => `${BASE_URL}/extern_user/${idUser}/news`,
   },
   courses: {
     create: `${BASE_URL}/courses`,
@@ -157,6 +161,7 @@ export const apiUrls = {
     delete: (id: string) => `${BASE_URL}/courses/${id}`,
     pagination: (page: number, per_page: number) =>
       `${BASE_URL}/courses?per_page=${per_page}&page=${page}`,
+    byUser: (idUser: string) => `${BASE_URL}/extern_user/${idUser}/courses`,
   },
   filter: {
     create: `${BASE_URL}/filters`,
@@ -166,6 +171,13 @@ export const apiUrls = {
     delete: (id: string) => `${BASE_URL}/filters/${id}`,
     pagination: (page: number, per_page: number) =>
       `${BASE_URL}/filters?per_page=${per_page}&page=${page}`,
+  },
+  crop: {
+    create: `${BASE_URL}/crops`,
+    getAll: `${BASE_URL}/crops`,
+    getOne: (id: string) => `${BASE_URL}/crops/${id}`,
+    update: (id: string) => `${BASE_URL}/crops/${id}/?_method=PUT`,
+    delete: (id: string) => `${BASE_URL}/crops/${id}`,
   },
   plan: {
     create: `${BASE_URL}/plans`,
@@ -219,5 +231,12 @@ export const apiUrls = {
     delete: (id: string) => `${BASE_URL}/banners/${id}`,
     update: (id: string) => `${BASE_URL}/banners/${id}?_method=PUT`,
     byCompany: (id: string) => `${BASE_URL}/banners/company/${id}`,
-  }
+  },
+  extentTypes: {
+    getAll: `${BASE_URL}/extern-types`,
+    create: `${BASE_URL}/extern-types`,
+    getOne: (id: string) => `${BASE_URL}/extern-types/${id}`,
+    update: (id: string) => `${BASE_URL}/extern-types/${id}`,
+    delete: (id: string) => `${BASE_URL}/extern-type/${id}`,
+  },
 };

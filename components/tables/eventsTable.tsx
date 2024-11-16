@@ -18,6 +18,8 @@ interface EventsTableProps {
   onDelete: (id: number) => void;
   onApprove?: (id: number) => void;
   onReject?: (id: number) => void;
+  isAdmin?: boolean;
+
 }
 const EventsTable: React.FC<EventsTableProps> = ({
   dataTable,
@@ -25,6 +27,8 @@ const EventsTable: React.FC<EventsTableProps> = ({
   onDelete,
   onApprove,
   onReject,
+  isAdmin = false,
+
 }) => {
   const data: IEvents[] = dataTable;
   const [filter, setFilter] = useState("");
@@ -48,8 +52,21 @@ const EventsTable: React.FC<EventsTableProps> = ({
     {
       accessorKey: "company",
       header: "Empresa",
-      cell: (info) => info.row.original.company.name,
+      cell: (info) =>
+        info.row.original.company
+          ? info.row.original.company.name
+          : info.row.original.extern_user.work_for_company,
     },
+    ...(isAdmin
+      ? [
+          {
+            accessorKey: "type",
+            header: "Usuario",
+            cell: (info: any) =>
+              info.row.original.company ? "Empresa" : "Publicista",
+          },
+        ]
+      : []),
     {
       accessorKey: "status",
       header: "Estado",

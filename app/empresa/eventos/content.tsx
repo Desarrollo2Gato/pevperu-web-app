@@ -51,6 +51,7 @@ const Content = () => {
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
+  const [selectedTypeUser, setSelectedTypeUser] = useState<"company_owner" | "extern" | "">("extern");
   const [selectedStatus, setSelectedStatus] = useState<"delete" | "approved">(
     "delete"
   );
@@ -142,7 +143,7 @@ const Content = () => {
   }, [token]);
 
   const getData = async () => {
-    if (!user) {
+    if (!user || user.company_id === null) {
       toast.error("No se ha podido obtener el id de la empresa");
       return;
     }
@@ -158,7 +159,7 @@ const Content = () => {
           },
         }
       );
-      console.log('hola')
+      console.log("hola");
       console.log(response.data);
       setData(response.data.data);
       setPageCount(response.data.last_page);
@@ -172,11 +173,11 @@ const Content = () => {
   const getEventsBySearch = (query: string) => {
     setSearchQuery(query);
     setLoading(true);
-    if (!user) {
-      toast.error("No se ha podido obtener el id de la empresa");
-      return;
-    }
     const promise = new Promise(async (resolve, reject) => {
+      if (!user || user.company_id === null) {
+        toast.error("No se ha podido obtener el id de la empresa");
+        return;
+      }
       try {
         const res = await axios.get(
           apiUrls.event.myEvents(user?.company_id.toString()) +
@@ -218,11 +219,15 @@ const Content = () => {
       return;
     }
     setLoading(true);
-    if (!user) {
+    if (!user || user.company_id === null) {
       toast.error("No se ha podido obtener el id de la empresa");
       return;
     }
     const promise = new Promise(async (resolve, reject) => {
+      if (!user || user.company_id === null) {
+        toast.error("No se ha podido obtener el id de la empresa");
+        return;
+      }
       try {
         const res = await axios.get(
           apiUrls.event.myEvents(user.company_id.toString()) +
@@ -266,6 +271,10 @@ const Content = () => {
     }
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
+      if (!user || user.company_id === null) {
+        toast.error("No se ha podido obtener el id de la empresa");
+        return;
+      }
       try {
         const res = await axios.get(
           apiUrls.event.myEvents(user.company_id.toString()) +

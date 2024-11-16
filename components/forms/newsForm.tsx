@@ -113,14 +113,21 @@ const NewsForm: React.FC<NewsFormProps> = ({
     const date = data.published_at || news?.updated_at;
     const published_at = date.toISOString().split("T")[0];
     const dataSend = new FormData();
-    if (!user?.company_id) {
-      toast.error("No se ha podido obtener su id, recargue la página ");
-      return;
-    }
-    if (news) {
-      dataSend.append("company_id", news?.company_id.toString());
+    const isUpdate = Boolean(news);
+    const haveCompany = Boolean(user?.company_id);
+
+    let autor_id: string | undefined;
+    if (haveCompany) {
+      autor_id = isUpdate
+        ? news?.company.id.toString()
+        : user?.company_id?.toString();
+
+      if (autor_id) dataSend.append("company_id", autor_id);
     } else {
-      dataSend.append("company_id", user?.company_id.toString());
+      autor_id = isUpdate
+        ? news?.extern_user_id.toString()
+        : user?.id?.toString();
+      if (autor_id) dataSend.append("extern_user_id", autor_id);
     }
 
     dataSend.append("title", data.title);
@@ -166,10 +173,12 @@ const NewsForm: React.FC<NewsFormProps> = ({
         getData();
         closeModal();
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al guardar los datos" });
+        if (axios.isAxiosError(error)) {
+          // console.log(error.response?.data);
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "Error al guardar los datos" });
+        }
       } finally {
         setSubmitting(false);
       }

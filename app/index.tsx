@@ -31,19 +31,26 @@ const Index = () => {
         return;
       }
 
+      console.log(res.data);
       const { access_token, user } = res.data;
 
       const userInfo = {
+        id: user.id,
         name: user.full_name,
         email: user.email,
         type: user.type,
-        logo: user.company?.logo || null,
-        company_id: user.company?.id,
+        logo: user.company?.logo || user.photo || null,
+        adviser_id: user.adviser_id || null,
+        company_id: user.company?.id || null,
       };
 
       login(access_token, userInfo);
 
-      if (user.type !== "admin" && user.type !== "company_owner") {
+      if (
+        user.type !== "admin" &&
+        user.type !== "company_owner" &&
+        user.type !== "extern"
+      ) {
         toast.warning("No tienes permisos para acceder");
         return;
       }
@@ -53,6 +60,8 @@ const Index = () => {
           ? "/admin"
           : user.type === "company_owner"
           ? "/empresa"
+          : user.type === "extern"
+          ? "/publicador"
           : "/"
       );
     } catch (error) {
@@ -78,7 +87,7 @@ const Index = () => {
           <span className="text-white text-lg">Portal de administrador</span>
 
           <p className="hidden md:block border-l-2 border-white pl-4 text-white text-xl">
-            Centro de <br /> informaciónagrícola
+            Centro de <br /> información agrícola
           </p>
         </div>
         <div
@@ -109,18 +118,27 @@ const Index = () => {
               isPassword
               onChange={(e) => setPassword(e.target.value)}
             />
+            <div className="w-full text-end">
+              <Link
+                href={"/forgot-my-password"}
+                className="text-green-900 font-[500] text-sm"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
             <button
               type="submit"
               className="my-4 rounded-full w-full bg-lime-400 text-green-900 p-3 font-medium"
             >
               {loading ? "Cargando..." : "Iniciar sesión"}
             </button>
-            <Link
-              href={"/forgot-my-password"}
-              className="text-green-900 font-[500]"
-            >
-              ¿Olvidaste tu contraseña?
-            </Link>
+            <p className="text-sm text-center text-stone-700">
+              ¿Eres un usuario nuevo que solo quiere publicar eventos, noticias
+              y/o cursos?{" "}
+              <Link href={"/registrarse"} className="text-green-900 font-[500]">
+                Registrate aquí
+              </Link>
+            </p>
           </form>
         </div>
       </div>

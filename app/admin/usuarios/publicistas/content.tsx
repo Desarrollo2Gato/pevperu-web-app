@@ -7,13 +7,13 @@ import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-
-import UsersTable from "@/components/tables/usersTable";
 import { toast } from "sonner";
-import { ConfirmModal } from "@/components/ui/modals";
+import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import SelectRows from "@/components/ui/selectRows";
-import ButtonForm from "@/components/ui/buttonForm";
+import PublisherTable from "@/components/tables/publisherTable";
 import Link from "next/link";
+import { FaArrowLeftLong } from "react-icons/fa6";
+import PublisherForm from "@/components/forms/publisherForm";
 
 const Content = () => {
   const [token, setToken] = useState("");
@@ -43,6 +43,9 @@ const Content = () => {
     "data"
   );
 
+  // modal
+  const [openModal, setOpenModal] = useState(false);
+
   useEffect(() => {
     const token = getTokenFromCookie();
     if (token) {
@@ -54,14 +57,13 @@ const Content = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        apiUrls.user.pagination(pageIndex, pageSize),
+        `${apiUrls.user.getAll}?type=extern&${pagination(pageIndex, pageSize)}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      console.log(response.data.data);
       setData(response.data.data);
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
@@ -76,20 +78,26 @@ const Content = () => {
     setSelectedAction("search");
     setSearchQuery(query);
     setLoading(true);
+    console.log(
+      `${apiUrls.user.getAll}?type=extern&like=${query}&${pagination(
+        pageIndex,
+        pageSize
+      )}`
+    );
     const promise = new Promise(async (resolve, reject) => {
       try {
         const res = await axios.get(
-          apiUrls.user.getAll +
-            "?like=" +
-            query +
-            "&" +
-            pagination(pageIndex, pageSize),
+          `${apiUrls.user.getAll}?type=extern&like=${query}&${pagination(
+            pageIndex,
+            pageSize
+          )}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
+        console.log(res.data.data);
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
@@ -109,6 +117,10 @@ const Content = () => {
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
   };
 
   const handleConfirmModal = async (id: number, status: string) => {
@@ -174,6 +186,11 @@ const Content = () => {
     setPageIndex(1);
   };
 
+  const handleChangePermisses = (id: number) => {
+    setOpenModal(true);
+    setSelectedId(id);
+  };
+
   useEffect(() => {
     setData([]);
   }, [selectedAction]);
@@ -200,10 +217,11 @@ const Content = () => {
             </h2>
             <div className="w-full md:w-auto flex justify-end">
               <Link
-                href={"/admin/usuarios/publicistas"}
-                className="bg-green-800 rounded-md px-4 py-1 text-white font-medium"
+                href={"/admin/usuarios"}
+                className="text-zinc-400 font-medium hover:-translate-x-2 duration-500 transition-all"
               >
-                Publicistas
+                <FaArrowLeftLong className="inline mr-2" />
+                Volver
               </Link>
             </div>
           </div>
@@ -220,10 +238,11 @@ const Content = () => {
             </div>
           </div>
           <div className=" overflow-x-auto">
-            <UsersTable
+            <PublisherTable
               dataTable={data}
               onSuspend={(id) => handleConfirmModal(id, "approved")}
               onUnsuspend={(id) => handleConfirmModal(id, "suspend")}
+              onChangePermisses={(id) => handleChangePermisses(id)}
             />
           </div>
           <div className="mt-4 justify-center flex">
@@ -236,6 +255,21 @@ const Content = () => {
           </div>
         </MainContainer>
       </SafeAreaContainer>
+      {openModal && (
+        <FormModal
+          title={`Editar Permisos`}
+          openModal={openModal}
+          setOpenModal={() => setOpenModal(false)}
+        >
+          <PublisherForm
+            closeModal={handleCloseModal}
+            type={"edit"}
+            id={selectedId}
+            token={token}
+            getData={getData}
+          />
+        </FormModal>
+      )}
       {selectedId && selectedStatus && (
         <ConfirmModal
           openModal={confirmModal}

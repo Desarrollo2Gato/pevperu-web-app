@@ -2,7 +2,7 @@
 import AddButton from "@/components/ui/addBtn";
 import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
-import { ICategory, ICourse } from "@/types/api";
+import { ICategory, ICourse, IUser } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
@@ -13,6 +13,7 @@ import CoursesTable from "@/components/tables/coursesTable";
 import SelectRows from "@/components/ui/selectRows";
 import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { toast } from "sonner";
+import SelectComponent from "@/components/ui/select";
 
 const Content = () => {
   const [token, setToken] = useState("");
@@ -25,6 +26,7 @@ const Content = () => {
 
   // data
   const [data, setData] = useState<ICourse[]>([]);
+  const [userExternData, setUserExternData] = useState<IUser[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
@@ -35,12 +37,13 @@ const Content = () => {
 
   // search
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [userExtern, setUserExter] = useState<"all" | string>("all");
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
 
   const [selectedAction, setSelectedAction] = useState<
-    "data" | "search" | "date"
+    "data" | "search" | "date" | "userExtern"
   >("data");
 
   useEffect(() => {
@@ -49,6 +52,12 @@ const Content = () => {
       setToken(token);
     }
   }, []);
+
+  useEffect(() => {
+    if (token) {
+      getUsersExtern();
+    }
+  }, [token]);
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -78,6 +87,12 @@ const Content = () => {
   };
   const handleCloseModal = () => {
     setOpenModal(false);
+  };
+  const handleUserExterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newUser = e.target.value as "all" | string;
+    newUser;
+    setUserExter(newUser);
+    setSelectedAction("userExtern");
   };
 
   const onDelete = () => {
@@ -128,6 +143,22 @@ const Content = () => {
       setLoading(false);
     }
   };
+  const getUsersExtern = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${apiUrls.user.getAll}?type=extern`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(response.data);
+      setUserExternData(response.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const getCoursesBySearch = (query: string) => {
     setSelectedAction("search");
     setSearchQuery(query);
@@ -166,6 +197,44 @@ const Content = () => {
       error: (error: any) => `${error.message}`,
     });
   };
+  const getEventsByUserExtern = async (userExtern: "all" | string) => {
+    if (userExtern === "all") {
+      setSelectedAction("data");
+      return;
+    }
+    console.log(userExtern);
+    setLoading(true);
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        const res = await axios.get(
+          apiUrls.courses.byUser(userExtern.toString()) +
+            "?" +
+            pagination(pageIndex, pageSize),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setData(res.data.data);
+        setPageCount(res.data.last_page);
+        setTotal(res.data.total);
+        resolve({ message: "Eventos filtrados" });
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          reject({ message: error.response?.data.message });
+        }
+        reject({ message: "Error al filtrar eventos por proveedor" });
+      } finally {
+        setLoading(false);
+      }
+    });
+    toast.promise(promise, {
+      loading: "Filtrando eventos...",
+      success: (data: any) => `${data.message}`,
+      error: (error: any) => `${error.message}`,
+    });
+  };
 
   useEffect(() => {
     setData([]);
@@ -181,9 +250,33 @@ const Content = () => {
       getCoursesBySearch(searchQuery);
     }
   }, [token, selectedAction, pageIndex, pageSize, searchQuery]);
+  useEffect(() => {
+    if (token && selectedAction === "userExtern") {
+      getEventsByUserExtern(userExtern);
+    }
+  }, [token, selectedAction, userExtern, pageIndex]);
   return (
     <>
       <SafeAreaContainer isTable>
+      <div className="mb-4">
+          <MainContainer title="Filtros">
+            <div className="flex gap-1 flex-wrap justify-between mb-4 flex-row w-full">
+              <SelectComponent
+                label="Publicistas"
+                id="userExtern"
+                options={[
+                  { value: "all", label: "Todos" },
+                  ...userExternData.map((user) => ({
+                    value: user.id,
+                    label: `${user.work_for_company} | ${user.full_name}`,
+                  })),
+                ]}
+                onChange={handleUserExterChange}
+                defaultValue={userExtern}
+              />
+            </div>
+          </MainContainer>
+        </div>
         <MainContainer>
           <div className="flex flex-col md:flex-row  md:justify-between pb-4 border-b border-b-gray-50 items-center gap-4">
             <h2 className="font-medium text-zinc-500 text-lg w-full md:w-auto">
@@ -207,6 +300,7 @@ const Content = () => {
           </div>
           <div className=" overflow-x-auto">
             <CoursesTable
+              isAdmin
               dataTable={data}
               onDelete={(id: number) => handleDelete(id)}
               onEdit={(id: number) => handleEdit(id)}

@@ -313,7 +313,7 @@ const ContentAdmin = () => {
                   height={100}
                   width={100}
                   alt="Perfil del usuario"
-                  className="rounded-[100%] h-32 w-32 border border-zinc-200 object-cover"
+                  className="rounded-[100%] h-32 w-32 border border-zinc-200 object-contain"
                 />
                 <label
                   htmlFor="logo"

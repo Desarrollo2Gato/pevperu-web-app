@@ -2,18 +2,17 @@
 import AddButton from "@/components/ui/addBtn";
 import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
-import { ICompany, INews } from "@/types/api";
+import { ICategory, ICourse } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import NewsForm from "@/components/forms/newsForm";
-import NewsTable from "@/components/tables/newsTable";
+import CourseForm from "@/components/forms/courseForm";
+import CoursesTable from "@/components/tables/coursesTable";
 import SelectRows from "@/components/ui/selectRows";
-import { toast } from "sonner";
 import { ConfirmModal, FormModal } from "@/components/ui/modals";
-import SelectComponent from "@/components/ui/select";
+import { toast } from "sonner";
 import { useAuthContext } from "@/context/authContext";
 
 const Content = () => {
@@ -27,29 +26,23 @@ const Content = () => {
   const [pageCount, setPageCount] = useState(0);
 
   // data
-  const [data, setData] = useState<INews[]>([]);
+  const [data, setData] = useState<ICourse[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
 
-  // search
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  // filters
-
-  const [statusFilter, setStatusFilter] = useState<
-    "pending" | "approved" | "rejected" | "all"
-  >("all");
-
   // modal
   const [openModal, setOpenModal] = useState(false);
-  const [statusModal, setStatusModal] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<"delete">("delete");
+  const [deleteModal, setDeleteModal] = useState(false);
+
+  // search
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
 
   const [selectedAction, setSelectedAction] = useState<
-    "data" | "search" | "status"
+    "data" | "search" | "date"
   >("data");
 
   useEffect(() => {
@@ -76,17 +69,9 @@ const Content = () => {
     setOpenModal(true);
     setSelectedType("create");
   };
-
-  const handleStatus = (id: number, status: "delete") => {
+  const handleDelete = (id: number) => {
+    setDeleteModal(true);
     setSelectedId(id);
-    setSelectedStatus(status);
-    setStatusModal(true);
-  };
-  const handleChangeStatus = () => {
-    if (!selectedId) return;
-    if (selectedStatus === "delete") {
-      onDelete();
-    }
   };
   const handleEdit = (id: number) => {
     setOpenModal(true);
@@ -97,62 +82,53 @@ const Content = () => {
     setOpenModal(false);
   };
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStatus = e.target.value as "pending" | "approved" | "rejected";
-    newStatus;
-    setStatusFilter(newStatus);
-    setSelectedAction("status");
-  };
-
   const onDelete = () => {
     if (!selectedId) return;
     const promise = new Promise(async (resolve, reject) => {
       try {
-        await axios.delete(apiUrls.news.delete(selectedId?.toString()), {
+        await axios.delete(apiUrls.courses.delete(selectedId?.toString()), {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        resolve({ message: "Noticia eliminado" });
+        resolve({ message: "Curso eliminado" });
       } catch (error) {
         // if (axios.isAxiosError(error)) {
         //   console.log(error.response?.data);
         // }
-        reject({ message: "No se pudo eliminar la noticia" });
+        reject({ message: "No se pudo eliminar el curso" });
       } finally {
         getData();
-        setStatusModal(false);
+        setDeleteModal(false);
       }
     });
 
     toast.promise(promise, {
-      loading: "Eliminando noticia...",
+      loading: "Eliminando curso...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
   };
 
   const getData = async () => {
-    if (!user) {
-      toast.error("No se ha podido obtener el id de la empresa");
+    if (!user || user.id === null) {
+      toast.warning("no se encontro al usuario");
       return;
     }
     setLoading(true);
-    if (!user || user.company_id === null) {
-      toast.error("No se ha podido obtener el id de la empresa");
-      return;
-    }
     try {
       const response = await axios.get(
-        apiUrls.news.myNews(user.company_id.toString()) +
-          "?" +
-          pagination(pageIndex, pageSize),
+        `${apiUrls.courses.byUser(user.id.toString())}?${pagination(
+          pageIndex,
+          pageSize
+        )}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
+      console.log(response.data.data);
       setData(response.data.data);
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
@@ -162,23 +138,18 @@ const Content = () => {
       setLoading(false);
     }
   };
-
-  const getNewsBySearch = (query: string) => {
+  const getCoursesBySearch = (query: string) => {
     setSelectedAction("search");
-    if (!user) {
-      toast.error("No se ha podido obtener el id de la empresa");
-      return;
-    }
     setSearchQuery(query);
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
+      if (!user || user.id === null) {
+        toast.warning("no se encontro al usuario");
+        return;
+      }
       try {
-        if (!user || user.company_id === null) {
-          toast.error("No se ha podido obtener el id de la empresa");
-          return;
-        }
         const res = await axios.get(
-          apiUrls.news.myNews(user.company_id.toString()) +
+          apiUrls.courses.byUser(user.id.toString()) +
             "?like=" +
             query +
             "&" +
@@ -194,68 +165,25 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Busqueda exitosa" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al buscar noticias" });
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+        }
+        reject({ message: "Error al buscar cursos" });
       } finally {
         setLoading(false);
       }
     });
 
     toast.promise(promise, {
-      loading: "Buscando noticias...",
+      loading: "Buscando cursos...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
   };
-  const getNewsByStatus = (
-    status: "pending" | "approved" | "rejected" | "all"
-  ) => {
-    if (status === "all") {
-      setSelectedAction("data");
-      return;
-    }
-    setLoading(true);
-    const promise = new Promise(async (resolve, reject) => {
-      try {
-        if (!user || user.company_id === null) {
-          toast.error("No se ha podido obtener el id de la empresa");
-          return;
-        }
-        const res = await axios.get(
-          apiUrls.news.myNews(user?.company_id.toString()) +
-            "?status=" +
-            status +
-            "&" +
-            pagination(pageIndex, pageSize),
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setData(res.data.data);
-        setPageCount(res.data.last_page);
-        setTotal(res.data.total);
-        resolve({ message: "Noticias filtrados" });
-      } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al filtrar noticias por estado" });
-      } finally {
-        setLoading(false);
-      }
-    });
-    toast.promise(promise, {
-      loading: "Filtrando noticias...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
-  };
+
   useEffect(() => {
     setData([]);
+    setPageIndex(1);
   }, [selectedAction]);
   useEffect(() => {
     if (token && selectedAction === "data") {
@@ -264,43 +192,19 @@ const Content = () => {
   }, [token, selectedAction, pageIndex, pageSize]);
   useEffect(() => {
     if (token && selectedAction === "search") {
-      getNewsBySearch(searchQuery);
+      getCoursesBySearch(searchQuery);
     }
-  }, [token, selectedAction, pageIndex, pageSize]);
-  useEffect(() => {
-    if (token && selectedAction === "status") {
-      getNewsByStatus(statusFilter);
-    }
-  }, [token, selectedAction, statusFilter, pageIndex, pageSize]);
-
+  }, [token, selectedAction, pageIndex, pageSize, searchQuery]);
   return (
     <>
       <SafeAreaContainer isTable>
-        <div className="mb-4">
-          <MainContainer title="Filtros">
-            <div className="flex gap-1 flex-wrap justify-between mb-4 flex-row w-full">
-              <SelectComponent
-                label="Estado"
-                id="statusFilter"
-                options={[
-                  { value: "all", label: "Todos" },
-                  { value: "pending", label: "Pendientes" },
-                  { value: "approved", label: "Aprobados" },
-                  { value: "rejected", label: "Rechazados" },
-                ]}
-                onChange={handleStatusChange}
-                defaultValue={statusFilter}
-              />
-            </div>
-          </MainContainer>
-        </div>
         <MainContainer>
           <div className="flex flex-col md:flex-row  md:justify-between pb-4 border-b border-b-gray-50 items-center gap-4">
             <h2 className="font-medium text-zinc-500 text-lg w-full md:w-auto">
               Registros ({total})
             </h2>{" "}
             <div className="w-full md:w-auto flex justify-end">
-              <AddButton text="Agregar Noticia" onClick={handleAdd} />
+              <AddButton text="Agregar Curso" onClick={handleAdd} />
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">
@@ -310,15 +214,15 @@ const Content = () => {
             />
             <div className="w-full sm:w-auto flex flex-row self-end">
               <SearchInput
-                placeholder="Buscar noticias"
-                onClick={(query) => getNewsBySearch(query)}
+                placeholder="Buscar curso"
+                onClick={(query) => getCoursesBySearch(query)}
               />
             </div>
           </div>
           <div className=" overflow-x-auto">
-            <NewsTable
+            <CoursesTable
               dataTable={data}
-              onDelete={(id: number) => handleStatus(id, "delete")}
+              onDelete={(id: number) => handleDelete(id)}
               onEdit={(id: number) => handleEdit(id)}
             />
           </div>
@@ -333,11 +237,11 @@ const Content = () => {
         </MainContainer>
       </SafeAreaContainer>
       <FormModal
-        title={`${selectedType === "edit" ? "Editar" : "Crear"} noticia`}
+        title={`${selectedType === "edit" ? "Editar" : "Crear"} curso`}
         openModal={openModal}
         setOpenModal={() => setOpenModal(false)}
       >
-        <NewsForm
+        <CourseForm
           closeModal={handleCloseModal}
           type={selectedType}
           id={selectedId}
@@ -345,19 +249,12 @@ const Content = () => {
           getData={getData}
         />
       </FormModal>
+      {/* delete modal */}
       <ConfirmModal
-        openModal={statusModal}
-        setOpenModal={() => setStatusModal(false)}
-        onAction={handleChangeStatus}
-        title={
-          selectedStatus === "delete" ? "Eliminar Noticia" : "Aprobar Noticia"
-        }
-        text={
-          selectedStatus === "delete"
-            ? "¿Está seguro que desea eliminar esta noticia?"
-            : "¿Está seguro que desea rechazar esta noticia?"
-        }
-        textButton={selectedStatus === "delete" ? "Eliminar" : "Aprobar"}
+        openModal={deleteModal}
+        setOpenModal={() => setDeleteModal(false)}
+        onAction={onDelete}
+        title="Eliminar Curso"
       />
     </>
   );

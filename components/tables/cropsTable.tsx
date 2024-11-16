@@ -1,7 +1,7 @@
-import { ICourse } from "@/types/api";
-import { useState } from "react";
+import { ICrops } from "@/types/api";
 import { BiSolidEdit } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";
+import { FaRegImage } from "react-icons/fa6";
 
 import {
   ColumnDef,
@@ -9,60 +9,46 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { imgUrl } from "@/utils/img/imgUrl";
 
-interface CoursesTableProps {
-  dataTable: ICourse[];
+interface CropsTableProps {
+  dataTable: ICrops[];
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
-  isAdmin?: boolean;
 }
-const CoursesTable: React.FC<CoursesTableProps> = ({
+const CropsTable: React.FC<CropsTableProps> = ({
   dataTable,
   onEdit,
   onDelete,
-  isAdmin = false,
 }) => {
-  const data: ICourse[] = dataTable;
+  const data: ICrops[] = dataTable;
 
   // colums
-  const columns: ColumnDef<ICourse, any>[] = [
+  const columns: ColumnDef<ICrops, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
     },
     {
-      accessorKey: "title",
-      header: "Curso",
-    },
-    {
-      accessorKey: "company",
-      header: "Empresa",
+      accessorKey: "icon_url",
+      header: "Ícono",
       cell: (info) =>
-        info.row.original.company
-          ? info.row.original.company.name
-          : info.row.original.extern_user.work_for_company,
+        info.row.original.icon_url ? (
+          <img
+            className="w-8 h-8 object-contain"
+            src={imgUrl(info.row.original.icon_url)}
+            alt="icon"
+          />
+        ) : (
+          <div className="w-8 h-8 rounded flex justify-center items-center border border-green-800  text-green-800">
+            <FaRegImage />
+          </div>
+        ),
     },
-    ...(isAdmin
-      ? [
-          {
-            accessorKey: "type",
-            header: "Usuario",
-            cell: (info: any) =>
-              info.row.original.company ? "Empresa" : "Publicista",
-          },
-        ]
-      : []),
+
     {
-      accessorKey: "link",
-      header: "Correo de contacto",
-      cell: (info) =>
-        info.row.original.link ? info.row.original.link : "Sin correo",
-    },
-    {
-      accessorKey: "link",
-      header: "Ultima actualización",
-      cell: (info) =>
-        new Date(info.row.original.updated_at).toLocaleDateString(),
+      accessorKey: "name",
+      header: "Cultivo",
     },
 
     {
@@ -146,4 +132,4 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
   );
 };
 
-export default CoursesTable;
+export default CropsTable;

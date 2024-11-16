@@ -10,7 +10,8 @@ export async function middleware(req: NextRequest) {
     // Redirect to login if not authenticated
     if (
       req.nextUrl.pathname.startsWith("/admin") ||
-      req.nextUrl.pathname.startsWith("/empresa")
+      req.nextUrl.pathname.startsWith("/empresa") ||
+      req.nextUrl.pathname.startsWith("/publicador")
     ) {
       return NextResponse.redirect(new URL("/", req.url));
     }
@@ -29,7 +30,7 @@ export async function middleware(req: NextRequest) {
     }
 
     if (
-      user.type === "company_owner" &&
+      (user.type === "company_owner" || user.type === "extern") &&
       req.nextUrl.pathname.startsWith("/admin")
     ) {
       const url = new URL("/", req.url);
@@ -53,11 +54,14 @@ export async function middleware(req: NextRequest) {
     if (user.type === "company_owner" && req.nextUrl.pathname === "/") {
       return NextResponse.redirect(new URL("/empresa", req.url));
     }
+    if (user.type === "extern" && req.nextUrl.pathname === "/") {
+      return NextResponse.redirect(new URL("/publicador", req.url));
+    }
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin(.*)", "/empresa(.*)", "/"],
+  matcher: ["/admin(.*)", "/empresa(.*)", "/publicador(.*)", "/"],
 };

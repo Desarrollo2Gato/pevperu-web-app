@@ -61,6 +61,10 @@ export type TIngredient = {
   ingredient: string;
   percentage: string;
 };
+export type TExternType = {
+  id: number;
+  name: string;
+};
 // Interfaces
 
 export interface IBranchData {
@@ -103,6 +107,7 @@ export interface IUser {
   status: string;
   company: ICompany;
   photo: string;
+  extern_types: TExternType[];
 }
 
 export interface INotification {
@@ -137,7 +142,6 @@ export interface ISubscription {
   plan_id: number;
   start_date: Date | string;
 }
-
 export interface IFilter {
   id: number;
   icon: string | null;
@@ -176,6 +180,7 @@ export interface IProduct {
   chemical_classification_title: string;
   chemical_classification_url: string;
   ingredients: TIngredient[];
+  toxicological_category: string;
 }
 
 export interface IEvents {
@@ -193,6 +198,8 @@ export interface IEvents {
   company: ICompany;
   updated_at: Date | string;
   link: string;
+  extern_user_id: number;
+  extern_user: IUser;
 }
 export interface INews {
   id: string;
@@ -206,19 +213,34 @@ export interface INews {
   status: string;
   updated_at: Date | string;
   link: string;
+  extern_user_id: number;
+  extern_user: IUser;
 }
 export interface ICourse {
   id: string;
   title: string;
+  company_id: string;
   published_at: Date | string;
   photos: TPhotos[];
   description: string;
   content: string;
-  language: string;
+  modality: string;
+  hours: string;
+  cost: string;
+  start_date: Date | string;
+  phone_number: string;
   company: ICompany;
   updated_at: Date | string;
   link: string;
+  email: string;
+  extern_user_id: number;
+  extern_user: IUser;
 }
+
+// export interface IExternUser {
+//   id: string;
+
+// }
 
 export interface IHelpCompany {
   whatsapp_link: string;
@@ -245,4 +267,15 @@ export interface IAds {
   type: string;
   product_id: string;
   // home_ads: Tphotos[];
+}
+
+export interface ICrops {
+  id: string;
+  name: string;
+  icon_url: string;
+}
+export interface IPublisher {
+  id: string;
+  name: string;
+  permisses: string[];
 }

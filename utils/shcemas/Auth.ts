@@ -77,10 +77,12 @@ export const PersonUpdateSchema = z.object({
     })
     .positive("La profesión es requerida"),
   email: z.string().email("El email no es válido"),
-  phoneNumber: z
-    .string()
-    .regex(/^\d{9}$/, "El número debe contener solo 9 dígitos"),
-  image: z.nullable(z.any()),
+
+  image: z
+    .custom<FileList>((files) => files?.length > 0, {
+      message: "La imagen es requerida",
+    })
+    .nullable(),
   workForCompany: z.string().nullable(),
 });
 
@@ -164,10 +166,9 @@ export const CompanyUpdateSchema = z.object({
       invalid_type_error: "La profesión es requerida",
     })
     .positive("La profesión es requerida"),
-  businessHours: z
-    .string().nullable(),
-    // .min(1, "El horario de atención es requerido")
-    // .max(255, "El horario de atención no puede tener más de 255 caracteres"),
+  businessHours: z.string().nullable(),
+  // .min(1, "El horario de atención es requerido")
+  // .max(255, "El horario de atención no puede tener más de 255 caracteres"),
   // logo: z.any().nullable(),
   logo: z
     .custom<FileList>((files) => files?.length > 0, {
@@ -249,3 +250,38 @@ export const ChangePasswordSchema = z
     message: "Las contraseñas no coinciden",
     path: ["passwordConfirm"],
   });
+
+export const registerSchema = z
+  .object({
+    name: z.string().min(1, "El nombre es requerido"),
+    email: z.string().email("El correo no es valido"),
+    // numero: z.string().nullable(),
+    profession: z.string().min(1, "La profesion es requerida"),
+    password: z
+      .string()
+      .min(6, "La contraseña debe tener al menos 6 caracteres"),
+    confirmPassword: z.string(),
+    content: z.string().min(1, "El tipo del contenido es requerido"),
+    company: z.string().min(1, "El nombre de la empresa es requerido"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
+
+export const publisherSchema = z.object({
+  profile: z
+    .custom<FileList>((files) => files?.length > 0, {
+      message: "La imagen es requerida",
+    })
+    .nullable(),
+  name: z.string().min(1, "El nombre es requerido"),
+  email: z.string().email("El correo no es valido"),
+  phone: z.string().nullable(),
+  profesion: z.string().min(1, "La profesion es requerida"),
+  company: z.string().min(1, "El nombre de la empresa es requerido"),
+});
+
+export const publisherPermisses = z.object({
+  content: z.array(z.string()),
+});

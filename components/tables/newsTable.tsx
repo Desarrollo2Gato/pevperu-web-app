@@ -1,5 +1,4 @@
 import { INews } from "@/types/api";
-import { useState } from "react";
 import { BiSolidEdit, BiCheck, BiX } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";
 
@@ -18,6 +17,7 @@ interface NewsTableProps {
   onDelete: (id: number) => void;
   onApprove?: (id: number) => void;
   onReject?: (id: number) => void;
+  isAdmin?: boolean;
 }
 const NewsTable: React.FC<NewsTableProps> = ({
   dataTable,
@@ -25,10 +25,9 @@ const NewsTable: React.FC<NewsTableProps> = ({
   onDelete,
   onApprove,
   onReject,
+  isAdmin = false,
 }) => {
   const data: INews[] = dataTable;
-  const [filter, setFilter] = useState("");
-  const [filteredData, setFilteredData] = useState<INews[]>([]);
 
   // colums
   const columns: ColumnDef<INews, any>[] = [
@@ -43,8 +42,21 @@ const NewsTable: React.FC<NewsTableProps> = ({
     {
       accessorKey: "company",
       header: "Empresa",
-      cell: (info) => info.row.original.company.name,
+      cell: (info) =>
+        info.row.original.company
+          ? info.row.original.company.name
+          : info.row.original.extern_user.work_for_company,
     },
+    ...(isAdmin
+      ? [
+          {
+            accessorKey: "type",
+            header: "Usuario",
+            cell: (info: any) =>
+              info.row.original.company ? "Empresa" : "Publicista",
+          },
+        ]
+      : []),
     {
       accessorKey: "status",
       header: "Estado",

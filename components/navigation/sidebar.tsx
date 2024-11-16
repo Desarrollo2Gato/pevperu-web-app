@@ -27,6 +27,7 @@ import { PiFilesBold } from "react-icons/pi";
 import { FaRegBuilding } from "react-icons/fa";
 import { toast } from "sonner";
 import { MdOutlineCampaign } from "react-icons/md";
+import { RiSeedlingLine } from "react-icons/ri";
 
 interface SidebarProps {
   active: boolean;
@@ -106,7 +107,9 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                 className={`flex flex-row items-center relative ${
                   !active ? "justify-center" : "justify-center md:justify-start"
                 } w-full  hover:opacity-100 ${
-                  pathname === "/admin" || pathname === "/empresa"
+                  pathname === "/admin" ||
+                  pathname === "/empresa" ||
+                  pathname === "/publicador"
                     ? "opacity-100"
                     : " opacity-30"
                 } transition-all duration-500`}
@@ -223,9 +226,8 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
-              {
-                user?.plan?.id !== 1 && (
-                  <li
+              {user?.plan?.id !== 1 && (
+                <li
                   className={`w-full justify-center flex items-center py-4 group ${
                     active ? "px-4 md:px-8" : "px-4 "
                   } `}
@@ -258,9 +260,109 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                     </Link>
                   </BootstrapTooltip>
                 </li>
-                )
-              }
-             
+              )}
+            </>
+          )}
+          {user?.type === "extern" && (
+            <>
+              <li
+                className={`w-full justify-center flex items-center py-4 group ${
+                  active ? "px-4 md:px-8" : "px-4 "
+                } `}
+              >
+                <BootstrapTooltip
+                  placement="right"
+                  title={active ? "" : "Eventos"}
+                >
+                  <Link
+                    href={"/publicador/eventos"}
+                    className={`flex flex-row items-center relative ${
+                      !active
+                        ? "justify-center"
+                        : "justify-center md:justify-start"
+                    } w-full  hover:opacity-100 ${
+                      pathname === "/publicador/eventos"
+                        ? "opacity-100"
+                        : " opacity-30"
+                    } transition-all duration-500`}
+                  >
+                    <MdEventNote className="text-2xl" />
+
+                    <span
+                      className={`${
+                        !active ? "hidden" : "hidden md:inline-block"
+                      } ml-2 text-base inline-block transform transition-all duration-700`}
+                    >
+                      Eventos
+                    </span>
+                  </Link>
+                </BootstrapTooltip>
+              </li>
+              <li
+                className={`w-full justify-center flex items-center py-4 group ${
+                  active ? "px-4 md:px-8" : "px-4 "
+                } `}
+              >
+                <BootstrapTooltip
+                  placement="right"
+                  title={active ? "" : "Noticias"}
+                >
+                  <Link
+                    href={"/publicador/noticias"}
+                    className={`flex flex-row items-center relative ${
+                      !active
+                        ? "justify-center"
+                        : "justify-center md:justify-start"
+                    } w-full  hover:opacity-100 ${
+                      pathname === "/publicador/noticias"
+                        ? "opacity-100"
+                        : " opacity-30"
+                    } transition-all duration-500`}
+                  >
+                    <IoNewspaperOutline className="text-2xl" />
+
+                    <span
+                      className={`${
+                        !active ? "hidden" : "hidden md:inline-block"
+                      } ml-2 text-base inline-block transform transition-all duration-700`}
+                    >
+                      Noticias
+                    </span>
+                  </Link>
+                </BootstrapTooltip>
+              </li>
+              <li
+                className={`w-full justify-center flex items-center py-4 group ${
+                  active ? "px-4 md:px-8" : "px-4 "
+                } `}
+              >
+                <BootstrapTooltip
+                  placement="right"
+                  title={active ? "" : "Cursos"}
+                >
+                  <Link
+                    href={"/publicador/cursos"}
+                    className={`flex flex-row items-center relative ${
+                      !active
+                        ? "justify-center"
+                        : "justify-center md:justify-start"
+                    } w-full  hover:opacity-100 ${
+                      pathname === "/publicador/cursos"
+                        ? "opacity-100"
+                        : " opacity-30"
+                    } transition-all duration-500`}
+                  >
+                    <GrBook className="text-2xl" />
+                    <span
+                      className={`${
+                        !active ? "hidden" : "hidden md:inline-block"
+                      } ml-2 text-base inline-block transform transition-all duration-700`}
+                    >
+                      Cursos
+                    </span>
+                  </Link>
+                </BootstrapTooltip>
+              </li>
             </>
           )}
 
@@ -361,6 +463,39 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                       } ml-2 text-base inline-block transform transition-all duration-700`}
                     >
                       Filtros
+                    </span>
+                  </Link>
+                </BootstrapTooltip>
+              </li>
+              <li
+                className={`w-full justify-center flex items-center py-4 group ${
+                  active ? "px-4 md:px-8" : "px-4 "
+                } `}
+              >
+                <BootstrapTooltip
+                  placement="right"
+                  title={active ? "" : "Cultivos"}
+                >
+                  <Link
+                    href={"/admin/cultivos"}
+                    className={`flex flex-row items-center relative ${
+                      !active
+                        ? "justify-center"
+                        : "justify-center md:justify-start"
+                    } w-full  hover:opacity-100 ${
+                      pathname === "/admin/cultivos"
+                        ? "opacity-100"
+                        : " opacity-30"
+                    } transition-all duration-500`}
+                  >
+                    <RiSeedlingLine className="text-2xl" />
+
+                    <span
+                      className={`${
+                        !active ? "hidden" : "hidden md:inline-block"
+                      } ml-2 text-base inline-block transform transition-all duration-700`}
+                    >
+                      Cultivos
                     </span>
                   </Link>
                 </BootstrapTooltip>
@@ -711,13 +846,16 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                 href={
                   user?.type === "admin"
                     ? "/admin/contrasenia"
-                    : "/empresa/contrasenia"
+                    : user?.type === "extern"
+                    ? "/publicador/contrasenia"
+                    : "/empresa/contrasenia "
                 }
                 className={`flex flex-row items-center relative ${
                   !active ? "justify-center" : "justify-center md:justify-start"
                 } w-full  hover:opacity-100 ${
                   pathname === "/admin/contrasenia" ||
-                  pathname === "/empresa/contrasenia"
+                  pathname === "/empresa/contrasenia" ||
+                  pathname === "/publicador/contrasenia"
                     ? "opacity-100"
                     : " opacity-30"
                 } transition-all duration-500`}

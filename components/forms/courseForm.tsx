@@ -51,12 +51,17 @@ const CourseForm: React.FC<CourseFormProps> = ({
     resolver: zodResolver(courseSaveSchema),
     defaultValues: {
       title: "",
-      language: "",
-      description: "",
       content: "",
+      description: "",
       main_img: null,
       second_img: null,
       link: "",
+      cost: "0.0",
+      modality: "",
+      email: "",
+      phone: "",
+      start_date: "",
+      hours: "",
     },
   });
 
@@ -67,7 +72,6 @@ const CourseForm: React.FC<CourseFormProps> = ({
   }, [type, id]);
 
   useEffect(() => {
-
     if (course) {
       if (course.photos && course.photos.length > 0) {
         setImgMain(imgUrl(course.photos[0].photo_url));
@@ -77,12 +81,19 @@ const CourseForm: React.FC<CourseFormProps> = ({
       }
       reset({
         title: course.title || "",
-        language: course.language || "",
         description: course.description || "",
         content: course.content || "",
         main_img: null,
         second_img: null,
         link: course.link || "",
+        cost: course.cost || "0.0",
+        modality: course.modality || "",
+        email: course.email || "",
+        phone: course.phone_number || "",
+        start_date: course?.start_date
+          ? new Date(course.start_date).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+        hours: course.hours || "",
       });
     }
   }, [course]);
@@ -103,26 +114,36 @@ const CourseForm: React.FC<CourseFormProps> = ({
       setLoading(false);
     }
   };
-
+  const formatDateToISO = (date: any) => {
+    if (!date) return "";
+    return date.toISOString().split("T")[0];
+  };
   const onSubmit = async (data: any) => {
     setSubmitting(true);
     const dataSend = new FormData();
-    if (!user?.company_id) {
-      toast.error("No se ha podido obtener su id, recargue la página ");
-      return;
-    }
+    const isUpdate = Boolean(course);
+    const haveCompany = Boolean(user?.company_id);
 
-    if (course) {
-      dataSend.append("company_id", course?.company.id.toString());
+    let autor_id: string | undefined;
+    if (isUpdate) {
+      autor_id = haveCompany
+        ? course?.company.id.toString()
+        : course?.extern_user_id?.toString();
     } else {
-      dataSend.append("company_id", user?.company_id.toString());
+      autor_id = haveCompany
+        ? user?.company_id?.toString()
+        : user?.id.toString();
     }
-
     dataSend.append("title", data.title);
-    dataSend.append("language", data.language);
     dataSend.append("description", data.description);
     dataSend.append("content", data.content);
+    dataSend.append("start_date", formatDateToISO(data.start_date)),
     dataSend.append("link", data.link);
+    dataSend.append("hours", data.hours);
+    dataSend.append("modality", data.modality);
+    dataSend.append("cost", data.cost);
+    dataSend.append("phone_number", data.phone);
+    dataSend.append("email", data.email);
     dataSend.append("published_at", new Date().toISOString());
     if (data.main_img) {
       dataSend.append("photos[]", data.main_img[0]);
@@ -160,10 +181,12 @@ const CourseForm: React.FC<CourseFormProps> = ({
         getData();
       } catch (error) {
         console.error(error);
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al guardar los datos" });
+        if (axios.isAxiosError(error)) {
+          // console.log(error.response?.data);
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "Error al guardar los datos" });
+        }
       } finally {
         setSubmitting(false);
       }
@@ -219,7 +242,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
         />
         <TextAreaZodField
           id="description"
-          name="Descripción"
+          name="Descripción Corta"
           placeholder="Ingrese una descripción corta"
           register={register("description")}
           error={errors.description}
@@ -232,24 +255,53 @@ const CourseForm: React.FC<CourseFormProps> = ({
           text="Contenido"
           error={errors.content}
         />
-        {/* <EditorHtml
-          text="Contenido"
-          id="content"
-          value={getValues("content")}
-          setValue={setValue}
-          error={errors.content}
-        /> */}
         <InputZodField
-          id="language"
-          name="Idioma"
-          placeholder="Ingrese el idioma del curso"
-          register={register("language")}
-          error={errors.language}
+          id="start_date"
+          name="Fecha de inicio"
+          type="date"
+          register={register("start_date")}
+          error={errors.start_date}
+        />
+        <InputZodField
+          id="modality"
+          name="Modalidad"
+          placeholder="Presencial o Remoto"
+          register={register("modality")}
+          error={errors.modality}
+        />
+        <InputZodField
+          id="hours"
+          name="Horario"
+          placeholder="Lunes, Miercoles y Viernes de 8:00 am - 10:00 am"
+          register={register("hours")}
+          error={errors.hours}
+        />
+        <InputZodField
+          id="phone"
+          name="Teléfono de contacto"
+          placeholder="+51 999888333"
+          register={register("phone")}
+          error={errors.phone}
+        />
+        <InputZodField
+          id="cost"
+          name="Costo"
+          placeholder="0.00"
+          register={register("cost")}
+          error={errors.cost}
+        />
+        <InputZodField
+          id="email"
+          name="Correo de contacto"
+          placeholder="correo@gmail.com"
+          register={register("email")}
+          type="email"
+          error={errors.email}
         />
         <InputZodField
           id="link"
-          name="Correo de contacto"
-          placeholder="Ingrese el correo de contacto"
+          name="Enlace para mas información"
+          placeholder="http://example.com"
           register={register("link")}
           error={errors.link}
         />

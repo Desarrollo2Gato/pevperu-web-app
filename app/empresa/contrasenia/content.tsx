@@ -1,9 +1,6 @@
 "use client";
 import ButtonForm from "@/components/ui/buttonForm";
-import {
-  MainContainer,
-  SafeAreaContainer,
-} from "@/components/ui/containers";
+import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import { InputZodField } from "@/components/ui/inputField";
 import { useAuthContext } from "@/context/authContext";
 import { IHelpCompany } from "@/types/api";
@@ -51,6 +48,7 @@ const Content = () => {
     }
 
     const promise = new Promise(async (resolve, reject) => {
+      if (!user?.company_id) return;
       try {
         const res = await axios.post(
           apiUrls.user.password(user?.company_id.toString()),

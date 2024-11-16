@@ -42,14 +42,15 @@ const Content = () => {
 
   const onSubmit = async (data: any) => {
     setLoading(true);
+    if (!user) {
+      toast.error("Usuario no encontrado");
+      return;
+    }
+
     const promise = new Promise(async (resolve, reject) => {
       try {
-        if (!user || user.company_id === null) {
-          toast.error("No se ha podido obtener el id de la empresa");
-          return;
-        }
         const res = await axios.post(
-          apiUrls.user.password(user?.company_id.toString()),
+          apiUrls.user.password(user?.id.toString()),
           {
             current_password: data.currentPassword,
             new_password: data.password,

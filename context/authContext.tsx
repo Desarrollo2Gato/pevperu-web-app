@@ -15,7 +15,6 @@ import { apiUrls } from "../utils/api/apiUrls";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-
 type TypePlan = {
   id: number;
   name: string;
@@ -29,16 +28,19 @@ type TypePlan = {
 };
 
 type User = {
+  id: string;
   email: string;
   type: string;
   name: string;
   logo: string | null;
-  company_id: number;
+  company_id: number | null;
+  adviser_id: number | null;
   plan?: TypePlan | undefined | null;
 };
 type AuthContextType = {
   user: User | null;
   login: (authTokens: string, userInfo: User) => void;
+  registerExtern: (authTokens: string, userInfo: User) => void;
   logout: () => void;
   isAdmin: () => boolean;
   refreshToken?: () => void;
@@ -47,6 +49,7 @@ type AuthContextType = {
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   login: () => {},
+  registerExtern: () => {},
   logout: () => {},
   isAdmin: () => false,
   refreshToken: () => {},
@@ -67,6 +70,17 @@ export default function AuthContextProvider({
     setAuthTokens(authTokens);
     setUser(userInfo);
   }, []);
+
+  const registerExtern = useCallback(function (
+    authTokens: string,
+    userInfo: User
+  ) {
+    Cookies.set("authTokens", authTokens);
+    Cookies.set("user", JSON.stringify(userInfo));
+    setAuthTokens(authTokens);
+    setUser(userInfo);
+  },
+  []);
 
   const logout = useCallback(function () {
     Cookies.remove("authTokens");
@@ -99,6 +113,7 @@ export default function AuthContextProvider({
         );
         const user = res.data.user;
         const userInfo = {
+          id: user.id,
           name: user.full_name,
           email: user.email,
           type: user.type,
@@ -165,7 +180,7 @@ export default function AuthContextProvider({
     if (authTokens) {
       const refreshInterval = setInterval(() => {
         refreshToken();
-      }, 60 * 60 * 1000); 
+      }, 60 * 60 * 1000);
       return () => clearInterval(refreshInterval);
     }
   }, [authTokens, refreshToken]);
@@ -176,9 +191,10 @@ export default function AuthContextProvider({
       login,
       logout,
       isAdmin,
+      registerExtern,
       refreshToken,
     }),
-    [user, login, logout, user, isAdmin]
+    [user, login, logout, user, isAdmin, registerExtern]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

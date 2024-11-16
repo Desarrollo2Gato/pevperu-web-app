@@ -138,8 +138,14 @@ const Content = () => {
     }
     setLoading(true);
     try {
+      if (!user || user.company_id === null) {
+        toast.error("No se ha podido obtener el id de la empresa");
+        return;
+      }
       const response = await axios.get(
-        apiUrls.banner.byCompany(user.company_id.toString()) + "?" + pagination(pageIndex, pageSize),
+        apiUrls.banner.byCompany(user.company_id.toString()) +
+          "?" +
+          pagination(pageIndex, pageSize),
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -159,14 +165,14 @@ const Content = () => {
 
   const getNewsBySearch = (query: string) => {
     setSelectedAction("search");
-    if (!user) {
-      toast.error("No se ha podido obtener el id de la empresa");
-      return;
-    }
     setSearchQuery(query);
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
+        if (!user || user.company_id === null) {
+          toast.error("No se ha podido obtener el id de la empresa");
+          return;
+        }
         const res = await axios.get(
           apiUrls.news.myNews(user.company_id.toString()) +
             "?like=" +
@@ -199,9 +205,7 @@ const Content = () => {
       error: (error: any) => `${error.message}`,
     });
   };
-  const getNewsByStatus = (
-    status: "home" | "intern" | "product" | "all"
-  ) => {
+  const getNewsByStatus = (status: "home" | "intern" | "product" | "all") => {
     if (status === "all") {
       setSelectedAction("data");
       return;
@@ -209,7 +213,7 @@ const Content = () => {
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
-        if (!user) {
+        if (!user || user.company_id === null) {
           toast.error("No se ha podido obtener el id de la empresa");
           return;
         }
@@ -261,7 +265,7 @@ const Content = () => {
     if (token && selectedAction === "type") {
       getNewsByStatus(typeFilter);
     }
-  }, [token, selectedAction, typeFilter,pageIndex, pageSize]);
+  }, [token, selectedAction, typeFilter, pageIndex, pageSize]);
 
   return (
     <>

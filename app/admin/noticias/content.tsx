@@ -1,11 +1,8 @@
 "use client";
 import AddButton from "@/components/ui/addBtn";
-import {
-  MainContainer,
-  SafeAreaContainer,
-} from "@/components/ui/containers";
+import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
-import { ICompany, INews } from "@/types/api";
+import { ICompany, INews, IUser } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
@@ -31,6 +28,7 @@ const Content = () => {
   // data
   const [data, setData] = useState<INews[]>([]);
   const [providers, setProviders] = useState<ICompany[]>([]);
+  const [userExternData, setUserExternData] = useState<IUser[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
@@ -39,6 +37,7 @@ const Content = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   // filters
   const [providerFilter, setProviderFilter] = useState<"all" | string>("all");
+  const [userExtern, setUserExter] = useState<"all" | string>("all");
   const [statusFilter, setStatusFilter] = useState<
     "pending" | "approved" | "rejected" | "all"
   >("all");
@@ -55,7 +54,7 @@ const Content = () => {
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
 
   const [selectedAction, setSelectedAction] = useState<
-    "data" | "search" | "status" | "provider"
+    "data" | "search" | "status" | "provider" | "userExtern"
   >("data");
 
   useEffect(() => {
@@ -67,6 +66,7 @@ const Content = () => {
   useEffect(() => {
     if (token) {
       getProviders();
+      getUsersExtern();
     }
   }, [token]);
 
@@ -123,6 +123,12 @@ const Content = () => {
     newStatus;
     setStatusFilter(newStatus);
     setSelectedAction("status");
+  };
+  const handleUserExterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newUser = e.target.value as "all" | string;
+    newUser;
+    setUserExter(newUser);
+    setSelectedAction("userExtern");
   };
 
   const onApprove = async (id: string) => {
@@ -330,6 +336,60 @@ const Content = () => {
       error: (error: any) => `${error.message}`,
     });
   };
+  const getUsersExtern = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${apiUrls.user.getAll}?type=extern`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(response.data);
+      setUserExternData(response.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const getEventsByUserExtern = async (userExtern: "all" | string) => {
+    if (userExtern === "all") {
+      setSelectedAction("data");
+      return;
+    }
+    console.log(userExtern);
+    setLoading(true);
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        const res = await axios.get(
+          apiUrls.news.byUser(userExtern.toString()) +
+            "?" +
+            pagination(pageIndex, pageSize),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setData(res.data.data);
+        setPageCount(res.data.last_page);
+        setTotal(res.data.total);
+        resolve({ message: "Eventos filtrados" });
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          reject({ message: error.response?.data.message });
+        }
+        reject({ message: "Error al filtrar eventos por proveedor" });
+      } finally {
+        setLoading(false);
+      }
+    });
+    toast.promise(promise, {
+      loading: "Filtrando eventos...",
+      success: (data: any) => `${data.message}`,
+      error: (error: any) => `${error.message}`,
+    });
+  };
 
   useEffect(() => {
     // limpiar data
@@ -355,6 +415,11 @@ const Content = () => {
       getNewsByProvider(providerFilter);
     }
   }, [token, selectedAction, providerFilter, pageIndex]);
+  useEffect(() => {
+    if (token && selectedAction === "userExtern") {
+      getEventsByUserExtern(userExtern);
+    }
+  }, [token, selectedAction, userExtern, pageIndex]);
   return (
     <>
       <SafeAreaContainer isTable>
@@ -385,6 +450,19 @@ const Content = () => {
                 ]}
                 onChange={handleProviderChange}
                 defaultValue={providerFilter}
+              />
+              <SelectComponent
+                label="Publicistas"
+                id="userExtern"
+                options={[
+                  { value: "all", label: "Todos" },
+                  ...userExternData.map((user) => ({
+                    value: user.id,
+                    label: `${user.work_for_company} | ${user.full_name}`,
+                  })),
+                ]}
+                onChange={handleUserExterChange}
+                defaultValue={userExtern}
               />
             </div>
           </MainContainer>
@@ -417,6 +495,7 @@ const Content = () => {
               onEdit={(id: number) => handleEdit(id)}
               onApprove={(id: number) => handleStatus(id, "approved")}
               onReject={(id: number) => handleRejected(id)}
+              isAdmin
             />
           </div>
           <div className="mt-4 justify-center flex">

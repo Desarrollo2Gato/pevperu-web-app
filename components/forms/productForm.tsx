@@ -71,7 +71,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [gettingCategories, setGettingCategories] = useState(false);
 
-  const [SelectedLabels, setSelectedLabels] = useState<any[]>([]);
+  // const [SelectedLabels, setSelectedLabels] = useState<any[]>([]);
   const [labelsData, setLabelsData] = useState<any[]>([]);
 
   const [files, setFiles] = useState<TFileData[]>([]);
@@ -96,6 +96,14 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     TFilterOptions[]
   >([]);
 
+  const [labelSelected, setLabelSelected] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
+  const [isAgro, setIsAgro] = useState<boolean>(false);
+  const [isRC, setIsRC] = useState<boolean>(false);
+
   const {
     control,
     register,
@@ -112,7 +120,8 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       name: "",
       description: "",
       category_id: "",
-      labels: [] as number[],
+      // labels: [] as number[],
+      labels: "",
       specifications: [{ title: "", description: "" }],
       img1: null,
       img2: null,
@@ -120,11 +129,13 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       featured_product: "false",
       company_id: "",
       senasa_number: "",
-      senasa_link: "",
+      senasa_link:
+        "https://servicios.senasa.gob.pe/SIGIAWeb/sigia_consulta_cultivo.html",
       active_ingts: [{ ingredient: "", percentage: "" }],
-      chemical_class_title: "Clasificación química",
+      chemical_class_title: "",
       chemical_class_text: "",
       chemical_class_url: "",
+      toxicological_category: "",
     },
   });
 
@@ -181,18 +192,18 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         setFilesInitialData(FilesToDownload);
       }
 
-      if (product.labels && product.labels.length > 0) {
-        const labels = product.labels.map((label: any) => ({
-          value: label.id,
-          label: label.name,
-        }));
-        setLabelsData(labels);
-      }
+      // if (product.labels && product.labels.length > 0) {
+      //   const labels = product.labels.map((label: any) => ({
+      //     value: label.id,
+      //     label: label.name,
+      //   }));
+      //   setLabelsData(labels);
+      // }
 
-      if (product.labels && product.labels.length > 0) {
-        const labels = product.labels.map((label: any) => Number(label.id));
-        setValue("labels", labels || []);
-      }
+      // if (product.labels && product.labels.length > 0) {
+      //   const labels = product.labels.map((label: any) => Number(label.id));
+      //   setValue("labels", labels || []);
+      // }
       if (product?.category.id) {
         getFiles();
       }
@@ -217,6 +228,8 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           product.ingredients.length > 0
             ? product.ingredients
             : [{ ingredient: "", percentage: "" }],
+        labels:
+          product.labels.length > 0 ? product.labels[0].id.toString() : "",
         img1: null,
         img2: null,
         // img3: null,
@@ -227,11 +240,14 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           "",
         status:
           product.status || user?.type === "admin" ? "approved" : "pending",
-        senasa_link: product.senasa_url || "",
+        senasa_link:
+          product.senasa_url ||
+          "https://servicios.senasa.gob.pe/SIGIAWeb/sigia_consulta_cultivo.html",
         senasa_number: product.senasa_number || "",
         chemical_class_title: product.chemical_classification_code || "",
         chemical_class_text: product.chemical_classification_title || "",
         chemical_class_url: product.chemical_classification_url || "",
+        toxicological_category: product.toxicological_category || "",
       });
     }
   }, [product]);
@@ -249,11 +265,26 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   useEffect(() => {
     if (selectedCategory) {
       setFilterOptionData([]);
-      setSelectedLabels([]);
+      // setSelectedLabels([]);
 
       getFiles();
       getLabels();
       getFilters();
+    }
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    if (selectedCategory) {
+      const name = selectedCategory.name?.toLowerCase();
+      const result =
+        name.includes("agroquimico") || name.includes("agroquímico")
+          ? true
+          : false;
+      const resultrc = name.includes("reguladores de crecimiento")
+        ? true
+        : false;
+      setIsRC(resultrc);
+      setIsAgro(result);
     }
   }, [selectedCategory]);
 
@@ -282,26 +313,26 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     }
   }, [product, filterOptionData]);
 
-  useEffect(() => {
-    if (product?.labels && SelectedLabels.length > 0) {
-      const labels = product.labels.map((label) => ({
-        value: label.id,
-        label: label.name,
-      }));
-      setLabelsData(labels);
+  // useEffect(() => {
+  //   if (product?.labels && SelectedLabels.length > 0) {
+  //     const labels = product.labels.map((label) => ({
+  //       value: label.id,
+  //       label: label.name,
+  //     }));
+  //     setLabelsData(labels);
 
-      // Mapear los IDs
-      const labelsIds = product.labels.map((label) => Number(label.id));
-      setValue("labels", labelsIds || []);
-    }
-  }, [product, SelectedLabels]);
+  //     // Mapear los IDs
+  //     const labelsIds = product.labels.map((label) => Number(label.id));
+  //     setValue("labels", labelsIds || []);
+  //   }
+  // }, [product, SelectedLabels]);
 
   // get labels
   const getLabels = () => {
-    setSelectedLabels([]);
+    // setSelectedLabels([]);
     setLabelsData([]);
-    setValue("labels", []);
-    return setSelectedLabels(selectedCategory?.labels || []);
+    // setValue("labels", []);
+    return setLabelsData(selectedCategory?.labels || []);
   };
 
   const getFiles = () => {
@@ -406,12 +437,53 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           Authorization: `Bearer ${token}`,
         },
       });
-      setCompaniesData(res.data);
+      const sortedData = res.data.sort((a: any, b: any) => {
+        return a.name.localeCompare(b.name);
+      });
+      setCompaniesData(sortedData);
     } catch (error) {
       toast.error("Error al obtener las empresas");
     }
   };
 
+  useEffect(() => {
+    if (isAgro) {
+      console.log(isAgro, "es agro");
+      getClassChemical();
+    } else {
+      setValue("chemical_class_title", "");
+      setValue("chemical_class_text", "");
+      setValue("chemical_class_url", "");
+    }
+  }, [isAgro, labelSelected]);
+
+  const getClassChemical = () => {
+    // obtener la clase seleccionada
+    const nameCategory = labelSelected?.name?.toLowerCase();
+    const result = nameCategory?.includes("fungicida")
+      ? {
+          name: "Clasificación FRAC",
+          url: "https://www.frac.info/knowledge-database/downloads",
+        }
+      : nameCategory?.includes("herbicida")
+      ? {
+          name: "Clasificación HRAC",
+          url: "https://hracglobal.com/tools/2024-hrac-global-herbicide-moa-classification",
+        }
+      : nameCategory?.includes("insecticida")
+      ? {
+          name: "Clasificación IRAC",
+          url: "https://hracglobal.com/tools/2024-hrac-global-herbicide-moa-classification",
+        }
+      : {
+          name: "",
+          url: "",
+        };
+    if (result) {
+      setValue("chemical_class_title", result?.name);
+      setValue("chemical_class_url", result.url);
+    }
+  };
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
@@ -462,11 +534,15 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       "featured_product",
       data.featured_product === "true" ? "1" : "0"
     );
-    if (data.labels && data.labels.length > 0) {
-      data.labels.forEach((label: number) => {
-        dataSend.append("labels[]", label.toString());
-      });
+    if (data.labels) {
+      dataSend.append("labels[]", data.labels.toString());
     }
+    dataSend.append("toxicological_category", data.toxicological_category);
+    // if (data.labels && data.labels.length > 0) {
+    //   data.labels.forEach((label: number) => {
+    //     dataSend.append("labels[]", label.toString());
+    //   });
+    // }
     let selectedOptions: string[] = [];
     // if (optionSelectedData.length > 0) {
     //   console.log("optionSelectedData", optionSelectedData);
@@ -541,7 +617,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       });
     }
 
-
     const promise = new Promise(async (resolve, reject) => {
       try {
         if (type === "create") {
@@ -575,8 +650,8 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       } catch (error) {
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
+          reject({ message: error.response?.data.message });
         }
-        reject({ message: "Error al guardar los datos" });
       } finally {
         getData();
         setSubmitting(false);
@@ -668,9 +743,9 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
     }
   };
 
-  useEffect(() => {
-    console.log("ingredientes", watch("active_ingts"));
-  }, [watch("active_ingts")]);
+  // useEffect(() => {
+  //   console.log("ingredientes", watch("active_ingts"));
+  // }, [watch("active_ingts")]);
 
   return (
     <>
@@ -776,7 +851,30 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
             handleCategoryChange(value);
           }}
         />
-        <SelectTag
+        <SelectZodField
+          id="labels"
+          name="Clase de uso"
+          options={labelsData}
+          placeholder={
+            labelsData.length > 0
+              ? "Seleccione una clase"
+              : "Clases no disponibles"
+          }
+          getOptionValue={(option) => option.id.toString()}
+          getOptionLabel={(option) => option.name}
+          register={register("labels")}
+          isdisabled={labelsData.length == 0}
+          error={errors.labels}
+          onChange={(item) => {
+            const selectedValue = item.target.value;
+            const selectedOption = labelsData.find(
+              (option) => option.id.toString() === selectedValue
+            );
+            setLabelSelected(selectedOption);
+          }}
+        />
+
+        {/* <SelectTag
           data={labelsData}
           setData={setLabelsData}
           selectedItems={SelectedLabels}
@@ -786,7 +884,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           text="Clase"
           placeholder="clase"
           displayField="name"
-        />
+        /> */}
         <>
           <h2 className=" font-medium text-zinc-500">Filtros</h2>
           <div className="flex flex-col gap-4 border border-zinc-300 rounded-md p-4">
@@ -872,6 +970,25 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         <div className="flex flex-col gap-2 mt-4">
           <h2 className=" font-medium text-zinc-500">Especificaciones</h2>
           <div className="flex flex-col gap-2 border border-zinc-300 rounded-md p-4">
+            <SelectZodField
+              id="toxicological_category"
+              name="Categoría toxicológica"
+              options={[
+                "Extremadamente peligroso - Muy tóxico",
+                "Altamente peligroso - Muy tóxico",
+                "Moderadamente peligroso - Nocivo",
+                "Ligeramente peligroso - Cuidado",
+                "Normalmente no peligroso - Cuidado",
+              ]}
+              placeholder="Seleccione una categoría"
+              getOptionValue={(option) => option}
+              getOptionLabel={(option) => option}
+              register={register("toxicological_category")}
+            />
+          </div>
+          {/* {isAgro ||
+            (isRC && ( */}
+          <div className="flex flex-col gap-2 border border-zinc-300 rounded-md p-4">
             <InputZodField
               id={`senasa_number`}
               name="N° Registro SENASA"
@@ -887,29 +1004,18 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
               error={errors.senasa_link}
             />
           </div>
-          <div className="flex flex-col gap-2 border border-zinc-300 rounded-md p-4">
-            <InputZodField
-              id={`chemical_class_title`}
-              name="Clasificación química Título"
-              placeholder="Título de la clasificación química"
-              register={register(`chemical_class_title`)}
-              error={errors.chemical_class_title}
-            />
-            <InputZodField
-              id={`chemical_class_text`}
-              name="Clasificación química"
-              placeholder="Clasificación química"
-              register={register(`chemical_class_text`)}
-              error={errors.chemical_class_text}
-            />
-            <InputZodField
-              id={`chemical_class_url`}
-              name="Clasificación química url"
-              placeholder="https://pev.com.pe/"
-              register={register(`chemical_class_url`)}
-              error={errors.chemical_class_url}
-            />
-          </div>
+          {/* ))} */}
+          {watch("chemical_class_title") && (
+            <div className="flex flex-col gap-2 border border-zinc-300 rounded-md p-4">
+              <InputZodField
+                id={`chemical_class_text`}
+                name={watch("chemical_class_title")}
+                register={register(`chemical_class_text`)}
+                error={errors.chemical_class_text}
+              />
+            </div>
+          )}
+
           {SpecificationsField.map((item, index) => (
             <div
               key={item.id}

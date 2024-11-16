@@ -1,19 +1,18 @@
 "use client";
+import AddButton from "@/components/ui/addBtn";
 import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
-import { IUser } from "@/types/api";
+import { ICrops } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-
-import UsersTable from "@/components/tables/usersTable";
-import { toast } from "sonner";
-import { ConfirmModal } from "@/components/ui/modals";
 import SelectRows from "@/components/ui/selectRows";
-import ButtonForm from "@/components/ui/buttonForm";
-import Link from "next/link";
+import { ConfirmModal, FormModal } from "@/components/ui/modals";
+import { toast } from "sonner";
+import CropsTable from "@/components/tables/cropsTable";
+import CropForm from "@/components/forms/cropForm";
 
 const Content = () => {
   const [token, setToken] = useState("");
@@ -25,20 +24,19 @@ const Content = () => {
   const [pageCount, setPageCount] = useState(0);
 
   // data
-  const [data, setData] = useState<IUser[]>([]);
+  const [data, setData] = useState<ICrops[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
 
   // modal
-  const [confirmModal, setConfirmModal] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
-  //search
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-
+  const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
   const [selectedAction, setSelectedAction] = useState<"data" | "search">(
     "data"
   );
@@ -50,11 +48,17 @@ const Content = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (token) {
+      getData();
+    }
+  }, [pageIndex, token]);
+
   const getData = async () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        apiUrls.user.pagination(pageIndex, pageSize),
+        `${apiUrls.crop.getAll}?${pagination(pageIndex, pageSize)}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -72,14 +76,75 @@ const Content = () => {
     }
   };
 
-  const getUserBySearch = (query: string) => {
-    setSelectedAction("search");
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    newPage: number
+  ) => {
+    setPageIndex(newPage);
+  };
+
+  const handlePageSizeChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const selectedValue = event.target.value;
+    setPageSize(parseInt(selectedValue, 10));
+    setPageIndex(1);
+  };
+
+  const handleAdd = () => {
+    setOpenModal(true);
+    setSelectedType("create");
+  };
+
+  const handleDelete = (id: number) => {
+    setSelectedId(id);
+    setDeleteModal(true);
+  };
+
+  const onDelete = () => {
+    if (!selectedId) return;
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        await axios.delete(apiUrls.crop.delete(selectedId?.toString()), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        resolve({ message: "Cultivo eliminado" });
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+        }
+        reject({ message: "No se pudo eliminar el cultivo" });
+      } finally {
+        getData();
+        setDeleteModal(false);
+      }
+    });
+
+    toast.promise(promise, {
+      loading: "Eliminando cultivo...",
+      success: (data: any) => `${data.message}`,
+      error: (error: any) => `${error.message}`,
+    });
+  };
+
+  const handleEdit = (id: number) => {
+    setOpenModal(true);
+    setSelectedId(id);
+    setSelectedType("edit");
+  };
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  const getCropBySearch = (query: string) => {
     setSearchQuery(query);
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
         const res = await axios.get(
-          apiUrls.user.getAll +
+          apiUrls.crop.getAll +
             "?like=" +
             query +
             "&" +
@@ -93,89 +158,27 @@ const Content = () => {
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
-        resolve({ message: "Busqueda exitosa" });
+        resolve({ message: "Cultivos filtradas" });
       } catch (error) {
         // if (axios.isAxiosError(error)) {
         //   console.log(error.response?.data);
         // }
-        reject({ message: "Error al buscar productos" });
+        reject({ message: "Error" });
       } finally {
         setLoading(false);
       }
     });
 
     toast.promise(promise, {
-      loading: "Buscando productos...",
+      loading: "Filtrando cultivos...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
   };
 
-  const handleConfirmModal = async (id: number, status: string) => {
-    setSelectedId(id);
-    setSelectedStatus(status);
-    setConfirmModal(true);
-  };
-
-  const handleChangeStatus = async (id: number, status: string) => {
-    const promise = new Promise(async (resolve, reject) => {
-      try {
-        if (status === "suspend") {
-          await axios.post(
-            apiUrls.admin.approve("user", id.toString()),
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          resolve({ message: "Usuario aprobado" });
-        } else {
-          await axios.post(
-            apiUrls.admin.suspend("user", id.toString()),
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          resolve({ message: "Usuario suspendido" });
-        }
-        setConfirmModal(false);
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          reject({ message: error.response?.data.message });
-        }
-        reject({ message: "Error al cambiar el estado" });
-      } finally {
-        getData();
-      }
-    });
-
-    toast.promise(promise, {
-      loading: "Cambiando estado",
-      success: (data: any) => data.message,
-      error: (error: any) => error.message,
-    });
-  };
-  const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
-    newPage: number
-  ) => {
-    setPageIndex(newPage);
-  };
-  const handlePageSizeChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const selectedValue = event.target.value;
-    setPageSize(parseInt(selectedValue, 10));
-    setPageIndex(1);
-  };
-
   useEffect(() => {
     setData([]);
+    setPageIndex(1);
   }, [selectedAction]);
 
   useEffect(() => {
@@ -184,27 +187,22 @@ const Content = () => {
     }
   }, [token, selectedAction, pageIndex, pageSize]);
 
+  // status
   useEffect(() => {
     if (token && selectedAction === "search") {
-      getUserBySearch(searchQuery);
+      getCropBySearch(searchQuery);
     }
-  }, [token, selectedAction, pageIndex, pageSize]);
-
+  }, [token, selectedAction, searchQuery, pageIndex, pageSize]);
   return (
     <>
       <SafeAreaContainer isTable>
         <MainContainer>
-          <div className="flex flex-row justify-between pb-4 border-b border-b-gray-50">
+          <div className="flex flex-col md:flex-row  md:justify-between pb-4 border-b border-b-gray-50 items-center gap-4">
             <h2 className="font-medium text-zinc-500 text-lg w-full md:w-auto">
               Registros ({total})
-            </h2>
+            </h2>{" "}
             <div className="w-full md:w-auto flex justify-end">
-              <Link
-                href={"/admin/usuarios/publicistas"}
-                className="bg-green-800 rounded-md px-4 py-1 text-white font-medium"
-              >
-                Publicistas
-              </Link>
+              <AddButton text="Agregar Cultivo" onClick={handleAdd} />
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">
@@ -214,17 +212,21 @@ const Content = () => {
             />
             <div className="w-full sm:w-auto flex flex-row self-end">
               <SearchInput
-                placeholder="Buscar producto"
-                onClick={(query) => getUserBySearch(query)}
+                placeholder="Buscar cultivo"
+                onClick={(query) => getCropBySearch(query)}
               />
             </div>
           </div>
           <div className=" overflow-x-auto">
-            <UsersTable
-              dataTable={data}
-              onSuspend={(id) => handleConfirmModal(id, "approved")}
-              onUnsuspend={(id) => handleConfirmModal(id, "suspend")}
-            />
+            {loading ? (
+              <div>Cargando...</div>
+            ) : (
+              <CropsTable
+                dataTable={data}
+                onDelete={(id: number) => handleDelete(id)}
+                onEdit={(id: number) => handleEdit(id)}
+              />
+            )}
           </div>
           <div className="mt-4 justify-center flex">
             <Pagination
@@ -236,16 +238,25 @@ const Content = () => {
           </div>
         </MainContainer>
       </SafeAreaContainer>
-      {selectedId && selectedStatus && (
-        <ConfirmModal
-          openModal={confirmModal}
-          setOpenModal={() => setConfirmModal(false)}
-          onAction={() => handleChangeStatus(selectedId!, selectedStatus!)}
-          title="Cambiar estado"
-          textButton="Confirmar"
-          text={`¿Estás seguro de cambiar el estado del usuario?`}
+      <FormModal
+        title={`${selectedType === "edit" ? "Editar" : "Crear"} cultivo`}
+        openModal={openModal}
+        setOpenModal={() => setOpenModal(false)}
+      >
+        <CropForm
+          closeModal={handleCloseModal}
+          type={selectedType}
+          id={selectedId}
+          token={token}
+          getData={getData}
         />
-      )}
+      </FormModal>
+      <ConfirmModal
+        openModal={deleteModal}
+        setOpenModal={() => setDeleteModal(false)}
+        onAction={onDelete}
+        title="Eliminar Cultivo"
+      />
     </>
   );
 };

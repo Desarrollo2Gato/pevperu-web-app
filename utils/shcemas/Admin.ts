@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { string, z } from "zod";
 
 export const notificationSaveSchema = z.object({
   title: z.string().min(1, "El título es requerido"),
@@ -143,7 +143,7 @@ export const newsSaveSchema = z.object({
 });
 export const courseSaveSchema = z.object({
   title: z.string().min(1, "El nombre del curso  es requerido"),
-  language: z.string().nullable(),
+  // language: z.string().min(1, "El idioma es requerido"),
   description: z
     .string()
     .min(1, "La descripción es requerida")
@@ -151,6 +151,15 @@ export const courseSaveSchema = z.object({
   content: z.string().min(1, "El contenido es requerido"),
   main_img: z.any().nullable(),
   second_img: z.any().nullable(),
+  start_date: z.coerce.date({
+    required_error: "La fecha de inicio es requerida",
+    invalid_type_error: "La fecha de inicio no es válida",
+  }),
+  hours: z.string().min(1, "El horario es requerido"),
+  cost: z.string().nullable(),
+  phone: z.string().nullable(),
+  email: z.string().nullable(),
+  modality: z.string().min(1, "La modalidad es requerida"),
   link: z.string().nullable(),
 });
 
@@ -203,7 +212,8 @@ export const productSaveSchema = z.object({
     required_error: "Por favor, seleccione si es un producto destacado",
   }),
   // labels: z.array(z.number().nullable()).nullable(),
-  labels: z.any().nullable(),
+  // labels: z.any().nullable(),
+  labels: z.string().nullable(),
   category_id: z.string().min(1, "La categoría es requerida"),
   specifications: z
     .array(
@@ -257,6 +267,7 @@ export const productSaveSchema = z.object({
   chemical_class_title: z.string().nullable(),
   chemical_class_text: z.string().nullable(),
   chemical_class_url: z.any().nullable(),
+  toxicological_category: z.string().nullable(),
 });
 
 export const rejectedMessage = z.object({
@@ -303,4 +314,16 @@ export const adsSchema = z.object({
   //       .nullable(),
   //   })
   // ),
+});
+export const CropSchema = z.object({
+  name: z.string().min(1, "El nombre del cultivo es requerido"),
+  icon: z
+    .custom<FileList>((files) => files?.length > 0, {
+      message: "La imagen es requerida",
+    })
+    .nullable(),
+});
+
+export const PublisherSchema = z.object({
+  content: z.string().array(),
 });

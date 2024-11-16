@@ -117,14 +117,21 @@ const EventForm: React.FC<EventFormProps> = ({
   const onSubmit = async (data: any) => {
     setSubmitting(true);
     const dataSend = new FormData();
-    if (!user?.company_id) {
-      toast.error("No se ha podido obtener su id, recargue la página ");
-      return;
-    }
-    if (event) {
-      dataSend.append("company_id", event?.company_id.toString());
+    const isUpdate = Boolean(event);
+    const haveCompany = Boolean(user?.company_id);
+
+    let autor_id: string | undefined;
+    if (haveCompany) {
+      autor_id = isUpdate
+        ? event?.company.id.toString()
+        : user?.company_id?.toString();
+
+      if (autor_id) dataSend.append("company_id", autor_id);
     } else {
-      dataSend.append("company_id", user?.company_id.toString());
+      autor_id = isUpdate
+        ? event?.extern_user_id.toString()
+        : user?.id?.toString();
+      if (autor_id) dataSend.append("extern_user_id", autor_id);
     }
 
     dataSend.append("name", data.title);
@@ -173,10 +180,11 @@ const EventForm: React.FC<EventFormProps> = ({
         getData();
       } catch (error) {
         if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
+          // console.log(error.response?.data);
           reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "Error al guardar los datos" });
         }
-        reject({ message: "Error al guardar los datos" });
       } finally {
         setSubmitting(false);
       }

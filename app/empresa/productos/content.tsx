@@ -138,6 +138,10 @@ const Content = () => {
     }
     setLoading(true);
     try {
+      if (!user || user.company_id === null) {
+        toast.error("No se ha podido obtener el id de la empresa");
+        return;
+      }
       const response = await axios.get(
         apiUrls.product.myProducts(user.company_id.toString()) +
           "?" +
@@ -167,6 +171,10 @@ const Content = () => {
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
+        if (!user || user.company_id === null) {
+          toast.error("No se ha podido obtener el id de la empresa");
+          return;
+        }
         const res = await axios.get(
           apiUrls.product.myProducts(user.company_id.toString()) +
             "?like=" +
@@ -213,6 +221,10 @@ const Content = () => {
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
+        if (!user || user.company_id === null) {
+          toast.error("No se ha podido obtener el id de la empresa");
+          return;
+        }
         const res = await axios.get(
           apiUrls.product.myProducts(user.company_id.toString()) +
             "?status=" +

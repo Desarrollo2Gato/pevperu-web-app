@@ -2,7 +2,7 @@
 import AddButton from "@/components/ui/addBtn";
 import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
-import { ICompany, IEvents, IUser } from "@/types/api";
+import { ICompany, IEvents } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
@@ -15,10 +15,12 @@ import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { toast } from "sonner";
 import RejectForm from "@/components/forms/rejectedForm";
 import SelectComponent from "@/components/ui/select";
+import { useAuthContext } from "@/context/authContext";
 
 const Content = () => {
   // token
   const [token, setToken] = useState("");
+  const { user } = useAuthContext();
 
   // pagination
   const [total, setTotal] = useState(0);
@@ -28,8 +30,6 @@ const Content = () => {
 
   // data
   const [data, setData] = useState<IEvents[]>([]);
-  const [providers, setProviders] = useState<ICompany[]>([]);
-  const [userExternData, setUserExternData] = useState<IUser[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
@@ -45,21 +45,18 @@ const Content = () => {
   const [typeFilter, setTypeFilter] = useState<
     "all" | "Nacional" | "Internacional"
   >("all");
-  const [providerFilter, setProviderFilter] = useState<"all" | string>("all");
-  const [userExtern, setUserExter] = useState<"all" | string>("all");
   const [statusFilter, setStatusFilter] = useState<
     "pending" | "approved" | "rejected" | "all"
   >("all");
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
-
   const [selectedStatus, setSelectedStatus] = useState<"delete" | "approved">(
     "delete"
   );
 
   const [selectedAction, setSelectedAction] = useState<
-    "data" | "search" | "status" | "type" | "provider" | "userExtern"
+    "data" | "search" | "status" | "type"
   >("data");
 
   useEffect(() => {
@@ -68,13 +65,6 @@ const Content = () => {
       setToken(token);
     }
   }, []);
-
-  useEffect(() => {
-    if (token) {
-      getProviders();
-      getUsersExtern();
-    }
-  }, [token]);
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -93,10 +83,6 @@ const Content = () => {
     setOpenModal(true);
     setSelectedType("create");
   };
-  const handleRejected = (id: number) => {
-    setSelectedId(id);
-    setRejectedModal(true);
-  };
   const handleStatus = (id: number, status: "delete" | "approved") => {
     setSelectedId(id);
     setSelectedStatus(status);
@@ -114,16 +100,9 @@ const Content = () => {
     if (!selectedId) return;
     if (selectedStatus === "delete") {
       onDelete();
-    } else {
-      onApprove(selectedId.toString());
     }
   };
-  const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newProvider = e.target.value as "all" | string;
-    newProvider;
-    setProviderFilter(newProvider);
-    setSelectedAction("provider");
-  };
+
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value as "pending" | "approved" | "rejected";
     newStatus;
@@ -136,42 +115,6 @@ const Content = () => {
     setTypeFilter(newType);
     setSelectedAction("type");
   };
-  const handleUserExterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newUser = e.target.value as "all" | string;
-    newUser;
-    setUserExter(newUser);
-    setSelectedAction("userExtern");
-  };
-
-  const onApprove = async (id: string) => {
-    const promise = new Promise(async (resolve, rejects) => {
-      try {
-        await axios.post(
-          apiUrls.admin.approve("event", id),
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        resolve({ message: "Evento aprobado" });
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
-        rejects({ message: "No se pudo aprobar el evento" });
-      } finally {
-        getData();
-        setStatusModal(false);
-      }
-    });
-    toast.promise(promise, {
-      loading: "Aprobando evento...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
-  };
   const onDelete = () => {
     if (!selectedId) return;
     const promise = new Promise(async (resolve, reject) => {
@@ -183,10 +126,12 @@ const Content = () => {
         });
         resolve({ message: "Evento eliminado" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "No se pudo eliminar el evento" });
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "No se pudo eliminar el evento" });
+        }
       } finally {
         getData();
         setStatusModal(false);
@@ -202,49 +147,22 @@ const Content = () => {
 
   const getData = async () => {
     setLoading(true);
+    if (!user) {
+      toast.warning("no se encontro al usuario");
+      return;
+    }
     try {
       const response = await axios.get(
-        apiUrls.event.pagination(pageIndex, pageSize),
+        `${apiUrls.event.byUser(user.id)}?${pagination(pageIndex, pageSize)}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      console.log(response.data.data);
-
       setData(response.data.data);
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const getProviders = async () => {
-    try {
-      const response = await axios.get(apiUrls.company.getAll, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setProviders(response.data);
-    } catch (error) {
-      toast.error("Error al obtener proveedores");
-      console.error(error);
-    }
-  };
-  const getUsersExtern = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(`${apiUrls.user.getAll}?type=extern`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log(response.data);
-      setUserExternData(response.data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -255,13 +173,16 @@ const Content = () => {
     setSearchQuery(query);
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
+      if (!user) {
+        toast.warning("no se encontro al usuario");
+        return;
+      }
       try {
         const res = await axios.get(
-          apiUrls.event.getAll +
-            "?like=" +
-            query +
-            "&" +
-            pagination(pageIndex, pageSize),
+          `${apiUrls.event.byUser(user.id)}?like=${query}&${pagination(
+            pageIndex,
+            pageSize
+          )}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -273,9 +194,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Busqueda exitosa" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+        }
         reject({ message: "Error al buscar eventos" });
       } finally {
         setLoading(false);
@@ -295,11 +216,19 @@ const Content = () => {
       setSelectedAction("data");
       return;
     }
+    if (!user || user.company_id === null) {
+      toast.error("No se ha podido obtener el id de la empresa");
+      return;
+    }
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
+      if (!user || user.id === null) {
+        toast.warning("no se encontro al usuario");
+        return;
+      }
       try {
         const res = await axios.get(
-          apiUrls.event.getAll +
+          apiUrls.event.byUser(user.id.toString()) +
             "?status=" +
             status +
             "&" +
@@ -315,10 +244,11 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Eventos filtrados" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al filtrar eventos por estado" });
+        if (axios.isAxiosError(error)) {
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "Error al filtrar eventos por estado" });
+        }
       } finally {
         setLoading(false);
       }
@@ -334,11 +264,15 @@ const Content = () => {
       setSelectedAction("data");
       return;
     }
+    if (!user || user.company_id === null) {
+      toast.error("No se ha podido obtener el id de la empresa");
+      return;
+    }
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
         const res = await axios.get(
-          apiUrls.event.getAll +
+          apiUrls.event.byUser(user.id.toString()) +
             "?type=" +
             type +
             "&" +
@@ -354,85 +288,11 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Eventos filtrados" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al filtrar eventos por tipo" });
-      } finally {
-        setLoading(false);
-      }
-    });
-    toast.promise(promise, {
-      loading: "Filtrando eventos...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
-  };
-  const getEventsByProvider = async (provider: "all" | string) => {
-    if (provider === "all") {
-      setSelectedAction("data");
-      return;
-    }
-    setLoading(true);
-    const promise = new Promise(async (resolve, reject) => {
-      try {
-        const res = await axios.get(
-          apiUrls.event.myEvents(provider.toString()) +
-            "?" +
-            pagination(pageIndex, pageSize),
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setData(res.data.data);
-        setPageCount(res.data.last_page);
-        setTotal(res.data.total);
-        resolve({ message: "Eventos filtrados" });
-      } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al filtrar eventos por proveedor" });
-      } finally {
-        setLoading(false);
-      }
-    });
-    toast.promise(promise, {
-      loading: "Filtrando eventos...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
-  };
-  const getEventsByUserExtern = async (userExtern: "all" | string) => {
-    if (userExtern === "all") {
-      setSelectedAction("data");
-      return;
-    }
-    console.log(userExtern);
-    setLoading(true);
-    const promise = new Promise(async (resolve, reject) => {
-      try {
-        const res = await axios.get(
-          apiUrls.event.byUser(userExtern.toString()) +
-            "?" +
-            pagination(pageIndex, pageSize),
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setData(res.data.data);
-        setPageCount(res.data.last_page);
-        setTotal(res.data.total);
-        resolve({ message: "Eventos filtrados" });
-      } catch (error) {
         if (axios.isAxiosError(error)) {
           reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "Error al filtrar eventos por tipo" });
         }
-        reject({ message: "Error al filtrar eventos por proveedor" });
       } finally {
         setLoading(false);
       }
@@ -468,16 +328,6 @@ const Content = () => {
       getEventsByType(typeFilter);
     }
   }, [token, selectedAction, typeFilter, pageIndex]);
-  useEffect(() => {
-    if (token && selectedAction === "provider") {
-      getEventsByProvider(providerFilter);
-    }
-  }, [token, selectedAction, providerFilter, pageIndex]);
-  useEffect(() => {
-    if (token && selectedAction === "userExtern") {
-      getEventsByUserExtern(userExtern);
-    }
-  }, [token, selectedAction, userExtern, pageIndex]);
 
   return (
     <>
@@ -507,32 +357,6 @@ const Content = () => {
                 ]}
                 onChange={handleTypeChange}
                 defaultValue={typeFilter}
-              />
-              <SelectComponent
-                label="Proveedor"
-                id="providerFilter"
-                options={[
-                  { value: "all", label: "Todos" },
-                  ...providers.map((provider) => ({
-                    value: provider.id,
-                    label: `${provider.ruc} | ${provider.name}`,
-                  })),
-                ]}
-                onChange={handleProviderChange}
-                defaultValue={providerFilter}
-              />
-              <SelectComponent
-                label="Publicistas"
-                id="userExtern"
-                options={[
-                  { value: "all", label: "Todos" },
-                  ...userExternData.map((user) => ({
-                    value: user.id,
-                    label: `${user.work_for_company} | ${user.full_name}`,
-                  })),
-                ]}
-                onChange={handleUserExterChange}
-                defaultValue={userExtern}
               />
             </div>
           </MainContainer>
@@ -566,9 +390,6 @@ const Content = () => {
                 dataTable={data}
                 onDelete={(id: number) => handleStatus(id, "delete")}
                 onEdit={(id: number) => handleEdit(id)}
-                onApprove={(id: number) => handleStatus(id, "approved")}
-                onReject={(id: number) => handleRejected(id)}
-                isAdmin
               />
             </div>
           )}

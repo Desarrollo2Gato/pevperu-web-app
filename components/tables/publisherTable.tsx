@@ -6,19 +6,20 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import StatusSpan from "../ui/statusSpan";
-import { FaBan } from "react-icons/fa";
-import { FaCheck } from "react-icons/fa";
+import { FaCheck, FaUserShield, FaBan } from "react-icons/fa";
 import { BootstrapTooltip } from "../ui/tooltip";
 
-interface UsersTableProps {
+interface PublisherTableProps {
   dataTable: IUser[];
   onSuspend: (id: number) => void;
   onUnsuspend: (id: number) => void;
+  onChangePermisses?: (id: number) => void;
 }
-const UsersTable: React.FC<UsersTableProps> = ({
+const PublisherTable: React.FC<PublisherTableProps> = ({
   dataTable,
   onSuspend,
   onUnsuspend,
+  onChangePermisses,
 }) => {
   const data: IUser[] = dataTable;
 
@@ -50,7 +51,9 @@ const UsersTable: React.FC<UsersTableProps> = ({
           ? "Empresa"
           : info.row.original.type === "client"
           ? "Persona"
-          : "Publicista",
+          : info.row.original.type === "extern"
+          ? "Publicista"
+          : "sin dato",
     },
     {
       accessorKey: "status",
@@ -66,7 +69,17 @@ const UsersTable: React.FC<UsersTableProps> = ({
       accessorKey: "actions",
       header: "Acciones",
       cell: (info) => (
-        <>
+        <div className="flex-wrap flex gap-2">
+          {onChangePermisses && (
+            <BootstrapTooltip title="Permisos" placement="top">
+              <button
+                onClick={() => onChangePermisses(Number(info.row.original.id))}
+                className="bg-purple-500 hover:bg-purple-600 text-white p-1 aspect-square rounded transition-all duration-500"
+              >
+                <FaUserShield className="text-lg" />
+              </button>
+            </BootstrapTooltip>
+          )}
           {info.row.original.status === "approved" ? (
             <BootstrapTooltip title="Banear" placement="top">
               <button
@@ -86,8 +99,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
               </button>
             </BootstrapTooltip>
           )}
-        
-        </>
+        </div>
       ),
     },
   ];
@@ -98,7 +110,6 @@ const UsersTable: React.FC<UsersTableProps> = ({
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
-  
   return (
     <table className="min-w-full border-collapse text-zinc-700 border-t border-t-gray-100">
       <thead className=" ">
@@ -152,4 +163,4 @@ const UsersTable: React.FC<UsersTableProps> = ({
   );
 };
 
-export default UsersTable;
+export default PublisherTable;

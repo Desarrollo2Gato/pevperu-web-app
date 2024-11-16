@@ -13,6 +13,7 @@ import NewsTable from "@/components/tables/newsTable";
 import SelectRows from "@/components/ui/selectRows";
 import { toast } from "sonner";
 import { ConfirmModal, FormModal } from "@/components/ui/modals";
+import RejectForm from "@/components/forms/rejectedForm";
 import SelectComponent from "@/components/ui/select";
 import { useAuthContext } from "@/context/authContext";
 
@@ -35,15 +36,17 @@ const Content = () => {
   // search
   const [searchQuery, setSearchQuery] = useState<string>("");
   // filters
-
   const [statusFilter, setStatusFilter] = useState<
     "pending" | "approved" | "rejected" | "all"
   >("all");
 
   // modal
   const [openModal, setOpenModal] = useState(false);
+  const [rejectedModal, setRejectedModal] = useState(false);
   const [statusModal, setStatusModal] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<"delete">("delete");
+  const [selectedStatus, setSelectedStatus] = useState<"delete" | "approved">(
+    "delete"
+  );
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
@@ -76,8 +79,7 @@ const Content = () => {
     setOpenModal(true);
     setSelectedType("create");
   };
-
-  const handleStatus = (id: number, status: "delete") => {
+  const handleStatus = (id: number, status: "delete" | "approved") => {
     setSelectedId(id);
     setSelectedStatus(status);
     setStatusModal(true);
@@ -96,7 +98,6 @@ const Content = () => {
   const handleCloseModal = () => {
     setOpenModal(false);
   };
-
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value as "pending" | "approved" | "rejected";
     newStatus;
@@ -115,10 +116,11 @@ const Content = () => {
         });
         resolve({ message: "Noticia eliminado" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "No se pudo eliminar la noticia" });
+        if (axios.isAxiosError(error)) {
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "No se pudo aprobar la noticia" });
+        }
       } finally {
         getData();
         setStatusModal(false);
@@ -133,20 +135,17 @@ const Content = () => {
   };
 
   const getData = async () => {
-    if (!user) {
-      toast.error("No se ha podido obtener el id de la empresa");
+    if (!user || user.id === null) {
+      toast.warning("no se encontro al usuario");
       return;
     }
     setLoading(true);
-    if (!user || user.company_id === null) {
-      toast.error("No se ha podido obtener el id de la empresa");
-      return;
-    }
     try {
       const response = await axios.get(
-        apiUrls.news.myNews(user.company_id.toString()) +
-          "?" +
-          pagination(pageIndex, pageSize),
+        `${apiUrls.news.byUser(user.id.toString())}?${pagination(
+          pageIndex,
+          pageSize
+        )}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -162,42 +161,36 @@ const Content = () => {
       setLoading(false);
     }
   };
-
   const getNewsBySearch = (query: string) => {
-    setSelectedAction("search");
-    if (!user) {
-      toast.error("No se ha podido obtener el id de la empresa");
-      return;
-    }
     setSearchQuery(query);
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
+      if (!user || user.id === null) {
+        toast.warning("no se encontro al usuario");
+        return;
+      }
       try {
-        if (!user || user.company_id === null) {
-          toast.error("No se ha podido obtener el id de la empresa");
-          return;
-        }
         const res = await axios.get(
-          apiUrls.news.myNews(user.company_id.toString()) +
-            "?like=" +
-            query +
-            "&" +
-            pagination(pageIndex, pageSize),
+          `${apiUrls.news.byUser(
+            user.id.toString()
+          )}?like=${query}&${pagination(pageIndex, pageSize)}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
+        console.log(res.data.data);
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
         resolve({ message: "Busqueda exitosa" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al buscar noticias" });
+        if (axios.isAxiosError(error)) {
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "Error al buscar noticias" });
+        }
       } finally {
         setLoading(false);
       }
@@ -218,13 +211,13 @@ const Content = () => {
     }
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
+      if (!user || user.id === null) {
+        toast.warning("no se encontro al usuario");
+        return;
+      }
       try {
-        if (!user || user.company_id === null) {
-          toast.error("No se ha podido obtener el id de la empresa");
-          return;
-        }
         const res = await axios.get(
-          apiUrls.news.myNews(user?.company_id.toString()) +
+          apiUrls.news.byUser(user.id.toString()) +
             "?status=" +
             status +
             "&" +
@@ -238,7 +231,7 @@ const Content = () => {
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
-        resolve({ message: "Noticias filtrados" });
+        resolve({ message: "Noticias filtradas" });
       } catch (error) {
         // if (axios.isAxiosError(error)) {
         //   console.log(error.response?.data);
@@ -255,23 +248,24 @@ const Content = () => {
     });
   };
   useEffect(() => {
+    // limpiar data
     setData([]);
   }, [selectedAction]);
   useEffect(() => {
     if (token && selectedAction === "data") {
       getData();
     }
-  }, [token, selectedAction, pageIndex, pageSize]);
+  }, [token, selectedAction, pageIndex]);
   useEffect(() => {
     if (token && selectedAction === "search") {
       getNewsBySearch(searchQuery);
     }
-  }, [token, selectedAction, pageIndex, pageSize]);
+  }, [token, selectedAction, pageIndex]);
   useEffect(() => {
     if (token && selectedAction === "status") {
       getNewsByStatus(statusFilter);
     }
-  }, [token, selectedAction, statusFilter, pageIndex, pageSize]);
+  }, [token, selectedAction, statusFilter, pageIndex]);
 
   return (
     <>
@@ -359,6 +353,21 @@ const Content = () => {
         }
         textButton={selectedStatus === "delete" ? "Eliminar" : "Aprobar"}
       />
+      {selectedId && (
+        <FormModal
+          title={`Rechazar Noticia`}
+          openModal={rejectedModal}
+          setOpenModal={() => setRejectedModal(false)}
+        >
+          <RejectForm
+            closeModal={() => setRejectedModal(false)}
+            type="news"
+            id={selectedId}
+            token={token}
+            getData={getData}
+          />
+        </FormModal>
+      )}
     </>
   );
 };

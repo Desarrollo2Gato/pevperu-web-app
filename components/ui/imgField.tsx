@@ -30,9 +30,14 @@ export const ImgField: React.FC<ImgFieldProps> = ({
   useEffect(() => {
     if (watch) {
       const file = watch;
-      if (file === null) return;
-      const imgUrl = URL.createObjectURL(file[0]);
-      setImgLogo(imgUrl);
+
+      if (file && file[0]) {
+        const imgUrl = URL.createObjectURL(file[0]);
+
+        setImgLogo(imgUrl);
+      } else {
+        setImgLogo("");
+      }
     }
   }, [watch]);
 

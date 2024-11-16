@@ -185,14 +185,14 @@ const Content = () => {
 
   const getNewsBySearch = (query: string) => {
     setSelectedAction("search");
-    if (!user) {
-      toast.error("No se ha podido obtener el id de la empresa");
-      return;
-    }
     setSearchQuery(query);
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
+        if (!user || user.company_id === null) {
+          toast.error("No se ha podido obtener el id de la empresa");
+          return;
+        }
         const res = await axios.get(
           apiUrls.news.myNews(user.company_id.toString()) +
             "?like=" +
@@ -233,7 +233,7 @@ const Content = () => {
     setLoading(true);
     const promise = new Promise(async (resolve, reject) => {
       try {
-        if (!user) {
+        if (!user || user.company_id === null) {
           toast.error("No se ha podido obtener el id de la empresa");
           return;
         }
