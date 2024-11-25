@@ -1,19 +1,18 @@
 "use client";
 import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import SearchInput from "@/components/ui/searchInput";
-import { IUser } from "@/types/api";
+import { IAdviser, IUser } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
 
-import UsersTable from "@/components/tables/usersTable";
 import { toast } from "sonner";
-import { ConfirmModal } from "@/components/ui/modals";
+import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import SelectRows from "@/components/ui/selectRows";
-import ButtonForm from "@/components/ui/buttonForm";
-import Link from "next/link";
+import AdviserTable from "@/components/tables/advisersTable";
+import AdviserShow from "@/components/info/adviserShow";
 
 const Content = () => {
   const [token, setToken] = useState("");
@@ -25,19 +24,19 @@ const Content = () => {
   const [pageCount, setPageCount] = useState(0);
 
   // data
-  const [data, setData] = useState<IUser[]>([]);
+  const [data, setData] = useState<IAdviser[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
 
   // modal
   const [confirmModal, setConfirmModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   //search
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
   const [selectedAction, setSelectedAction] = useState<"data" | "search">(
     "data"
@@ -54,17 +53,17 @@ const Content = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        apiUrls.user.pagination(pageIndex, pageSize),
+        `${apiUrls.advisor.getAll}?${pagination(pageIndex, pageSize)}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      console.log(response.data.data);
-      setData(response.data.data);
-      setPageCount(response.data.last_page);
-      setTotal(response.data.total);
+      // console.log(response.data.data.data);
+      setData(response.data.data.data);
+      setPageCount(response.data.data.last_page);
+      setTotal(response.data.data.total);
     } catch (error) {
       console.error(error);
     } finally {
@@ -79,7 +78,7 @@ const Content = () => {
     const promise = new Promise(async (resolve, reject) => {
       try {
         const res = await axios.get(
-          apiUrls.user.getAll +
+          apiUrls.advisor.getAll +
             "?like=" +
             query +
             "&" +
@@ -95,71 +94,23 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Busqueda exitosa" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al buscar usuario" });
+        if (axios.isAxiosError(error)) {
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "Error al buscar asesor" });
+        }
       } finally {
         setLoading(false);
       }
     });
 
     toast.promise(promise, {
-      loading: "Buscando usuarios...",
+      loading: "Buscando asesor...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
   };
 
-  const handleConfirmModal = async (id: number, status: string) => {
-    setSelectedId(id);
-    setSelectedStatus(status);
-    setConfirmModal(true);
-  };
-
-  const handleChangeStatus = async (id: number, status: string) => {
-    const promise = new Promise(async (resolve, reject) => {
-      try {
-        if (status === "suspend") {
-          await axios.post(
-            apiUrls.admin.approve("user", id.toString()),
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          resolve({ message: "Usuario aprobado" });
-        } else {
-          await axios.post(
-            apiUrls.admin.suspend("user", id.toString()),
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          resolve({ message: "Usuario suspendido" });
-        }
-        setConfirmModal(false);
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          reject({ message: error.response?.data.message });
-        }
-        reject({ message: "Error al cambiar el estado" });
-      } finally {
-        getData();
-      }
-    });
-
-    toast.promise(promise, {
-      loading: "Cambiando estado",
-      success: (data: any) => data.message,
-      error: (error: any) => error.message,
-    });
-  };
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
     newPage: number
@@ -172,6 +123,45 @@ const Content = () => {
     const selectedValue = event.target.value;
     setPageSize(parseInt(selectedValue, 10));
     setPageIndex(1);
+  };
+
+  const handleDelete = (id: number) => {
+    setSelectedId(id);
+    setConfirmModal(true);
+  };
+  const handleShow = (id: number) => {
+    setSelectedId(id);
+    setShowModal(true);
+  };
+  const onShow = () => {};
+  const onDelete = () => {
+    if (!selectedId) return;
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        await axios.delete(apiUrls.advisor.delete(selectedId?.toString()), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        resolve({ message: "Asesor eliminado" });
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data.message);
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "No se pudo eliminar el asesor" });
+        }
+      } finally {
+        getData();
+        setConfirmModal(false);
+      }
+    });
+
+    toast.promise(promise, {
+      loading: "Eliminando asesor...",
+      success: (data: any) => `${data.message}`,
+      error: (error: any) => `${error.message}`,
+    });
   };
 
   useEffect(() => {
@@ -198,14 +188,7 @@ const Content = () => {
             <h2 className="font-medium text-zinc-500 text-lg w-full md:w-auto">
               Registros ({total})
             </h2>
-            <div className="w-full md:w-auto flex justify-end">
-              <Link
-                href={"/admin/usuarios/publicistas"}
-                className="bg-green-800 rounded-md px-4 py-1 text-white font-medium"
-              >
-                Publicistas
-              </Link>
-            </div>
+            <div className="w-full md:w-auto flex justify-end"></div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">
             <SelectRows
@@ -214,16 +197,16 @@ const Content = () => {
             />
             <div className="w-full sm:w-auto flex flex-row self-end">
               <SearchInput
-                placeholder="Buscar usuario"
+                placeholder="Buscar asesor"
                 onClick={(query) => getUserBySearch(query)}
               />
             </div>
           </div>
           <div className=" overflow-x-auto">
-            <UsersTable
+            <AdviserTable
               dataTable={data}
-              onSuspend={(id) => handleConfirmModal(id, "approved")}
-              onUnsuspend={(id) => handleConfirmModal(id, "suspend")}
+              onDelete={(id) => handleDelete(id)}
+              onShow={(id) => handleShow(id)}
             />
           </div>
           <div className="mt-4 justify-center flex">
@@ -236,14 +219,27 @@ const Content = () => {
           </div>
         </MainContainer>
       </SafeAreaContainer>
-      {selectedId && selectedStatus && (
+      {selectedId && showModal && (
+        <FormModal
+          openModal={showModal}
+          setOpenModal={setShowModal}
+          title="Información de asesor"
+        >
+          <AdviserShow
+            token={token}
+            id={selectedId}
+            closeModal={() => setShowModal(false)}
+          />
+        </FormModal>
+      )}
+      {selectedId && confirmModal && (
         <ConfirmModal
           openModal={confirmModal}
           setOpenModal={() => setConfirmModal(false)}
-          onAction={() => handleChangeStatus(selectedId!, selectedStatus!)}
-          title="Cambiar estado"
+          onAction={() => onDelete()}
+          title="Eliminar"
           textButton="Confirmar"
-          text={`¿Estás seguro de cambiar el estado del usuario?`}
+          text={`¿Estás seguro de eliminar este asesro?`}
         />
       )}
     </>

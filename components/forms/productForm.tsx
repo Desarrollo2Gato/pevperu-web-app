@@ -176,6 +176,8 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   // obtener datos del producto para actualizar
   useEffect(() => {
     if (product) {
+      console.log("empresas", product.companies);
+
       if (product?.photos && product?.photos.length > 0) {
         setImage(product.photos[0] && imgUrl(product?.photos[0].photo_url));
         setImage2(product.photos[1] && imgUrl(product?.photos[1].photo_url));
@@ -234,10 +236,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         img2: null,
         // img3: null,
         // img4: null,
-        company_id:
-          product.companies[0].id.toString() || (user && user?.company_id)
-            ? user?.company_id?.toString()
-            : "",
+        company_id: product.companies?.[0]?.id?.toString() || "",
         status:
           product.status || user?.type === "admin" ? "approved" : "pending",
         senasa_link:

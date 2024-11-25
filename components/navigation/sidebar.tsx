@@ -3,11 +3,11 @@
 import Image from "next/image";
 
 import { HiOutlineHome } from "react-icons/hi";
-import { PiCards } from "react-icons/pi";
+import { PiCards, PiUserGearBold } from "react-icons/pi";
 import { RiCustomerService2Line } from "react-icons/ri";
 import { MdOutlineAutoAwesomeMosaic } from "react-icons/md";
 import { MdEventNote } from "react-icons/md";
-import { IoNewspaperOutline } from "react-icons/io5";
+import { IoBriefcaseOutline, IoNewspaperOutline } from "react-icons/io5";
 import { GrBook } from "react-icons/gr";
 import { LuLogOut } from "react-icons/lu";
 import { LuBoxes } from "react-icons/lu";
@@ -243,7 +243,6 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                           ? "justify-center"
                           : "justify-center md:justify-start"
                       } w-full  hover:opacity-100 ${
-                        pathname === "/empresa/publicidad" ||
                         pathname === "/empresa/publicidad"
                           ? "opacity-100"
                           : " opacity-30"
@@ -261,113 +260,156 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </BootstrapTooltip>
                 </li>
               )}
+              <li
+                className={`w-full justify-center flex items-center py-4 group ${
+                  active ? "px-4 md:px-8" : "px-4 "
+                } `}
+              >
+                <BootstrapTooltip
+                  placement="right"
+                  title={active ? "" : "Empleos"}
+                >
+                  <Link
+                    href={"/empresa/empleos"}
+                    className={`flex flex-row items-center relative ${
+                      !active
+                        ? "justify-center"
+                        : "justify-center md:justify-start"
+                    } w-full  hover:opacity-100 ${
+                      pathname === "/empresa/empleos"
+                        ? "opacity-100"
+                        : " opacity-30"
+                    } transition-all duration-500`}
+                  >
+                    <IoBriefcaseOutline className="text-2xl" />
+
+                    <span
+                      className={`${
+                        !active ? "hidden" : "hidden md:inline-block"
+                      } ml-2 text-base inline-block transform transition-all duration-700`}
+                    >
+                      Empleos
+                    </span>
+                  </Link>
+                </BootstrapTooltip>
+              </li>
             </>
           )}
           {user?.type === "extern" && (
             <>
-              <li
-                className={`w-full justify-center flex items-center py-4 group ${
-                  active ? "px-4 md:px-8" : "px-4 "
-                } `}
-              >
-                <BootstrapTooltip
-                  placement="right"
-                  title={active ? "" : "Eventos"}
+              {/* Eventos */}
+              {user.extern_type.includes("Eventos") && (
+                <li
+                  className={`w-full justify-center flex items-center py-4 group ${
+                    active ? "px-4 md:px-8" : "px-4 "
+                  } `}
                 >
-                  <Link
-                    href={"/publicador/eventos"}
-                    className={`flex flex-row items-center relative ${
-                      !active
-                        ? "justify-center"
-                        : "justify-center md:justify-start"
-                    } w-full  hover:opacity-100 ${
-                      pathname === "/publicador/eventos"
-                        ? "opacity-100"
-                        : " opacity-30"
-                    } transition-all duration-500`}
+                  <BootstrapTooltip
+                    placement="right"
+                    title={active ? "" : "Eventos"}
                   >
-                    <MdEventNote className="text-2xl" />
+                    <Link
+                      href={"/publicador/eventos"}
+                      className={`flex flex-row items-center relative ${
+                        !active
+                          ? "justify-center"
+                          : "justify-center md:justify-start"
+                      } w-full  hover:opacity-100 ${
+                        pathname === "/publicador/eventos"
+                          ? "opacity-100"
+                          : " opacity-30"
+                      } transition-all duration-500`}
+                    >
+                      <MdEventNote className="text-2xl" />
 
-                    <span
-                      className={`${
-                        !active ? "hidden" : "hidden md:inline-block"
-                      } ml-2 text-base inline-block transform transition-all duration-700`}
-                    >
-                      Eventos
-                    </span>
-                  </Link>
-                </BootstrapTooltip>
-              </li>
-              <li
-                className={`w-full justify-center flex items-center py-4 group ${
-                  active ? "px-4 md:px-8" : "px-4 "
-                } `}
-              >
-                <BootstrapTooltip
-                  placement="right"
-                  title={active ? "" : "Noticias"}
+                      <span
+                        className={`${
+                          !active ? "hidden" : "hidden md:inline-block"
+                        } ml-2 text-base inline-block transform transition-all duration-700`}
+                      >
+                        Eventos
+                      </span>
+                    </Link>
+                  </BootstrapTooltip>
+                </li>
+              )}
+              {/* Noticias */}
+              {user.extern_type.includes("Noticias") && (
+                <li
+                  className={`w-full justify-center flex items-center py-4 group ${
+                    active ? "px-4 md:px-8" : "px-4 "
+                  } `}
                 >
-                  <Link
-                    href={"/publicador/noticias"}
-                    className={`flex flex-row items-center relative ${
-                      !active
-                        ? "justify-center"
-                        : "justify-center md:justify-start"
-                    } w-full  hover:opacity-100 ${
-                      pathname === "/publicador/noticias"
-                        ? "opacity-100"
-                        : " opacity-30"
-                    } transition-all duration-500`}
+                  <BootstrapTooltip
+                    placement="right"
+                    title={active ? "" : "Noticias"}
                   >
-                    <IoNewspaperOutline className="text-2xl" />
+                    <Link
+                      href={"/publicador/noticias"}
+                      className={`flex flex-row items-center relative ${
+                        !active
+                          ? "justify-center"
+                          : "justify-center md:justify-start"
+                      } w-full  hover:opacity-100 ${
+                        pathname === "/publicador/noticias"
+                          ? "opacity-100"
+                          : " opacity-30"
+                      } transition-all duration-500`}
+                    >
+                      <IoNewspaperOutline className="text-2xl" />
 
-                    <span
-                      className={`${
-                        !active ? "hidden" : "hidden md:inline-block"
-                      } ml-2 text-base inline-block transform transition-all duration-700`}
-                    >
-                      Noticias
-                    </span>
-                  </Link>
-                </BootstrapTooltip>
-              </li>
-              <li
-                className={`w-full justify-center flex items-center py-4 group ${
-                  active ? "px-4 md:px-8" : "px-4 "
-                } `}
-              >
-                <BootstrapTooltip
-                  placement="right"
-                  title={active ? "" : "Cursos"}
+                      <span
+                        className={`${
+                          !active ? "hidden" : "hidden md:inline-block"
+                        } ml-2 text-base inline-block transform transition-all duration-700`}
+                      >
+                        Noticias
+                      </span>
+                    </Link>
+                  </BootstrapTooltip>
+                </li>
+              )}
+              {/* Cursos */}
+              {user.extern_type.includes("Eventos") && (
+                <li
+                  className={`w-full justify-center flex items-center py-4 group ${
+                    active ? "px-4 md:px-8" : "px-4 "
+                  } `}
                 >
-                  <Link
-                    href={"/publicador/cursos"}
-                    className={`flex flex-row items-center relative ${
-                      !active
-                        ? "justify-center"
-                        : "justify-center md:justify-start"
-                    } w-full  hover:opacity-100 ${
-                      pathname === "/publicador/cursos"
-                        ? "opacity-100"
-                        : " opacity-30"
-                    } transition-all duration-500`}
+                  <BootstrapTooltip
+                    placement="right"
+                    title={active ? "" : "Cursos"}
                   >
-                    <GrBook className="text-2xl" />
-                    <span
-                      className={`${
-                        !active ? "hidden" : "hidden md:inline-block"
-                      } ml-2 text-base inline-block transform transition-all duration-700`}
+                    <Link
+                      href={"/publicador/cursos"}
+                      className={`flex flex-row items-center relative ${
+                        !active
+                          ? "justify-center"
+                          : "justify-center md:justify-start"
+                      } w-full  hover:opacity-100 ${
+                        pathname === "/publicador/cursos"
+                          ? "opacity-100"
+                          : " opacity-30"
+                      } transition-all duration-500`}
                     >
-                      Cursos
-                    </span>
-                  </Link>
-                </BootstrapTooltip>
-              </li>
+                      <GrBook className="text-2xl" />
+                      <span
+                        className={`${
+                          !active ? "hidden" : "hidden md:inline-block"
+                        } ml-2 text-base inline-block transform transition-all duration-700`}
+                      >
+                        Cursos
+                      </span>
+                    </Link>
+                  </BootstrapTooltip>
+                </li>
+              )}
             </>
           )}
 
           {user?.type === "admin" && (
             <>
+              {/* Subs */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -401,6 +443,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              {/* Planes */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -434,6 +477,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              {/* Filtros */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -467,6 +511,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              {/* Cultivos */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -500,6 +545,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              {/* Categorias */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -533,6 +579,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              {/* Productos */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -566,7 +613,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
-
+              {/* Eventos */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -600,6 +647,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              {/* Noticias */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -633,6 +681,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              {/* Cursos */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -665,6 +714,41 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              {/* Empleos */}
+              <li
+                className={`w-full justify-center flex items-center py-4 group ${
+                  active ? "px-4 md:px-8" : "px-4 "
+                } `}
+              >
+                <BootstrapTooltip
+                  placement="right"
+                  title={active ? "" : "Empleos"}
+                >
+                  <Link
+                    href={"/admin/empleos"}
+                    className={`flex flex-row items-center relative ${
+                      !active
+                        ? "justify-center"
+                        : "justify-center md:justify-start"
+                    } w-full  hover:opacity-100 ${
+                      pathname === "/admin/empleos"
+                        ? "opacity-100"
+                        : " opacity-30"
+                    } transition-all duration-500`}
+                  >
+                    <IoBriefcaseOutline className="text-2xl" />
+
+                    <span
+                      className={`${
+                        !active ? "hidden" : "hidden md:inline-block"
+                      } ml-2 text-base inline-block transform transition-all duration-700`}
+                    >
+                      Empleos
+                    </span>
+                  </Link>
+                </BootstrapTooltip>
+              </li>
+              {/* Empresas */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -698,6 +782,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              {/* Usuarios */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -731,6 +816,40 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              {/* Asesores */}
+              <li
+                className={`w-full justify-center flex items-center py-4 group ${
+                  active ? "px-4 md:px-8" : "px-4 "
+                } `}
+              >
+                <BootstrapTooltip
+                  placement="right"
+                  title={active ? "" : "Asesores"}
+                >
+                  <Link
+                    href={"/admin/asesores"}
+                    className={`flex flex-row items-center relative ${
+                      !active
+                        ? "justify-center"
+                        : "justify-center md:justify-start"
+                    } w-full  hover:opacity-100 ${
+                      pathname === "/admin/asesores"
+                        ? "opacity-100"
+                        : " opacity-30"
+                    } transition-all duration-500`}
+                  >
+                    <PiUserGearBold className="text-2xl" />
+                    <span
+                      className={`${
+                        !active ? "hidden" : "hidden md:inline-block"
+                      } ml-2 text-base inline-block transform transition-all duration-700`}
+                    >
+                      Asesores
+                    </span>
+                  </Link>
+                </BootstrapTooltip>
+              </li>
+              {/* Archivos */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -764,6 +883,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              {/* Publicidad */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "
@@ -797,6 +917,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                   </Link>
                 </BootstrapTooltip>
               </li>
+              {/* Atencion al cliente */}
               <li
                 className={`w-full justify-center flex items-center py-4 group ${
                   active ? "px-4 md:px-8" : "px-4 "

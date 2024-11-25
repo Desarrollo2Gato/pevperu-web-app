@@ -1,7 +1,7 @@
 // const BASE_URL = 'https://pevperu-server-production.up.railway.app/api/V1';
 
-// export const BASE_URL = "https://pevperu-server.jocargames.com/api/V1";
-export const BASE_URL = "https://api.pev.com.pe/api/V1";
+export const BASE_URL = "http://192.168.100.55:8001/api/V1";
+// export const BASE_URL = "https://api.pev.com.pe/api/V1";
 
 export const pagination = (page: number, per_page: number) => {
   return `per_page=${per_page}&page=${page}`;
@@ -238,5 +238,19 @@ export const apiUrls = {
     getOne: (id: string) => `${BASE_URL}/extern-types/${id}`,
     update: (id: string) => `${BASE_URL}/extern-types/${id}`,
     delete: (id: string) => `${BASE_URL}/extern-type/${id}`,
+  },
+  advisor: {
+    create: `${BASE_URL}/advisors`,
+    getAll: `${BASE_URL}/advisors`,
+    getOne: (id: string) => `${BASE_URL}/advisors/${id}`,
+    update: (id: string) => `${BASE_URL}/advisors/${id}?_method=PUT`,
+    delete: (id: string) => `${BASE_URL}/advisors/${id}`,
+  },
+  jobs: {
+    create: `${BASE_URL}/jobs-positions`,
+    getAll: `${BASE_URL}/jobs-positions`,
+    getOne: (id: string) => `${BASE_URL}/jobs-positions/${id}`,
+    update: (id: string) => `${BASE_URL}/jobs-positions/${id}`,
+    delete: (id: string) => `${BASE_URL}/jobs-positions/${id}`,
   },
 };

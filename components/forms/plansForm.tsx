@@ -53,6 +53,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
       benefits: [{ title: "", description: "" }],
       banners_intern: "",
       banners_product: "",
+      num_jobs: "",
     },
   });
 
@@ -79,6 +80,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
         price: data.price.toString() || "",
         num_features_products: data.featured_products.toString() || "",
         num_products: data.products_limit.toString() || "",
+        num_jobs: data.jobs_limit.toString() || "",
         num_features_events: data.events_limit.toString() || "",
         num_features_news: data.news_limit.toString() || "",
         benefits: data.benefits || [{ title: "", description: "" }],
@@ -225,6 +227,13 @@ const PlanForm: React.FC<PlanFormProps> = ({
           placeholder="5"
           register={register("num_features_news")}
           error={errors.num_features_news}
+        />
+        <InputZodField
+          id="num_jobs"
+          name="Número de empleos por mes"
+          placeholder="5"
+          register={register("num_jobs")}
+          error={errors.num_jobs}
         />
         <InputZodField
           id="banner_intern"

@@ -128,6 +128,7 @@ export interface IPlan {
   products_limit: number;
   events_limit: number;
   news_limit: number;
+  jobs_limit: number;
   benefits: Tbenefit[];
   banners_intern_limit: number;
   banners_product_limit: number;
@@ -278,4 +279,38 @@ export interface IPublisher {
   id: string;
   name: string;
   permisses: string[];
+}
+
+export interface IAdviser {
+  id: number;
+  names: string;
+  last_names: string;
+  banner_url: string;
+  photo_url: string;
+  education_background: string[];
+  nationality: string;
+  specialty: string;
+  availability: string;
+  experience_years: number;
+  description: string;
+  crops: ICrops[];
+  email_1: string;
+  email_2: string;
+  phone_number: string;
+  linkedin: string;
+  web: string;
+  user: IUser;
+}
+export interface IJobs {
+  id: number;
+  title: string;
+  modality: string;
+  type: string;
+  content: string;
+  salary: string;
+  address: string;
+  company_id: number;
+  company: ICompany;
+  email: string;
+  link: string;
 }

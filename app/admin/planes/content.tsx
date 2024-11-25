@@ -1,9 +1,6 @@
 "use client";
 import AddButton from "@/components/ui/addBtn";
-import {
-  MainContainer,
-  SafeAreaContainer,
-} from "@/components/ui/containers";
+import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import { IPlan } from "@/types/api";
 import { apiUrls } from "@/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/utils/api/getToken";
@@ -115,10 +112,12 @@ const Content = () => {
         });
         resolve({ message: "Plan eliminado" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "No se pudo eliminar el plan" });
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "No se pudo eliminar el plan" });
+        }
       } finally {
         getData();
         setDeleteModal(false);

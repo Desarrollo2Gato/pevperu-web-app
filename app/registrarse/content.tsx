@@ -107,6 +107,7 @@ const Content = () => {
         adviser_id: user.adviser_id || null,
         logo: user.company?.logo || null,
         company_id: user.company?.id,
+        extern_type: [],
       };
       registerExtern(access_token, userInfo);
       if (

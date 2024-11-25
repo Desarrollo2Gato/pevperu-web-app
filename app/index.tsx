@@ -34,6 +34,16 @@ const Index = () => {
       console.log(res.data);
       const { access_token, user } = res.data;
 
+      let externTypes: string[] = [];
+      
+      if (
+        user.type === "extern" &&
+        Array.isArray(user.extern_types) &&
+        user.extern_types.length > 0
+      ) {
+        externTypes = user.extern_types.map((item: any) => item.name);
+      }
+
       const userInfo = {
         id: user.id,
         name: user.full_name,
@@ -42,10 +52,11 @@ const Index = () => {
         logo: user.company?.logo || user.photo || null,
         adviser_id: user.adviser_id || null,
         company_id: user.company?.id || null,
+        extern_type: externTypes,
       };
 
       login(access_token, userInfo);
-
+      console.log(userInfo);
       if (
         user.type !== "admin" &&
         user.type !== "company_owner" &&

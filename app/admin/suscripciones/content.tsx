@@ -1,14 +1,11 @@
 "use client";
 import SubsTable from "../../../components/tables/subsTable";
-import {
-  MainContainer,
-  SafeAreaContainer,
-} from "@/components/ui/containers";
+import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import { useEffect, useState } from "react";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
-import { apiUrls, pagination } from "@/utils/api/apiUrls";
-import { ICompany, IPlan, ISubscription } from "@/types/api";
+import { apiUrls } from "@/utils/api/apiUrls";
+import { IPlan, ISubscription } from "@/types/api";
 import AddButton from "@/components/ui/addBtn";
 import SubsForm from "@/components/forms/subsForm";
 import SelectRows from "@/components/ui/selectRows";
@@ -30,7 +27,6 @@ const Content = () => {
   // data
   const [data, setData] = useState<ISubscription[]>([]);
   const [plans, setPlans] = useState<IPlan[]>([]);
-  const [providers, setProviders] = useState<ICompany[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
@@ -42,16 +38,25 @@ const Content = () => {
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
-  const [selectedAction, setSelectedAction] = useState<
-    "data" | "date" | "status" | "provider" | "plan"
-  >("data");
+
 
   // filters
   const [planFilter, setPlanFilter] = useState<"all" | string>("all");
-  const [providerFilter, setProviderFilter] = useState<"all" | string>("all");
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [status, setStatus] = useState<"active" | "inactive" | "all">("all");
+
+  const [filters, setFilters] = useState<{
+    plan: string;
+    status: "active" | "inactive" | "all";
+    startDate: Date | null;
+    endDate: Date | null;
+  }>({
+    plan: "all",
+    status: "all",
+    startDate: null,
+    endDate: null,
+  });
 
   useEffect(() => {
     const token = getTokenFromCookie();
@@ -60,20 +65,24 @@ const Content = () => {
     }
   }, []);
 
+  const handleFilterChange = (key: string, value: any) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value as "active" | "inactive";
-    setStatus(newStatus);
-    setSelectedAction("status");
+    handleFilterChange("status", newStatus);
   };
   const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newPlan = e.target.value;
-    setPlanFilter(newPlan);
-    setSelectedAction("plan");
+    handleFilterChange("plan", newPlan);
   };
   const handleDatesChange = () => {
     if (!startDate || !endDate) return;
-    setSelectedAction("date");
-    getSubsByDate(startDate, endDate);
+    handleFilterChange("date", { startDate, endDate });
   };
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -124,10 +133,12 @@ const Content = () => {
         );
         resolve({ message: "Suscripción eliminada" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "No se pudo eliminar la suscripción" });
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "No se pudo eliminar la suscripción" });
+        }
       } finally {
         getData();
         setDeleteModal(false);
@@ -152,6 +163,7 @@ const Content = () => {
           },
         }
       );
+      console.log(response);
       setData(response.data.data);
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
@@ -161,6 +173,7 @@ const Content = () => {
       setLoading(false);
     }
   };
+
   const getPlans = async () => {
     try {
       const response = await axios.get(apiUrls.plan.getAll, {
@@ -173,168 +186,57 @@ const Content = () => {
       console.error(error);
     }
   };
-  const getProviders = async () => {
+
+  // filters
+
+  const fetchFilteredData = async () => {
+    setLoading(true);
     try {
-      const response = await axios.get(apiUrls.company.getAll, {
+      const params: Record<string, any> = {
+        page: pageIndex,
+        per_page: pageSize,
+      };
+
+      if (filters.plan !== "all") params.plan_id = filters.plan;
+      if (filters.status !== "all")
+        params.is_active = filters.status === "active" ? 1 : 0;
+      if (filters.startDate && filters.endDate) {
+        params.start_date = filters.startDate.toISOString();
+        params.end_date = filters.endDate.toISOString();
+      }
+      const response = await axios.get(apiUrls.subscription.getAll, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params,
       });
-      setProviders(response.data);
+      setData(response.data.data);
+      setPageCount(response.data.last_page);
+      setTotal(response.data.total);
+      toast.success("Se obtuvo los datos correctamente");
     } catch (error) {
-      toast.error("Error al obtener proveedores");
-      console.error(error);
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data.message);
+      } else {
+        toast.error("Error al filtrar los datos");
+      }
+    } finally {
+      setLoading(false);
     }
   };
-  // filters
-  const getSubsByStatus = (status: string) => {
-    if (status === "all") {
-      setSelectedAction("data");
-      return;
-    }
-    const is_active = status === "active" ? 1 : 0;
-    const promise = new Promise(async (resolve, reject) => {
-      try {
-        const res = await axios.get(
-          apiUrls.subscription.getAll +
-            "?is_active=" +
-            is_active +
-            "&" +
-            pagination(pageIndex, pageSize),
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setData(res.data.data);
-        setPageCount(res.data.last_page);
-        setTotal(res.data.total);
-        resolve({ message: "Suscripciones filtradas" });
-      } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "No se pudo filtrar por estado" });
-      } finally {
-        setDeleteModal(false);
-      }
-    });
-
-    toast.promise(promise, {
-      loading: "Filtrando suscripciones...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
-  };
-  const getSubsByPlan = (plan: string) => {
-    if (plan === "all") {
-      setSelectedAction("data");
-      return;
-    }
-    const promise = new Promise(async (resolve, reject) => {
-      try {
-        const res = await axios.get(
-          apiUrls.subscription.getAll +
-            "?plan_id=" +
-            plan +
-            "&" +
-            pagination(pageIndex, pageSize),
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setData(res.data.data);
-        setPageCount(res.data.last_page);
-        setTotal(res.data.total);
-        resolve({ message: "Suscripciones filtradas" });
-      } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "No se pudo filtrar por plan" });
-      } finally {
-        setDeleteModal(false);
-      }
-    });
-
-    toast.promise(promise, {
-      loading: "Filtrando suscripciones...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
-  };
-  const getSubsByDate = (start: Date, end: Date) => {
-    const promise = new Promise(async (resolve, reject) => {
-      try {
-        const res = await axios.get(
-          apiUrls.subscription.getAll +
-            "?start_date=" +
-            start.toISOString() +
-            "&end_date=" +
-            end.toISOString() +
-            "&" +
-            pagination(pageIndex, pageSize),
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setData(res.data.data);
-        setPageCount(res.data.last_page);
-        setTotal(res.data.total);
-        resolve({ message: "Suscripciones filtradas" });
-      } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "No se pudo filtrar por fecha" });
-      } finally {
-        setDeleteModal(false);
-      }
-    });
-
-    toast.promise(promise, {
-      loading: "Filtrando suscripciones...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
-  };
-
-  useEffect(() => {
-    setData([]);
-  }, [selectedAction]);
-
   useEffect(() => {
     if (token) {
       getPlans();
-      getProviders();
     }
   }, [token]);
+
   useEffect(() => {
-    if (token && selectedAction === "data") {
-      getData();
-    }
-  }, [token, selectedAction, pageIndex]);
-  // status
-  useEffect(() => {
-    if (token && selectedAction === "status") {
-      getSubsByStatus(status);
-    }
-  }, [token, selectedAction, status, pageIndex]);
-  useEffect(() => {
-    if (token && selectedAction === "plan") {
-      getSubsByPlan(planFilter);
-    }
-  }, [token, selectedAction, planFilter, pageIndex]);
-  useEffect(() => {
-    if (token && selectedAction === "date") {
-      getSubsByDate(startDate!, endDate!);
-    }
-  }, [token, selectedAction, startDate, endDate, pageIndex]);
+    if (token) fetchFilteredData();
+  }, [token, filters, pageIndex, pageSize]);
+
+  // useEffect(() => {
+  //   if (token) fetchFilteredData();
+  // }, [token, pageSize, pageIndex]);
 
   return (
     <>

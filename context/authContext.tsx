@@ -36,6 +36,7 @@ type User = {
   company_id: number | null;
   adviser_id: number | null;
   plan?: TypePlan | undefined | null;
+  extern_type: string[];
 };
 type AuthContextType = {
   user: User | null;
@@ -112,6 +113,14 @@ export default function AuthContextProvider({
           }
         );
         const user = res.data.user;
+        let externTypes: string[] = [];
+        if (
+          user.type === "extern" &&
+          Array.isArray(user.extern_types) &&
+          user.extern_types.length > 0
+        ) {
+          externTypes = user.extern_types.map((item: any) => item.name);
+        }
         const userInfo = {
           id: user.id,
           name: user.full_name,
@@ -119,6 +128,7 @@ export default function AuthContextProvider({
           type: user.type,
           logo: user.company?.logo || null,
           company_id: user.company?.id,
+          extern_type: externTypes,
         };
         const newAuthTokens: string = res.data.access_token;
         setAuthTokens(newAuthTokens);

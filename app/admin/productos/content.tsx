@@ -103,6 +103,7 @@ const Content = () => {
     setSelectedStatus(status);
     setStatusModal(true);
   };
+
   const handleChangeStatus = () => {
     if (!selectedId) return;
     if (selectedStatus === "delete") {

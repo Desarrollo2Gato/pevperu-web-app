@@ -51,6 +51,10 @@ export const planSaveSchema = z.object({
     .string()
     .regex(/^\d+$/, "El número de productos no es válido")
     .min(1, "El número de productos es requerido"),
+  num_jobs: z
+    .string()
+    .regex(/^\d+$/, "El número de empleos no es válido")
+    .min(1, "El número de empleos es requerido"),
   num_features_events: z
     .string()
     .regex(/^\d+$/, "El número de eventos no es válido")
@@ -326,4 +330,43 @@ export const CropSchema = z.object({
 
 export const PublisherSchema = z.object({
   content: z.string().array(),
+});
+
+export const adviserSchema = z.object({
+  banner: z.any().nullable(),
+  profile: z.any().nullable(),
+  description: z.any().nullable(),
+  names: z.string().min(1, "El nombre es requerido"),
+  lastnames: z.string().min(1, "Los apellidos son requeridos"),
+  availability: z.string().nullable(),
+  years_xp: z
+    .string()
+    .regex(/^\d+$/, "Los años de experiencia debe ser numerico"),
+  certificates: z.array(
+    z.object({
+      name: z.string().min(1, "El nombre del certificado es requerido"),
+    })
+  ),
+  crops_ids: z.array(z.number().nullable()).nullable(),
+  web: z.string().nullable(),
+  lnkd: z.string().nullable(),
+  phone: z.string().nullable(),
+  email1: z.string().email("El correo no es valido"),
+  email2: z.string().nullable(),
+  specialty: z.string().min(1, "La especialidad es requerida"),
+  nationality: z.string().min(1, "la nacionalidad es requerida"),
+});
+
+export const JobSchema = z.object({
+  title: z.string().min(1, "El Cargo es requerido"),
+  modality: z.string().min(1, "La modalidad es requerida"),
+  type: z.string().min(1, "El tipo es requerido"),
+  address: z.string().optional(),
+  content: z.string().min(1, "El contenido es requerido"),
+  salary: z
+    .string()
+    // .regex(/^\d+(\.\d{2})?$/, "El salario debe tener el formato 2000.00")
+    .optional(),
+  link: z.string().optional(),
+  email: z.string(),
 });
