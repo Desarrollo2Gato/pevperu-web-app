@@ -98,7 +98,6 @@ const Content = () => {
       if (typeof filters.search === "string" && filters.search.trim()) {
         params.like = filters.search.trim();
       }
-      console.log(filters.search);
       if (filters.modality !== "all") {
         params.modality = filters.modality;
       }

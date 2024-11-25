@@ -115,6 +115,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
       description: data.description,
       featured_products: Number(data.num_features_products),
       products_limit: Number(data.num_products),
+      jobs_limit: Number(data.num_jobs),
       events_limit: Number(data.num_features_events),
       news_limit: Number(data.num_features_news),
       benefits: data.benefits,
