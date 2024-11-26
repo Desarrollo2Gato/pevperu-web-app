@@ -65,6 +65,13 @@ export type TExternType = {
   id: number;
   name: string;
 };
+export type TCategoryLimits = {
+  id: number;
+  plan_id: string;
+  category_id: string;
+  product_limit: string;
+};
+
 // Interfaces
 
 export interface IBranchData {
@@ -118,20 +125,29 @@ export interface INotification {
   type: string;
   id_item: string;
 }
-
 export interface IPlan {
   id: number;
   name: string;
-  price: number;
   description: string;
+  price: string;
   featured_products: number;
-  products_limit: number;
   events_limit: number;
   news_limit: number;
+  products_limit: number;
   jobs_limit: number;
   benefits: Tbenefit[];
+  banners_home_limit: number;
   banners_intern_limit: number;
   banners_product_limit: number;
+  show_product_specifications: boolean;
+  show_supplier_description: boolean;
+  supplier_branches_limit: number;
+  show_in_directory: boolean;
+  related_products_limit: number;
+  show_phone: boolean;
+  show_email: boolean;
+  show_website: boolean;
+  category_limits: TCategoryLimits[];
 }
 export interface ISubscription {
   company: ICompany;

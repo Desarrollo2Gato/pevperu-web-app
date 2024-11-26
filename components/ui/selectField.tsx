@@ -12,6 +12,7 @@ type SelectZodProps = {
   onChange?: (option: any) => void;
   isdisabled?: boolean;
   isrequired?: boolean;
+  defaultValue? : string | number;
 };
 
 export const SelectZodField: React.FC<SelectZodProps> = ({
@@ -26,6 +27,7 @@ export const SelectZodField: React.FC<SelectZodProps> = ({
   onChange,
   isdisabled = false,
   isrequired = false,
+  defaultValue, 
 }) => {
   return (
     <div className="w-full relative">
@@ -41,6 +43,7 @@ export const SelectZodField: React.FC<SelectZodProps> = ({
         required={isrequired}
         {...register}
         {...(onChange && { onChange })}
+        defaultValue={defaultValue}
 
       >
         <option value="" disabled>

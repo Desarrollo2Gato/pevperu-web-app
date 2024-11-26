@@ -77,6 +77,26 @@ export const planSaveSchema = z.object({
     .string()
     .regex(/^\d+$/, "El número de banners internos no es válido")
     .nullable(),
+  show_product_specifications: z.boolean(),
+  show_supplier_description: z.boolean(),
+  supplier_branches_limit: z
+    .string()
+    .regex(/^\d+$/, "El número de sucursales a mostrar no es válido")
+    .nullable(),
+  show_in_directory: z.boolean(),
+  related_products_limit: z
+    .string()
+    .regex(/^\d+$/, "El número de productos a mostrar no es válido")
+    .nullable(),
+  show_phone: z.boolean(),
+  show_email: z.boolean(),
+  show_website: z.boolean(),
+  category_limits: z.array(
+    z.object({
+      category_id: z.string().min(1, "seleccione una categoría"),
+      product_limit: z.string().min(1, "El limite de productos es requerido"),
+    })
+  ),
 });
 export const subscriptionSaveSchema = z.object({
   companyId: z.string().min(1, "El usuario es requerido"),

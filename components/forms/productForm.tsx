@@ -127,7 +127,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       img2: null,
       files: [{ file_type: "", file_label: "" }],
       featured_product: "false",
-      company_id: "",
+      company_id: user?.company_id?.toString(),
       senasa_number: "",
       senasa_link:
         "https://servicios.senasa.gob.pe/SIGIAWeb/sigia_consulta_cultivo.html",
@@ -236,7 +236,10 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         img2: null,
         // img3: null,
         // img4: null,
-        company_id: product.companies?.[0]?.id?.toString() || "",
+        company_id:
+          product.companies?.[0]?.id?.toString() ||
+          user?.company_id?.toString() ||
+          "",
         status:
           product.status || user?.type === "admin" ? "approved" : "pending",
         senasa_link:
@@ -744,6 +747,11 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   // useEffect(() => {
   //   console.log("ingredientes", watch("active_ingts"));
   // }, [watch("active_ingts")]);
+  useEffect(() => {
+    console.log("errores", errors);
+    console.log(watch("company_id"), "id");
+    console.log("user", user);
+  }, [errors]);
 
   return (
     <>

@@ -7,9 +7,11 @@ import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
 import { toast } from "sonner";
 import ButtonForm from "../ui/buttonForm";
-import { IPlan } from "@/types/api";
+import { ICategory, IPlan } from "@/types/api";
 import ButtonArrayForm from "../ui/buttonArrayFrom";
 import EditorText from "../ui/editorText";
+import { SelectZodField } from "../ui/selectField";
+import { RadioBooleanField } from "./radioButton";
 
 type PlanFormProps = {
   type: "create" | "edit";
@@ -27,10 +29,11 @@ const PlanForm: React.FC<PlanFormProps> = ({
   closeModal,
 }) => {
   const [data, setData] = useState<IPlan>();
+  const [categories, setCategories] = useState<ICategory[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
+  const [gettingCategories, setGettingCategories] = useState<boolean>(false);
   const {
     control,
     register,
@@ -54,6 +57,15 @@ const PlanForm: React.FC<PlanFormProps> = ({
       banners_intern: "",
       banners_product: "",
       num_jobs: "",
+      show_product_specifications: false,
+      show_supplier_description: false,
+      supplier_branches_limit: "",
+      show_in_directory: false,
+      related_products_limit: "",
+      show_phone: false,
+      show_email: false,
+      show_website: false,
+      category_limits: [{ category_id: "", product_limit: "" }],
     },
   });
 
@@ -65,6 +77,18 @@ const PlanForm: React.FC<PlanFormProps> = ({
     control,
     name: "benefits",
   });
+  const {
+    fields: categoryLimitsFields,
+    append: categoryLimitsAppend,
+    remove: categoryLimitsRemove,
+  } = useFieldArray({
+    control,
+    name: "category_limits",
+  });
+
+  useEffect(() => {
+    getCategories();
+  }, []);
 
   useEffect(() => {
     if (type === "edit") {
@@ -86,6 +110,15 @@ const PlanForm: React.FC<PlanFormProps> = ({
         benefits: data.benefits || [{ title: "", description: "" }],
         banners_intern: data.banners_intern_limit.toString() || "",
         banners_product: data.banners_product_limit.toString() || "",
+        show_product_specifications: data.show_product_specifications || false,
+        show_supplier_description: data.show_supplier_description || false,
+        supplier_branches_limit: data.supplier_branches_limit.toString() || "",
+        show_in_directory: data.show_in_directory || false,
+        related_products_limit: data.related_products_limit.toString() || "",
+        show_phone: data.show_phone || false,
+        show_email: data.show_email || false,
+        show_website: data.show_website || false,
+        category_limits: data.category_limits || [],
       });
     }
   }, [data]);
@@ -104,6 +137,25 @@ const PlanForm: React.FC<PlanFormProps> = ({
       alert("Error al obtener los datos");
     } finally {
       setLoading(false);
+    }
+  };
+  const getCategories = async () => {
+    setGettingCategories(true);
+    try {
+      const res = await axios.get(apiUrls.category.getAll, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCategories(res.data);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data.message);
+      } else {
+        toast.error("Error al obtener las categorias");
+      }
+    } finally {
+      setGettingCategories(false);
     }
   };
 
@@ -169,7 +221,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
 
   return (
     <>
-      <form className="flex flex-col gap-2 mt-4">
+      <form className="flex flex-col gap-3 mt-4">
         <InputZodField
           id="name"
           name="Nombre"
@@ -193,63 +245,141 @@ const PlanForm: React.FC<PlanFormProps> = ({
           text="Descripción"
           error={errors.description}
         />
-        {/* <EditorHtml
-          text="Descripción"
-          id="description"
-          value={getValues("description")}
-          // register={register("description")}
-          setValue={setValue}
-          error={errors.description}
-        /> */}
-        <InputZodField
-          id="num_features_products"
-          name="Productos destacados"
-          placeholder="5"
-          register={register("num_features_products")}
-          error={errors.num_features_products}
-        />
-        <InputZodField
-          id="num_products"
-          name="Número de productos"
-          placeholder="5"
-          register={register("num_products")}
-          error={errors.num_products}
-        />
-        <InputZodField
-          id="num_features_events"
-          name="Número de eventos"
-          placeholder="5"
-          register={register("num_features_events")}
-          error={errors.num_features_events}
-        />
-        <InputZodField
-          id="num_features_news"
-          name="Número de noticias"
-          placeholder="5"
-          register={register("num_features_news")}
-          error={errors.num_features_news}
-        />
-        <InputZodField
-          id="num_jobs"
-          name="Número de empleos por mes"
-          placeholder="5"
-          register={register("num_jobs")}
-          error={errors.num_jobs}
-        />
-        <InputZodField
-          id="banner_intern"
-          name="Número de anuncios en la navegación"
-          placeholder="5"
-          register={register("banners_intern")}
-          error={errors.banners_intern}
-        />
-        <InputZodField
-          id="banners_product"
-          name="Número anuncios para productos"
-          placeholder="5"
-          register={register("banners_product")}
-          error={errors.banners_product}
-        />
+
+        <div className=" ">
+          {/* category_limits: [{ category_id: "", product_limit: "" }], */}
+          <h2 className="text-zinc-500 font-medium mb-2">Productos</h2>
+          <div className="border border-stone-200 rounded-md p-2 flex flex-col gap-3">
+            <div className="grid md:grid-cols-2 gap-4">
+              <InputZodField
+                id="num_features_products"
+                name="Productos destacados"
+                placeholder="5"
+                register={register("num_features_products")}
+                error={errors.num_features_products}
+              />
+              <RadioBooleanField
+                id="show_product_specifications"
+                name="Mostrar especificaciones"
+                register={register("show_in_directory")}
+                error={errors.show_product_specifications}
+              />
+            </div>
+          </div>
+        </div>
+        <div className=" ">
+          {/* category_limits: [{ category_id: "", product_limit: "" }], */}
+          <h2 className="text-zinc-500 font-medium mb-2">
+            Limitaciones por categoría
+          </h2>
+          <div className="border border-stone-200 rounded-md p-2 flex flex-col gap-3">
+            {categories.map((field, index) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <SelectZodField
+                  id={`category_limits-${index}-category_id`}
+                  options={categories.map((category) => ({
+                    value: category.id.toString(),
+                    label: category.name.toString(),
+                  }))}
+                  name={field.name}
+                  defaultValue={field.id.toString()}
+                  placeholder="Seleccione una categoría"
+                  register={register(`category_limits.${index}.category_id`)}
+                  error={errors.category_limits?.[index]?.category_id}
+                />
+                <InputZodField
+                  id={`category_limits${index}.product_limit`}
+                  name="Número de productos"
+                  placeholder="5"
+                  register={register(`category_limits.${index}.product_limit`)}
+                  error={errors.category_limits?.[index]?.product_limit}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className=" ">
+          <h2 className=" text-zinc-500 font-medium mb-2">Proveedores</h2>
+          <div className="border border-stone-200 rounded-md p-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <RadioBooleanField
+              id="show_in_directory"
+              name="Mostrar en el directorio"
+              register={register("show_in_directory")}
+              error={errors.show_in_directory}
+            />
+            <RadioBooleanField
+              id="show_supplier_description"
+              name="Mostrar descripcion"
+              register={register("show_supplier_description")}
+              error={errors.show_supplier_description}
+            />
+            <RadioBooleanField
+              id="show_email"
+              name="Mostrar correo"
+              register={register("show_email")}
+              error={errors.show_email}
+            />
+            <RadioBooleanField
+              id="show_phone"
+              name="Mostrar Número celular"
+              register={register("show_phone")}
+              error={errors.show_phone}
+            />
+            <RadioBooleanField
+              id="show_website"
+              name="Mostrar sito web"
+              register={register("show_website")}
+              error={errors.show_website}
+            />
+          </div>
+        </div>
+        <div className=" ">
+          <h2 className=" text-zinc-500 font-medium mb-2">Otros</h2>
+          <div className="border border-stone-200 rounded-md p-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InputZodField
+              id="num_features_events"
+              name="Número de eventos"
+              placeholder="5"
+              register={register("num_features_events")}
+              error={errors.num_features_events}
+            />
+            <InputZodField
+              id="num_features_news"
+              name="Número de noticias"
+              placeholder="5"
+              register={register("num_features_news")}
+              error={errors.num_features_news}
+            />
+            <InputZodField
+              id="num_jobs"
+              name="Número de empleos por mes"
+              placeholder="5"
+              register={register("num_jobs")}
+              error={errors.num_jobs}
+            />
+          </div>
+        </div>
+        <div className=" ">
+          <h2 className=" text-zinc-500 font-medium mb-2">Publicidad</h2>
+          <div className="border border-stone-200 rounded-md p-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InputZodField
+              id="banner_intern"
+              name="Número de anuncios en la navegación"
+              placeholder="5"
+              register={register("banners_intern")}
+              error={errors.banners_intern}
+            />
+            <InputZodField
+              id="banners_product"
+              name="Número anuncios para productos"
+              placeholder="5"
+              register={register("banners_product")}
+              error={errors.banners_product}
+            />
+          </div>
+        </div>
+
         {/* benefits */}
         <div className="flex flex-col gap-2">
           <h2 className=" font-medium text-zinc-500">Beneficios</h2>
