@@ -5,7 +5,7 @@ type RadioBooleanProps = {
   name: string;
   error?: FieldError;
   register?: any;
-  onChange?: (value: boolean) => void;
+  // onChange?: (value: boolean) => void;
   isdisabled?: boolean;
   isrequired?: boolean;
 };
@@ -15,7 +15,7 @@ export const RadioBooleanField: React.FC<RadioBooleanProps> = ({
   name,
   error,
   register,
-  onChange,
+  // onChange,
   isdisabled = false,
   isrequired = false,
 }) => {
@@ -26,33 +26,38 @@ export const RadioBooleanField: React.FC<RadioBooleanProps> = ({
       </label>
       <div className="mt-2 space-x-4 flex justify-around">
         <div className="flex items-center">
-          <label htmlFor={`${id}_true`} className="text-zinc-600 text-sm flex items-center">
+          <label
+            htmlFor={`${id}_true`}
+            className="text-zinc-600 text-sm flex items-center"
+          >
             <input
               type="radio"
               id={`${id}_true`}
               name={id}
-              value="true"
+              value={"true"}
               className="mr-2"
               {...register}
               disabled={isdisabled}
               required={isrequired}
-              onChange={(e) => onChange && onChange(true)}
             />
             Sí
           </label>
         </div>
         <div className="flex items-center">
-          <label htmlFor={`${id}_false`} className="text-zinc-600 text-sm flex items-center">
+          <label
+            htmlFor={`${id}_false`}
+            className="text-zinc-600 text-sm flex items-center"
+          >
             <input
               type="radio"
               id={`${id}_false`}
               name={id}
-              value="false"
+              value={"false"}
               className="mr-2"
               {...register}
               disabled={isdisabled}
               required={isrequired}
-              onChange={(e) => onChange && onChange(false)}
+              // onChange={(e) => onChange && onChange(false)}
             />
             No
           </label>

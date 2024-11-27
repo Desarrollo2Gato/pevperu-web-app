@@ -121,11 +121,9 @@ const Content = () => {
       toast.success("Registro exitoso");
       router.push(user.type === "extern" ? "/publicador" : "/");
     } catch (error) {
-      toast.error("Credenciales invalidas");
       if (axios.isAxiosError(error)) {
-        console.log("error api", error);
-        console.log("error api", error.response?.data);
-      }
+        toast.error(error.response?.data.message);
+      } else toast.error("Error al registrar");
     } finally {
       setLoading(false);
     }

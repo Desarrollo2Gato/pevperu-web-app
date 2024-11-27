@@ -77,20 +77,50 @@ export const planSaveSchema = z.object({
     .string()
     .regex(/^\d+$/, "El número de banners internos no es válido")
     .nullable(),
-  show_product_specifications: z.boolean(),
-  show_supplier_description: z.boolean(),
+  show_product_specifications: z
+    .string()
+    .transform((val) => val === "true")
+    .refine((val) => typeof val === "boolean", {
+      message: "Debe marcar si o no",
+    }),
+  show_supplier_description: z
+    .string()
+    .transform((val) => val === "true")
+    .refine((val) => typeof val === "boolean", {
+      message: "Debe marcar si o no",
+    }),
   supplier_branches_limit: z
     .string()
     .regex(/^\d+$/, "El número de sucursales a mostrar no es válido")
     .nullable(),
-  show_in_directory: z.boolean(),
+  show_in_directory: z
+    .string()
+    .transform((val) => val === "true")
+    .refine((val) => typeof val === "boolean", {
+      message: "Debe marcar si o no",
+    }),
   related_products_limit: z
     .string()
     .regex(/^\d+$/, "El número de productos a mostrar no es válido")
     .nullable(),
-  show_phone: z.boolean(),
-  show_email: z.boolean(),
-  show_website: z.boolean(),
+  show_phone: z
+    .string()
+    .transform((val) => val === "true")
+    .refine((val) => typeof val === "boolean", {
+      message: "Debe marcar si o no",
+    }),
+  show_email: z
+    .string()
+    .transform((val) => val === "true")
+    .refine((val) => typeof val === "boolean", {
+      message: "Debe marcar si o no",
+    }),
+  show_website: z
+    .string()
+    .transform((val) => val === "true")
+    .refine((val) => typeof val === "boolean", {
+      message: "Debe marcar si o no",
+    }),
   category_limits: z.array(
     z.object({
       category_id: z.string().min(1, "seleccione una categoría"),

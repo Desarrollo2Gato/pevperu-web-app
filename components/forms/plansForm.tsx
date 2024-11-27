@@ -57,14 +57,14 @@ const PlanForm: React.FC<PlanFormProps> = ({
       banners_intern: "",
       banners_product: "",
       num_jobs: "",
-      show_product_specifications: false,
-      show_supplier_description: false,
+      show_product_specifications: "false",
+      show_supplier_description: "false",
       supplier_branches_limit: "",
-      show_in_directory: false,
+      show_in_directory: "false",
       related_products_limit: "",
-      show_phone: false,
-      show_email: false,
-      show_website: false,
+      show_phone: "false",
+      show_email: "false",
+      show_website: "false",
       category_limits: [{ category_id: "", product_limit: "" }],
     },
   });
@@ -98,6 +98,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
 
   useEffect(() => {
     if (data) {
+      console.log(data);
       reset({
         name: data.name || "",
         description: data.description || "",
@@ -110,15 +111,23 @@ const PlanForm: React.FC<PlanFormProps> = ({
         benefits: data.benefits || [{ title: "", description: "" }],
         banners_intern: data.banners_intern_limit.toString() || "",
         banners_product: data.banners_product_limit.toString() || "",
-        show_product_specifications: data.show_product_specifications || false,
-        show_supplier_description: data.show_supplier_description || false,
+        show_product_specifications:
+          Boolean(data.show_product_specifications).toString() || "false",
+        show_supplier_description:
+          Boolean(data.show_supplier_description).toString() || "false",
         supplier_branches_limit: data.supplier_branches_limit.toString() || "",
-        show_in_directory: data.show_in_directory || false,
+        show_in_directory:
+          Boolean(data.show_in_directory).toString() || "false",
         related_products_limit: data.related_products_limit.toString() || "",
-        show_phone: data.show_phone || false,
-        show_email: data.show_email || false,
-        show_website: data.show_website || false,
-        category_limits: data.category_limits || [],
+        show_phone: Boolean(data.show_phone).toString() || "false",
+        show_email: Boolean(data.show_email).toString() || "false",
+        show_website: Boolean(data.show_website).toString() || "false",
+        category_limits: (
+          data.category_limits || [{ category_id: "", product_limit: "" }]
+        ).map((limit) => ({
+          category_id: String(limit.category_id),
+          product_limit: String(limit.product_limit),
+        })),
       });
     }
   }, [data]);
@@ -160,8 +169,9 @@ const PlanForm: React.FC<PlanFormProps> = ({
   };
 
   const onSubmit = async (data: any) => {
-    setSubmitting(true);
-    const dataSend = {
+    // setSubmitting(true);
+    console.log("data", data.category_limits);
+    const dataSend: Record<string, any> = {
       name: data.name,
       price: Number(data.price),
       description: data.description,
@@ -173,7 +183,25 @@ const PlanForm: React.FC<PlanFormProps> = ({
       benefits: data.benefits,
       banners_intern_limit: Number(data.banners_intern),
       banners_product_limit: Number(data.banners_product),
+      show_product_specifications: Boolean(data.show_product_specifications),
+      show_supplier_description: Boolean(data.show_supplier_description),
+      supplier_branches_limit: Number(data.supplier_branches_limit),
+      show_in_directory: Boolean(data.show_in_directory),
+      related_products_limit: Number(data.related_products_limit),
+      show_phone: Boolean(data.show_phone),
+      show_email: Boolean(data.show_email),
+      show_website: Boolean(data.show_website),
+      categories_limits: data.category_limits,
     };
+    // data.category_limits.forEach((limit: any, index: number) => {
+    //   dataSend[`categories_limits[${index}][category_id]`] = Number(
+    //     limit.category_id
+    //   );
+    //   dataSend[`categories_limits[${index}][product_limit]`] =
+    //     limit.product_limit;
+    // });
+
+    console.log("dataSend", dataSend);
 
     const promise = new Promise(async (resolve, reject) => {
       try {
@@ -200,14 +228,16 @@ const PlanForm: React.FC<PlanFormProps> = ({
             });
           }
         }
+        closeModal();
       } catch (error) {
         console.error(error);
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "No se pudo registrar el plan" });
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "No se pudo registrar el plan" });
+        }
       } finally {
-        closeModal();
         setSubmitting(false);
         getData();
       }
@@ -218,6 +248,9 @@ const PlanForm: React.FC<PlanFormProps> = ({
       error: (error: any) => `${error.message}`,
     });
   };
+  useEffect(() => {
+    console.log(watch("show_email"));
+  }, [watch("show_email")]);
 
   return (
     <>
@@ -261,7 +294,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
               <RadioBooleanField
                 id="show_product_specifications"
                 name="Mostrar especificaciones"
-                register={register("show_in_directory")}
+                register={register("show_product_specifications")}
                 error={errors.show_product_specifications}
               />
             </div>
@@ -274,7 +307,10 @@ const PlanForm: React.FC<PlanFormProps> = ({
           </h2>
           <div className="border border-stone-200 rounded-md p-2 flex flex-col gap-3">
             {categories.map((field, index) => (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div
+                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                key={index}
+              >
                 <SelectZodField
                   id={`category_limits-${index}-category_id`}
                   options={categories.map((category) => ({
