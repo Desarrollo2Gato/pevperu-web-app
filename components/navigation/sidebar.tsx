@@ -370,7 +370,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                 </li>
               )}
               {/* Cursos */}
-              {user.extern_type.includes("Eventos") && (
+              {user.extern_type.includes("Cursos") && (
                 <li
                   className={`w-full justify-center flex items-center py-4 group ${
                     active ? "px-4 md:px-8" : "px-4 "
@@ -399,6 +399,41 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
                         } ml-2 text-base inline-block transform transition-all duration-700`}
                       >
                         Cursos
+                      </span>
+                    </Link>
+                  </BootstrapTooltip>
+                </li>
+              )}
+              {/* Empleos */}
+              {user.extern_type.includes("Empleos") && (
+                <li
+                  className={`w-full justify-center flex items-center py-4 group ${
+                    active ? "px-4 md:px-8" : "px-4 "
+                  } `}
+                >
+                  <BootstrapTooltip
+                    placement="right"
+                    title={active ? "" : "Empleos"}
+                  >
+                    <Link
+                      href={"/publicador/empleos"}
+                      className={`flex flex-row items-center relative ${
+                        !active
+                          ? "justify-center"
+                          : "justify-center md:justify-start"
+                      } w-full  hover:opacity-100 ${
+                        pathname === "/publicador/empleos"
+                          ? "opacity-100"
+                          : " opacity-30"
+                      } transition-all duration-500`}
+                    >
+                      <IoBriefcaseOutline className="text-2xl" />
+                      <span
+                        className={`${
+                          !active ? "hidden" : "hidden md:inline-block"
+                        } ml-2 text-base inline-block transform transition-all duration-700`}
+                      >
+                        Empleos
                       </span>
                     </Link>
                   </BootstrapTooltip>

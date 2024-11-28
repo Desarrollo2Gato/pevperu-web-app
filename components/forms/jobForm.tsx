@@ -1,13 +1,13 @@
-import {  useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { InputZodField } from "../ui/inputField";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {  JobSchema } from "@/utils/shcemas/Admin";
+import { JobSchema } from "@/utils/shcemas/Admin";
 import { useEffect, useState } from "react";
 import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
 import { toast } from "sonner";
 import ButtonForm from "../ui/buttonForm";
-import {  IJobs } from "@/types/api";
+import { IJobs } from "@/types/api";
 import { SelectZodField } from "../ui/selectField";
 import EditorText from "../ui/editorText";
 import { useAuthContext } from "@/context/authContext";
@@ -96,8 +96,21 @@ const JobForm: React.FC<JobFormProps> = ({
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
-    const companyId = id ? job?.company_id : user?.company_id;
-    console.log("id", companyId);
+
+    const isUpdate = Boolean(job);
+    const haveCompany = Boolean(user?.company_id);
+
+    let autor_id: string | undefined;
+    if (haveCompany) {
+      autor_id = isUpdate
+        ? job?.company.id.toString()
+        : user?.company_id?.toString();
+    } else {
+      autor_id = isUpdate
+        ? job?.extern_user_id.toString()
+        : user?.id?.toString();
+    }
+
     const dataSend = {
       title: data.title,
       modality: data.modality,
@@ -105,7 +118,8 @@ const JobForm: React.FC<JobFormProps> = ({
       content: data.content,
       salary: data.salary,
       address: data.adress,
-      company_id: companyId,
+      company_id: haveCompany ? autor_id : undefined,
+      extern_user_id: !haveCompany ? autor_id : undefined,
       email: data.email,
       link: data.link,
     };

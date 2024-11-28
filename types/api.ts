@@ -325,8 +325,10 @@ export interface IJobs {
   content: string;
   salary: string;
   address: string;
-  company_id: number;
-  company: ICompany;
   email: string;
   link: string;
+  company_id: number;
+  company: ICompany;
+  extern_user_id: number;
+  extern_user: IUser;
 }

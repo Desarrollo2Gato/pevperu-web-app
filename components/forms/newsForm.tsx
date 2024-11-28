@@ -80,7 +80,7 @@ const NewsForm: React.FC<NewsFormProps> = ({
         title: news.title || "",
         description: news.description || "",
         content: news.content || "",
-        status: news.status || user?.type === "admin" ? "approved" : "pending",
+        status: news.status || "pending",
         link: news.link || "",
         mainImage: null,
         secondImage: null,

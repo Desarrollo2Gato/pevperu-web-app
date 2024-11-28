@@ -78,11 +78,12 @@ const EventForm: React.FC<EventFormProps> = ({
           setImgSecond(imgUrl(event.photos[1].photo_url));
         }
       }
+      console.log("status", event.status);
       reset({
         title: event.name || "",
         description: event.description || "",
         type: event.type || "National",
-        status: event.status || user?.type === "admin" ? "approved" : "pending",
+        status: event.status || "pending",
         content: event.content || "",
         dateStart: event.date
           ? new Date(event.date).toISOString().split("T")[0]
