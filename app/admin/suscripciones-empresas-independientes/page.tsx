@@ -2,8 +2,8 @@ import { Metadata } from "next";
 import Content from "./content";
 
 export const metadata: Metadata = {
-  title: "Planes",
-  description: "Planes para empresas proveedores",
+  title: "Suscripciones",
+  description: "Empresas suscritas",
 };
 
 function Page() {

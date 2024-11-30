@@ -1,7 +1,7 @@
 // const BASE_URL = 'https://pevperu-server-production.up.railway.app/api/V1';
 
-export const BASE_URL = "http://192.168.100.55:8001/api/V1";
-// export const BASE_URL = "https://api.pev.com.pe/api/V1";
+// export const BASE_URL = "http://192.168.100.55:8001/api/V1";
+export const BASE_URL = "https://api.pev.com.pe/api/V1";
 
 export const pagination = (page: number, per_page: number) => {
   return `per_page=${per_page}&page=${page}`;
@@ -124,6 +124,14 @@ export const apiUrls = {
     pagination: (page: number, per_page: number) =>
       `${BASE_URL}/subscriptions?per_page=${per_page}&page=${page}`,
   },
+  independentSubscription: {
+    create: `${BASE_URL}/independent-subscriptions`,
+    getAll: `${BASE_URL}/independent-subscriptions`,
+    getOne: (id: string) => `${BASE_URL}/independent-subscriptions/${id}`,
+    update: (id: string) => `${BASE_URL}/independent-subscriptions/${id}`,
+    delete: (id: string) => `${BASE_URL}/independent-subscriptions/${id}`,
+    renew: (id: string) => `${BASE_URL}/independent-subscriptions/${id}/renew`,
+  },
   event: {
     create: `${BASE_URL}/events`,
     getAll: `${BASE_URL}/events`,
@@ -187,6 +195,13 @@ export const apiUrls = {
     delete: (id: string) => `${BASE_URL}/plans/${id}`,
     pagination: (page: number, per_page: number) =>
       `${BASE_URL}/plans?per_page=${per_page}&page=${page}`,
+  },
+  independentPlan: {
+    create: `${BASE_URL}/independent-plans`,
+    getAll: `${BASE_URL}/independent-plans`,
+    getOne: (id: string) => `${BASE_URL}/independent-plans/${id}`,
+    update: (id: string) => `${BASE_URL}/independent-plans/${id}`,
+    delete: (id: string) => `${BASE_URL}/independent-plans/${id}`,
   },
   review: {
     create: `${BASE_URL}/reviews`,

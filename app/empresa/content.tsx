@@ -279,7 +279,11 @@ const ContentCompany = () => {
           reject({ message: "No se pudo obtener id de la empresa" });
         }
       } catch (error) {
-        reject({ message: "Error al actualizar la empresa" });
+        if (axios.isAxiosError(error)) {
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "Error al actualizar la empresa" });
+        }
       } finally {
         refreshToken;
         setSending(false);

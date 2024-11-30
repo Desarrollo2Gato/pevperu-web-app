@@ -37,11 +37,13 @@ const JobsTable: React.FC<JobsTableProps> = ({
     },
     {
       accessorKey: "company",
-      header: "Empresa",
+      header: "Autor",
       cell: (info) =>
         info.row.original.company
           ? info.row.original.company.name
-          : "sin empresa",
+          : info.row.original.extern_user
+          ? info.row.original.extern_user.work_for_company
+          : "sin autor",
     },
     {
       accessorKey: "actions",

@@ -142,7 +142,7 @@ const Content = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `${apiUrls.news.byUser(user.id.toString())}?${pagination(
+        `${apiUrls.news.getAll}?extern_user_id=${user.id}&${pagination(
           pageIndex,
           pageSize
         )}`,

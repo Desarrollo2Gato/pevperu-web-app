@@ -12,6 +12,7 @@ import PlanForm from "@/components/forms/plansForm";
 import SelectRows from "@/components/ui/selectRows";
 import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { toast } from "sonner";
+import Link from "next/link";
 
 const Content = () => {
   // token
@@ -149,7 +150,13 @@ const Content = () => {
             <h2 className="font-medium text-zinc-500 text-lg w-full md:w-auto">
               Registros ({total})
             </h2>{" "}
-            <div className="w-full md:w-auto flex justify-end">
+            <div className="w-full md:w-auto flex justify-end gap-4 flex-wrap">
+              <Link
+                href={"/admin/planes-empresas-independientes"}
+                className="bg-green-800 rounded-md px-4 py-1 text-sm text-white font-medium flex justify-center items-center"
+              >
+                Planes independientes
+              </Link>
               <AddButton text="Agregar Plan" onClick={handleAdd} />
             </div>
           </div>

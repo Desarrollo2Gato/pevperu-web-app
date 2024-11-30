@@ -128,6 +128,31 @@ export const planSaveSchema = z.object({
     })
   ),
 });
+
+export const independentPlanSaveSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().nullable(),
+  price: z
+    .string()
+    .min(1, "El precio anual es requerido")
+    .regex(/^\d+(\.\d{1,2})?$/, "El precio anual no es válido"),
+  num_jobs: z
+    .string()
+    .regex(/^\d+$/, "El número de empleos no es válido")
+    .min(1, "El número de empleos es requerido"),
+  num_courses: z
+    .string()
+    .regex(/^\d+$/, "El número de cursos no es válido")
+    .min(1, "El número de cursos es requerido"),
+  num_features_events: z
+    .string()
+    .regex(/^\d+$/, "El número de eventos no es válido")
+    .min(1, "El número de eventos es requerido"),
+  num_features_news: z
+    .string()
+    .regex(/^\d+$/, "El número de noticias no es válido")
+    .min(1, "El número de noticias es requerido"),
+});
 export const subscriptionSaveSchema = z.object({
   companyId: z.string().min(1, "El usuario es requerido"),
   plan: z.string().min(1, "El plan es requerido"),

@@ -125,15 +125,19 @@ const CourseForm: React.FC<CourseFormProps> = ({
     const haveCompany = Boolean(user?.company_id);
 
     let autor_id: string | undefined;
-    if (isUpdate) {
-      autor_id = haveCompany
+    if (haveCompany) {
+      autor_id = isUpdate
         ? course?.company.id.toString()
-        : course?.extern_user_id?.toString();
+        : user?.company_id?.toString();
+
+      if (autor_id) dataSend.append("company_id", autor_id);
     } else {
-      autor_id = haveCompany
-        ? user?.company_id?.toString()
-        : user?.id.toString();
+      autor_id = isUpdate
+        ? course?.extern_user_id.toString()
+        : user?.id?.toString();
+      if (autor_id) dataSend.append("extern_user_id", autor_id);
     }
+
     dataSend.append("title", data.title);
     dataSend.append("description", data.description);
     dataSend.append("content", data.content);

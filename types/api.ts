@@ -148,6 +148,18 @@ export interface IPlan {
   show_email: boolean;
   show_website: boolean;
   category_limits: TCategoryLimits[];
+  courses_limit: number;
+}
+
+export interface IIndependentPlan {
+  id: number;
+  name: string;
+  description: string;
+  price: string;
+  events_limit: number;
+  news_limit: number;
+  jobs_limit: number;
+  courses_limit: number;
 }
 export interface ISubscription {
   company: ICompany;
@@ -157,6 +169,16 @@ export interface ISubscription {
   is_active: boolean;
   plan: IPlan;
   plan_id: number;
+  start_date: Date | string;
+}
+export interface IIndependentSubscription {
+  user: IUser;
+  user_id: number;
+  end_date: Date | string;
+  id: number;
+  is_active: boolean;
+  independent_plan: IIndependentPlan;
+  independent_plan_id: number;
   start_date: Date | string;
 }
 export interface IFilter {

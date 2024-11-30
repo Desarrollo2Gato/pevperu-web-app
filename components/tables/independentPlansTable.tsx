@@ -1,5 +1,4 @@
-import { ICourse } from "@/types/api";
-import { useState } from "react";
+import { IIndependentPlan } from "@/types/api";
 import { BiSolidEdit } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";
 
@@ -10,63 +9,50 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-interface CoursesTableProps {
-  dataTable: ICourse[];
+interface IndependentPlansTableProps {
+  dataTable: IIndependentPlan[];
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
-  isAdmin?: boolean;
 }
-const CoursesTable: React.FC<CoursesTableProps> = ({
+const IndependentPlansTable: React.FC<IndependentPlansTableProps> = ({
   dataTable,
   onEdit,
   onDelete,
-  isAdmin = false,
 }) => {
-  const data: ICourse[] = dataTable;
+  const data: IIndependentPlan[] = dataTable;
 
   // colums
-  const columns: ColumnDef<ICourse, any>[] = [
+  const columns: ColumnDef<IIndependentPlan, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
+      // cell: (info) => info.getValue(),
     },
     {
-      accessorKey: "title",
-      header: "Curso",
+      accessorKey: "name",
+      header: "Plan",
     },
     {
-      accessorKey: "company",
-      header: "Autor",
-      cell: (info) =>
-        info.row.original.company
-          ? info.row.original.company.name
-          : info.row.original.extern_user
-          ? info.row.original.extern_user.work_for_company
-          : "sin autor",
-    },
-    ...(isAdmin
-      ? [
-          {
-            accessorKey: "type",
-            header: "Usuario",
-            cell: (info: any) =>
-              info.row.original.company ? "Empresa" : "Publicista",
-          },
-        ]
-      : []),
-    {
-      accessorKey: "link",
-      header: "Correo de contacto",
-      cell: (info) =>
-        info.row.original.link ? info.row.original.link : "Sin correo",
+      accessorKey: "price",
+      header: "Precio",
+      cell: (info) => `S/${info.getValue()}`,
     },
     {
-      accessorKey: "link",
-      header: "Ultima actualización",
-      cell: (info) =>
-        new Date(info.row.original.updated_at).toLocaleDateString(),
+      accessorKey: "events_limit",
+      header: "N.º  de eventos",
     },
-
+    {
+      accessorKey: "news_limit",
+      header: "N.º  de noticias",
+    },
+    {
+      accessorKey: "courses_limit",
+      header: "N.º  de cursos",
+    },
+    {
+      accessorKey: "jobs_limit",
+      header: "N.º  de empleos",
+    },
     {
       accessorKey: "actions",
       header: "Acciones",
@@ -148,4 +134,4 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
   );
 };
 
-export default CoursesTable;
+export default IndependentPlansTable;

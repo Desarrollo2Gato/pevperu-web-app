@@ -1,23 +1,21 @@
 "use client";
 import AddButton from "@/components/ui/addBtn";
 import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
-import SearchInput from "@/components/ui/searchInput";
-import { ICategory, ICourse } from "@/types/api";
+import { IIndependentPlan } from "@/types/api";
 import { apiUrls, pagination } from "@/utils/api/apiUrls";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import CourseForm from "@/components/forms/courseForm";
-import CoursesTable from "@/components/tables/coursesTable";
 import SelectRows from "@/components/ui/selectRows";
 import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { toast } from "sonner";
-import { useAuthContext } from "@/context/authContext";
+import IndependentPlansTable from "@/components/tables/independentPlansTable";
+import IndependentPlanForm from "@/components/forms/independentPlansForm";
 
 const Content = () => {
+  // token
   const [token, setToken] = useState("");
-  const { user } = useAuthContext();
 
   // pagination
   const [total, setTotal] = useState(0);
@@ -26,7 +24,7 @@ const Content = () => {
   const [pageCount, setPageCount] = useState(0);
 
   // data
-  const [data, setData] = useState<ICourse[]>([]);
+  const [data, setData] = useState<IIndependentPlan[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
@@ -35,22 +33,49 @@ const Content = () => {
   const [openModal, setOpenModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
 
-  // search
-  const [searchQuery, setSearchQuery] = useState<string>("");
-
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<"edit" | "create">("create");
 
-  const [selectedAction, setSelectedAction] = useState<
-    "data" | "search" | "date"
-  >("data");
-
   useEffect(() => {
+    //obtener token
     const token = getTokenFromCookie();
     if (token) {
       setToken(token);
     }
   }, []);
+
+  useEffect(() => {
+    if (token) {
+      getData();
+    }
+  }, [pageIndex, token]);
+
+  const getData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${apiUrls.independentPlan.getAll}?${pagination(pageIndex, pageSize)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setData(response.data.data);
+      setPageCount(response.data.last_page);
+      setTotal(response.data.total);
+    } catch (error) {
+      toast.error("No se pudo obtener los planes");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      getData();
+    }
+  }, [pageIndex, pageSize]);
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -58,6 +83,7 @@ const Content = () => {
   ) => {
     setPageIndex(newPage);
   };
+
   const handlePageSizeChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
@@ -65,38 +91,33 @@ const Content = () => {
     setPageSize(parseInt(selectedValue, 10));
     setPageIndex(1);
   };
+
   const handleAdd = () => {
     setOpenModal(true);
     setSelectedType("create");
   };
-  const handleDelete = (id: number) => {
-    setDeleteModal(true);
-    setSelectedId(id);
-  };
-  const handleEdit = (id: number) => {
-    setOpenModal(true);
-    setSelectedId(id);
-    setSelectedType("edit");
-  };
-  const handleCloseModal = () => {
-    setOpenModal(false);
-  };
 
+  const handleDelete = (id: number) => {
+    setSelectedId(id);
+    setDeleteModal(true);
+  };
   const onDelete = () => {
     if (!selectedId) return;
     const promise = new Promise(async (resolve, reject) => {
       try {
-        await axios.delete(apiUrls.courses.delete(selectedId?.toString()), {
+        await axios.delete(apiUrls.plan.delete(selectedId?.toString()), {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        resolve({ message: "Curso eliminado" });
+        resolve({ message: "Plan eliminado" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "No se pudo eliminar el curso" });
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "No se pudo eliminar el plan" });
+        }
       } finally {
         getData();
         setDeleteModal(false);
@@ -104,97 +125,22 @@ const Content = () => {
     });
 
     toast.promise(promise, {
-      loading: "Eliminando curso...",
+      loading: "Eliminando plan...",
       success: (data: any) => `${data.message}`,
       error: (error: any) => `${error.message}`,
     });
   };
 
-  const getData = async () => {
-    if (!user || user.id === null) {
-      toast.warning("no se encontro al usuario");
-      return;
-    }
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${apiUrls.courses.getAll}?extern_user_id=${user.id}&${pagination(
-          pageIndex,
-          pageSize
-        )}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log(response.data.data);
-      setData(response.data.data);
-      setPageCount(response.data.last_page);
-      setTotal(response.data.total);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+  const handleEdit = (id: number) => {
+    setOpenModal(true);
+    setSelectedId(id);
+    setSelectedType("edit");
   };
-  const getCoursesBySearch = (query: string) => {
-    setSelectedAction("search");
-    setSearchQuery(query);
-    setLoading(true);
-    const promise = new Promise(async (resolve, reject) => {
-      if (!user || user.id === null) {
-        toast.warning("no se encontro al usuario");
-        return;
-      }
-      try {
-        const res = await axios.get(
-          apiUrls.courses.byUser(user.id.toString()) +
-            "?like=" +
-            query +
-            "&" +
-            pagination(pageIndex, pageSize),
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setData(res.data.data);
-        setPageCount(res.data.last_page);
-        setTotal(res.data.total);
-        resolve({ message: "Busqueda exitosa" });
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
-        }
-        reject({ message: "Error al buscar cursos" });
-      } finally {
-        setLoading(false);
-      }
-    });
-
-    toast.promise(promise, {
-      loading: "Buscando cursos...",
-      success: (data: any) => `${data.message}`,
-      error: (error: any) => `${error.message}`,
-    });
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedId(null);
+    setSelectedType("create");
   };
-
-  useEffect(() => {
-    setData([]);
-    setPageIndex(1);
-  }, [selectedAction]);
-  useEffect(() => {
-    if (token && selectedAction === "data") {
-      getData();
-    }
-  }, [token, selectedAction, pageIndex, pageSize]);
-  useEffect(() => {
-    if (token && selectedAction === "search") {
-      getCoursesBySearch(searchQuery);
-    }
-  }, [token, selectedAction, pageIndex, pageSize, searchQuery]);
   return (
     <>
       <SafeAreaContainer isTable>
@@ -204,7 +150,7 @@ const Content = () => {
               Registros ({total})
             </h2>{" "}
             <div className="w-full md:w-auto flex justify-end">
-              <AddButton text="Agregar Curso" onClick={handleAdd} />
+              <AddButton text="Agregar Plan" onClick={handleAdd} />
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-between mb-4 pt-4">
@@ -212,15 +158,9 @@ const Content = () => {
               pageSize={pageSize.toString()}
               handlePageSizeChange={handlePageSizeChange}
             />
-            <div className="w-full sm:w-auto flex flex-row self-end">
-              <SearchInput
-                placeholder="Buscar curso"
-                onClick={(query) => getCoursesBySearch(query)}
-              />
-            </div>
           </div>
           <div className=" overflow-x-auto">
-            <CoursesTable
+            <IndependentPlansTable
               dataTable={data}
               onDelete={(id: number) => handleDelete(id)}
               onEdit={(id: number) => handleEdit(id)}
@@ -237,11 +177,11 @@ const Content = () => {
         </MainContainer>
       </SafeAreaContainer>
       <FormModal
-        title={`${selectedType === "edit" ? "Editar" : "Crear"} curso`}
+        title={`${selectedType === "edit" ? "Editar" : "Crear"} plan`}
         openModal={openModal}
         setOpenModal={() => setOpenModal(false)}
       >
-        <CourseForm
+        <IndependentPlanForm
           closeModal={handleCloseModal}
           type={selectedType}
           id={selectedId}
@@ -254,7 +194,7 @@ const Content = () => {
         openModal={deleteModal}
         setOpenModal={() => setDeleteModal(false)}
         onAction={onDelete}
-        title="Eliminar Curso"
+        title="Eliminar Plan"
       />
     </>
   );

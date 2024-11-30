@@ -1,20 +1,22 @@
 "use client";
-import SubsTable from "../../../components/tables/subsTable";
 import { MainContainer, SafeAreaContainer } from "@/components/ui/containers";
 import { useEffect, useState } from "react";
 import { getTokenFromCookie } from "@/utils/api/getToken";
 import axios from "axios";
-import { apiUrls } from "@/utils/api/apiUrls";
-import { IPlan, ISubscription } from "@/types/api";
+import { apiUrls, pagination } from "@/utils/api/apiUrls";
+import {
+  IIndependentPlan,
+  IIndependentSubscription,
+} from "@/types/api";
 import AddButton from "@/components/ui/addBtn";
-import SubsForm from "@/components/forms/subsForm";
 import SelectRows from "@/components/ui/selectRows";
 import { toast } from "sonner";
 import { ConfirmModal, FormModal } from "@/components/ui/modals";
 import { Pagination } from "@mui/material";
 import RenewModal from "@/components/ui/renewModal";
 import SelectComponent from "@/components/ui/select";
-import Link from "next/link";
+import IndependentSubsForm from "@/components/forms/IndpendentSubsForm";
+import IndependentSubsTable from "@/components/tables/IndependentsubsTable";
 
 const Content = () => {
   // token
@@ -26,8 +28,8 @@ const Content = () => {
   const [pageSize, setPageSize] = useState(10);
   const [pageCount, setPageCount] = useState(0);
   // data
-  const [data, setData] = useState<ISubscription[]>([]);
-  const [plans, setPlans] = useState<IPlan[]>([]);
+  const [data, setData] = useState<IIndependentSubscription[]>([]);
+  const [plans, setPlans] = useState<IIndependentPlan[]>([]);
 
   // loading
   const [loading, setLoading] = useState(false);
@@ -124,7 +126,7 @@ const Content = () => {
     const promise = new Promise(async (resolve, reject) => {
       try {
         await axios.delete(
-          apiUrls.subscription.delete(selectedId?.toString()),
+          apiUrls.independentSubscription.delete(selectedId?.toString()),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -156,13 +158,17 @@ const Content = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        apiUrls.subscription.pagination(pageIndex, pageSize),
+        `${apiUrls.independentSubscription.getAll}?${pagination(
+          pageIndex,
+          pageSize
+        )}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
+      console.log(response.data);
       setData(response.data.data);
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
@@ -175,11 +181,12 @@ const Content = () => {
 
   const getPlans = async () => {
     try {
-      const response = await axios.get(apiUrls.plan.getAll, {
+      const response = await axios.get(apiUrls.independentPlan.getAll, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log(response.data);
       setPlans(response.data);
     } catch (error) {
       console.error(error);
@@ -203,12 +210,16 @@ const Content = () => {
         params.start_date = filters.startDate.toISOString();
         params.end_date = filters.endDate.toISOString();
       }
-      const response = await axios.get(apiUrls.subscription.getAll, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params,
-      });
+      const response = await axios.get(
+        `${apiUrls.independentSubscription.getAll}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params,
+        }
+      );
+      console.log(response.data);
       setData(response.data.data);
       setPageCount(response.data.last_page);
       setTotal(response.data.total);
@@ -311,12 +322,6 @@ const Content = () => {
               Registros ({total})
             </h2>{" "}
             <div className="w-full md:w-auto flex justify-end gap-4 flex-wrap">
-              <Link
-                href={"/admin/suscripciones-empresas-independientes"}
-                className="bg-green-800 rounded-md px-4 py-1 text-sm text-white font-medium flex justify-center items-center"
-              >
-                Suscripciones independientes
-              </Link>
               <AddButton text="Agregar Suscripción" onClick={handleAdd} />
             </div>
           </div>
@@ -326,7 +331,7 @@ const Content = () => {
             handlePageSizeChange={handlePageSizeChange}
           />
           <div className=" overflow-x-auto mt-4">
-            <SubsTable
+            <IndependentSubsTable
               dataTable={data}
               // onDelete={(id: number) => handleDelete(id)}
               onEdit={(id: number) => handleEdit(id)}
@@ -348,7 +353,7 @@ const Content = () => {
         openModal={openModal}
         setOpenModal={() => setOpenModal(false)}
       >
-        <SubsForm
+        <IndependentSubsForm
           closeModal={handleCloseModal}
           type={selectedType}
           id={selectedId}

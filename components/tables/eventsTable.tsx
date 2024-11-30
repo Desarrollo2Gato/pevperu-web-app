@@ -51,11 +51,13 @@ const EventsTable: React.FC<EventsTableProps> = ({
     },
     {
       accessorKey: "company",
-      header: "Empresa",
+      header: "Autor",
       cell: (info) =>
         info.row.original.company
           ? info.row.original.company.name
-          : info.row.original.extern_user.work_for_company,
+          : info.row.original.extern_user
+          ? info.row.original.extern_user.work_for_company
+          : "sin autor",
     },
     ...(isAdmin
       ? [

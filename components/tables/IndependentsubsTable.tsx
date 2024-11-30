@@ -1,7 +1,7 @@
-import { ICourse } from "@/types/api";
-import { useState } from "react";
+import { IIndependentSubscription } from "@/types/api";
 import { BiSolidEdit } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";
+import { MdOutlineAutorenew } from "react-icons/md";
 
 import {
   ColumnDef,
@@ -9,81 +9,91 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import StatusSpan from "../ui/statusSpan";
+import { BootstrapTooltip } from "../ui/tooltip";
 
-interface CoursesTableProps {
-  dataTable: ICourse[];
+interface IndependentSubsTableProps {
+  dataTable: IIndependentSubscription[];
   onEdit: (id: number) => void;
-  onDelete: (id: number) => void;
-  isAdmin?: boolean;
+  onDelete?: (id: number) => void;
+  onRenew?: (id: number) => void;
 }
-const CoursesTable: React.FC<CoursesTableProps> = ({
+const IndependentSubsTable: React.FC<IndependentSubsTableProps> = ({
   dataTable,
   onEdit,
   onDelete,
-  isAdmin = false,
+  onRenew,
 }) => {
-  const data: ICourse[] = dataTable;
+  const data: IIndependentSubscription[] = dataTable;
 
   // colums
-  const columns: ColumnDef<ICourse, any>[] = [
+  const columns: ColumnDef<IIndependentSubscription, any>[] = [
     {
       accessorKey: "id",
       header: "ID",
-    },
-    {
-      accessorKey: "title",
-      header: "Curso",
+      // cell: (info) => info.getValue(),
     },
     {
       accessorKey: "company",
-      header: "Autor",
-      cell: (info) =>
-        info.row.original.company
-          ? info.row.original.company.name
-          : info.row.original.extern_user
-          ? info.row.original.extern_user.work_for_company
-          : "sin autor",
-    },
-    ...(isAdmin
-      ? [
-          {
-            accessorKey: "type",
-            header: "Usuario",
-            cell: (info: any) =>
-              info.row.original.company ? "Empresa" : "Publicista",
-          },
-        ]
-      : []),
-    {
-      accessorKey: "link",
-      header: "Correo de contacto",
-      cell: (info) =>
-        info.row.original.link ? info.row.original.link : "Sin correo",
+      header: "Empresa",
+      cell: (info) => info.row.original.user.full_name,
     },
     {
-      accessorKey: "link",
-      header: "Ultima actualización",
-      cell: (info) =>
-        new Date(info.row.original.updated_at).toLocaleDateString(),
+      accessorKey: "plan",
+      header: "Plan",
+      cell: (info) => info.row.original.independent_plan.name,
     },
-
+    {
+      accessorKey: "is_active",
+      header: "Estado",
+      cell: (info) =>
+        info.row.original.is_active ? (
+          <StatusSpan text="Activo" bg="bg-green-400" />
+        ) : (
+          <StatusSpan text="Inactivo" bg="bg-red-500" />
+        ),
+    },
+    {
+      accessorKey: "start_date",
+      header: "Fecha de inicio",
+      cell: (info) =>
+        new Date(info.row.original.start_date).toLocaleDateString(),
+    },
+    {
+      accessorKey: "end_date",
+      header: "Fecha de fin",
+      cell: (info) => new Date(info.row.original.end_date).toLocaleDateString(),
+    },
     {
       accessorKey: "actions",
       header: "Acciones",
       cell: (info) => (
         <div className="flex justify-center items-center gap-2">
+          {onRenew && (
+            <BootstrapTooltip title="Renovar" placement="top">
+              <button
+                onClick={() => onRenew(info.row.original.id)}
+                className="bg-indigo-400 hover:bg-indigo-500 text-white p-1 aspect-square rounded transition-all duration-500"
+              >
+                <MdOutlineAutorenew className="text-lg" />
+              </button>
+            </BootstrapTooltip>
+          )}
+
           <button
-            onClick={() => onEdit(Number(info.row.original.id))}
+            onClick={() => onEdit(info.row.original.id)}
             className="bg-teal-400 hover:bg-teal-500 text-white p-1 aspect-square rounded transition-all duration-500"
           >
             <BiSolidEdit className="text-lg" />
           </button>
-          <button
-            onClick={() => onDelete(Number(info.row.original.id))}
-            className="bg-yellow-400 hover:bg-yellow-500 text-white  p-1 rounded aspect-square transition-all duration-500"
-          >
-            <FiTrash className="text-lg" />
-          </button>
+          {onDelete && (
+            <button
+              onClick={() => onDelete(info.row.original.id)}
+              className="bg-yellow-400 hover:bg-reyellow00 text-white  p-1 rounded aspect-square transition-all duration-500"
+            >
+              <FiTrash className="text-lg" />
+            </button>
+          )}
         </div>
       ),
     },
@@ -148,4 +158,4 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
   );
 };
 
-export default CoursesTable;
+export default IndependentSubsTable;
