@@ -119,14 +119,11 @@ const EventForm: React.FC<EventFormProps> = ({
     setSubmitting(true);
     const dataSend = new FormData();
     const isUpdate = Boolean(event);
-    const haveCompany = Boolean(user?.company_id);
+    const haveCompany = Boolean(isUpdate ? event?.company_id : false);
 
     let autor_id: string | undefined;
     if (haveCompany) {
-      autor_id = isUpdate
-        ? event?.company.id.toString()
-        : user?.company_id?.toString();
-
+      autor_id = isUpdate ? event?.company_id.toString() : user?.id.toString();
       if (autor_id) dataSend.append("company_id", autor_id);
     } else {
       autor_id = isUpdate
@@ -134,6 +131,18 @@ const EventForm: React.FC<EventFormProps> = ({
         : user?.id?.toString();
       if (autor_id) dataSend.append("extern_user_id", autor_id);
     }
+    // if (haveCompany) {
+    //   autor_id = isUpdate
+    //     ? event?.company.id.toString()
+    //     : user?.company_id?.toString();
+
+    //   if (autor_id) dataSend.append("company_id", autor_id);
+    // } else {
+    //   autor_id = isUpdate
+    //     ? event?.extern_user_id.toString()
+    //     : user?.id?.toString();
+    //   if (autor_id) dataSend.append("extern_user_id", autor_id);
+    // }
 
     dataSend.append("name", data.title);
     dataSend.append("description", data.description);

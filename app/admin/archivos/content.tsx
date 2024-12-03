@@ -141,10 +141,11 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Archivos filtrados" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al filtrar archivos por proveedor" });
+        if (axios.isAxiosError(error)) {
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "Error al filtrar archivos por proveedor" });
+        }
       } finally {
         setLoading(false);
       }
@@ -181,9 +182,10 @@ const Content = () => {
         resolve({ message: "Archivos filtrados" });
       } catch (error) {
         if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "Error al filtrar archivos por categoría" });
         }
-        reject({ message: "Error al filtrar archivos por categoría" });
       } finally {
         setLoading(false);
       }
@@ -281,9 +283,9 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Archivos filtradas" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
+        if (axios.isAxiosError(error)) {
+          reject({ message: error.response?.data.message });
+        }
         reject({ message: "Error" });
       } finally {
         setLoading(false);

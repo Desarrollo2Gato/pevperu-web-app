@@ -114,14 +114,11 @@ const NewsForm: React.FC<NewsFormProps> = ({
     const published_at = date.toISOString().split("T")[0];
     const dataSend = new FormData();
     const isUpdate = Boolean(news);
-    const haveCompany = Boolean(user?.company_id);
+    const haveCompany = Boolean(isUpdate ? news?.company_id : false);
 
     let autor_id: string | undefined;
     if (haveCompany) {
-      autor_id = isUpdate
-        ? news?.company.id.toString()
-        : user?.company_id?.toString();
-
+      autor_id = isUpdate ? news?.company_id.toString() : user?.id.toString();
       if (autor_id) dataSend.append("company_id", autor_id);
     } else {
       autor_id = isUpdate

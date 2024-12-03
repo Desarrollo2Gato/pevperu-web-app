@@ -98,13 +98,11 @@ const JobForm: React.FC<JobFormProps> = ({
     setSubmitting(true);
 
     const isUpdate = Boolean(job);
-    const haveCompany = Boolean(user?.company_id);
+    const haveCompany = Boolean(isUpdate ? job?.company_id : false);
 
     let autor_id: string | undefined;
     if (haveCompany) {
-      autor_id = isUpdate
-        ? job?.company.id.toString()
-        : user?.company_id?.toString();
+      autor_id = isUpdate ? job?.company_id.toString() : user?.id.toString();
     } else {
       autor_id = isUpdate
         ? job?.extern_user_id.toString()
@@ -117,7 +115,7 @@ const JobForm: React.FC<JobFormProps> = ({
       type: data.type,
       content: data.content,
       salary: data.salary,
-      address: data.adress,
+      address: data.address,
       company_id: haveCompany ? autor_id : undefined,
       extern_user_id: !haveCompany ? autor_id : undefined,
       email: data.email,

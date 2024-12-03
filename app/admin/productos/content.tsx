@@ -62,6 +62,7 @@ const Content = () => {
       setToken(token);
     }
   }, []);
+
   useEffect(() => {
     if (token) {
       getProviders();
@@ -255,7 +256,6 @@ const Content = () => {
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
-        resolve({ message: "Busqueda exitosa" });
       } catch (error) {
         // if (axios.isAxiosError(error)) {
         //   console.log(error.response?.data);
@@ -297,12 +297,13 @@ const Content = () => {
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
-        resolve({ message: "Productos filtrados" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al filtrar productos por estado" });
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "Error al filtrar productos por estado" });
+        }
       } finally {
         setLoading(false);
       }
@@ -336,10 +337,12 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Productos filtrados" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al filtrar productos por proveedor" });
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data.message);
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "Error al filtrar productos por proveedor" });
+        }
       } finally {
         setLoading(false);
       }
@@ -373,10 +376,12 @@ const Content = () => {
         setTotal(res.data.total);
         resolve({ message: "Productos filtrados" });
       } catch (error) {
-        // if (axios.isAxiosError(error)) {
-        //   console.log(error.response?.data);
-        // }
-        reject({ message: "Error al filtrar productos por categoría" });
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+          reject({ message: error.response?.data.message });
+        } else {
+          reject({ message: "Error al filtrar productos por categoría" });
+        }
       } finally {
         setLoading(false);
       }

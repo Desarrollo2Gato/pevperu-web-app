@@ -31,7 +31,6 @@ const Index = () => {
         return;
       }
 
-      console.log(res.data);
       const { access_token, user } = res.data;
 
       let externTypes: string[] = [];
@@ -56,7 +55,6 @@ const Index = () => {
       };
 
       login(access_token, userInfo);
-      console.log(userInfo);
       if (
         user.type !== "admin" &&
         user.type !== "company_owner" &&

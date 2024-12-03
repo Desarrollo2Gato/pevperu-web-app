@@ -122,14 +122,11 @@ const CourseForm: React.FC<CourseFormProps> = ({
     setSubmitting(true);
     const dataSend = new FormData();
     const isUpdate = Boolean(course);
-    const haveCompany = Boolean(user?.company_id);
+    const haveCompany = Boolean(isUpdate ? course?.company_id : false);
 
     let autor_id: string | undefined;
     if (haveCompany) {
-      autor_id = isUpdate
-        ? course?.company.id.toString()
-        : user?.company_id?.toString();
-
+      autor_id = isUpdate ? course?.company_id.toString() : user?.id.toString();
       if (autor_id) dataSend.append("company_id", autor_id);
     } else {
       autor_id = isUpdate
@@ -137,6 +134,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
         : user?.id?.toString();
       if (autor_id) dataSend.append("extern_user_id", autor_id);
     }
+   
 
     dataSend.append("title", data.title);
     dataSend.append("description", data.description);

@@ -68,9 +68,9 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
     } catch (error) {
       toast.error("Error al cerrar sesión");
     } finally {
+      router.push("/");
       logout();
 
-      router.push("/");
     }
   };
 
@@ -80,7 +80,6 @@ const Sidebar: React.FC<SidebarProps> = ({ active, setActive }) => {
         active ? " w-[70px] md:w-[250px]" : "w-0 md:w-[70px]"
       } fixed h-screen bg-gradient-to-b px-[1px] from-[#0f502b] via-[#072514] to-[#05130b]  flex flex-col items-center top-0 left-0 z-10 transform transition-all duration-700 `}
     >
-      {" "}
       {/* sideber */}
       <Link
         className={`w-[50px] h-[50px] bg-[#023719] my-4 rounded-[100%] shadow aspect-square p-2 transform transition-all duration-700 `}
