@@ -218,7 +218,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       reset({
         name: product.name || "",
         description: product.description || "",
-        category_id: product.category.id.toString() || "",
+        // category_id: product.category.id.toString() || "",
         featured_product: product.featured_product.toString() || "false",
         specifications:
           product.specifications.length > 0
@@ -261,11 +261,11 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   useEffect(() => {
     if (product) {
       const id = product?.category.id.toString();
-      if (id) {
+      if (id && categoriesData) {
         handleCategoryChange(id);
       }
     }
-  }, [product]);
+  }, [product, categoriesData]);
 
   useEffect(() => {
     if (selectedCategory) {
