@@ -368,13 +368,20 @@ const PlanForm: React.FC<PlanFormProps> = ({
               register={register("show_website")}
               error={errors.show_website}
             />
-             <InputZodField
-                id="num_products"
-                name="Número de productos a mostrar"
-                placeholder="5"
-                register={register("num_products")}
-                error={errors.num_products}
-              />
+            <InputZodField
+              id="num_products"
+              name="Número de productos a mostrar"
+              placeholder="5"
+              register={register("num_products")}
+              error={errors.num_products}
+            />
+            <InputZodField
+              id="supplier_branches_limit"
+              name="Número de sucursales a mostrar"
+              placeholder="5"
+              register={register("supplier_branches_limit")}
+              error={errors.supplier_branches_limit}
+            />
           </div>
         </div>
         <div className=" ">
