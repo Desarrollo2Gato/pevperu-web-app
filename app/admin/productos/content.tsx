@@ -216,7 +216,10 @@ const Content = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setProviders(response.data);
+      const sortedData = response.data.sort((a: any, b: any) => {
+        return a.name.localeCompare(b.name);
+      });
+      setProviders(sortedData);
     } catch (error) {
       toast.error("Error al obtener proveedores");
       console.error(error);
@@ -229,7 +232,11 @@ const Content = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setCategories(response.data);
+
+      const sortedData = response.data.sort((a: any, b: any) => {
+        return a.name.localeCompare(b.name);
+      });
+      setCategories(sortedData);
     } catch (error) {
       toast.error("Error al obtener categorías");
       console.error(error);
@@ -338,7 +345,6 @@ const Content = () => {
         resolve({ message: "Productos filtrados" });
       } catch (error) {
         if (axios.isAxiosError(error)) {
-          console.log(error.response?.data.message);
           reject({ message: error.response?.data.message });
         } else {
           reject({ message: "Error al filtrar productos por proveedor" });
@@ -374,7 +380,6 @@ const Content = () => {
         setData(res.data.data);
         setPageCount(res.data.last_page);
         setTotal(res.data.total);
-        resolve({ message: "Productos filtrados" });
       } catch (error) {
         if (axios.isAxiosError(error)) {
           console.log(error.response?.data);
@@ -446,7 +451,7 @@ const Content = () => {
                   { value: "all", label: "Todos" },
                   ...providers.map((provider) => ({
                     value: provider.id,
-                    label: `${provider.ruc} | ${provider.name}`,
+                    label: `${provider.name}`,
                   })),
                 ]}
                 onChange={handleProviderChange}

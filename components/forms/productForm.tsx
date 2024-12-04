@@ -261,7 +261,8 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   useEffect(() => {
     if (product) {
       const id = product?.category.id.toString();
-      if (id && categoriesData) {
+      if (id && categoriesData.length > 0) {
+        setValue("category_id", id);
         handleCategoryChange(id);
       }
     }

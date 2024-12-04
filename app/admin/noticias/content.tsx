@@ -215,7 +215,10 @@ const Content = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setProviders(response.data);
+      const sortedData = response.data.sort((a: any, b: any) => {
+        return a.name.localeCompare(b.name);
+      });
+      setProviders(sortedData);
     } catch (error) {
       toast.error("Error al obtener proveedores");
       console.error(error);
@@ -445,7 +448,7 @@ const Content = () => {
                   { value: "all", label: "Todos" },
                   ...providers.map((provider) => ({
                     value: provider.id,
-                    label: `${provider.ruc} | ${provider.name}`,
+                    label: `${provider.name}`,
                   })),
                 ]}
                 onChange={handleProviderChange}
