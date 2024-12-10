@@ -87,7 +87,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   }, [id, type]);
 
   useEffect(() => {
-    if (data && filtersData.length>0) {
+    if (data) {
       if (data.icon) {
         setIcon(imgUrl(data.icon));
       }
@@ -123,7 +123,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         files: files || [{ file_type: "" }],
       });
     }
-  }, [data, filtersData]);
+  }, [data]);
 
   const getDataById = async (id: string) => {
     setLoading(true);
