@@ -69,7 +69,7 @@ const IndependentSubsForm: React.FC<IndependentSubsFormProps> = ({
   }, [type, id]);
 
   useEffect(() => {
-    if (data) {
+    if (data && userData.length > 0 && plansData.length > 0) {
       reset({
         companyId: data.user ? data.user.id.toString() : "",
         plan: data.independent_plan_id
@@ -84,7 +84,7 @@ const IndependentSubsForm: React.FC<IndependentSubsFormProps> = ({
         status: data.is_active ? "true" : "false",
       });
     }
-  }, [data]);
+  }, [data, userData, plansData]);
 
   const getDataById = async (id: string) => {
     setLoading(true);
@@ -177,10 +177,13 @@ const IndependentSubsForm: React.FC<IndependentSubsFormProps> = ({
       } catch (error) {
         console.error(error);
         if (axios.isAxiosError(error)) {
-          const errorMessage = error.response?.data?.error || "Ha ocurrido un error inesperado.";
+          const errorMessage =
+            error.response?.data?.error || "Ha ocurrido un error inesperado.";
           reject({ message: errorMessage });
         } else {
-          reject({ message: "Error desconocido. Inténtalo nuevamente más tarde." });
+          reject({
+            message: "Error desconocido. Inténtalo nuevamente más tarde.",
+          });
         }
       } finally {
         getData();

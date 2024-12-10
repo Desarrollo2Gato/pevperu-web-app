@@ -6,7 +6,7 @@ import { apiUrls } from "@/utils/api/apiUrls";
 import axios from "axios";
 import { toast } from "sonner";
 import ButtonForm from "../ui/buttonForm";
-import { IAds, IProduct } from "@/types/api";
+import { IAds, ICompany, IProduct } from "@/types/api";
 import { useAuthContext } from "@/context/authContext";
 import { SelectZodField } from "../ui/selectField";
 import { ImgField } from "../ui/imgField";
@@ -30,6 +30,7 @@ const AdsForm: React.FC<AdsFormProps> = ({
   const { user } = useAuthContext();
   const [ads, setAds] = useState<IAds>();
   const [products, setProducts] = useState<IProduct[]>([]);
+  const [companies, setCompanies] = useState<ICompany[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -57,6 +58,9 @@ const AdsForm: React.FC<AdsFormProps> = ({
       getDataById(id?.toString());
     }
   }, [id, type]);
+  useEffect(() => {
+    getCompanies();
+  }, []);
 
   useEffect(() => {
     if (ads) {
@@ -72,17 +76,16 @@ const AdsForm: React.FC<AdsFormProps> = ({
   }, [ads]);
 
   useEffect(() => {
-    console.log(watch("type"));
     if (watch("type") === "product") {
       getProducts();
     }
   }, [watch("type")]);
 
   useEffect(() => {
-    if (products.length > 0) {
+    if (products.length > 0 && ads?.product_id) {
       setValue("id_product", ads ? ads.product_id.toString() : "");
     }
-  }, [products]);
+  }, [products, ads]);
 
   const getDataById = async (id: string) => {
     setLoading(true);
@@ -93,6 +96,21 @@ const AdsForm: React.FC<AdsFormProps> = ({
         },
       });
       setAds(res.data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al obtener los datos");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const getCompanies = async () => {
+    try {
+      const res = await axios.get(`${apiUrls.company.getAll}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCompanies(res.data);
     } catch (error) {
       console.error(error);
       toast.error("Error al obtener los datos");
@@ -125,7 +143,6 @@ const AdsForm: React.FC<AdsFormProps> = ({
             },
           }
         );
-        console.log(res.data);
         setProducts(res.data);
       } catch (error) {
         console.error(error);
@@ -216,7 +233,18 @@ const AdsForm: React.FC<AdsFormProps> = ({
           register={register("type")}
           error={errors.type}
         />
-
+        <SelectZodField
+          id="company"
+          name="Proveedor"
+          options={companies}
+          placeholder="Seleccione un proveedor"
+          getOptionValue={(option) => option.id}
+          getOptionLabel={(option) => option.name}
+          register={register("company_id")}
+          error={errors.company_id}
+          isdisabled={user?.type !== "admin"}
+        />
+        
         <SelectZodField
           id="id_product"
           name="Asociar a producto"

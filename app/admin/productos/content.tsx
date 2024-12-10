@@ -56,6 +56,18 @@ const Content = () => {
     "data" | "search" | "status" | "provider" | "category"
   >("data");
 
+  const [filters, setFilters] = useState<{
+    company_id: string;
+    category_id: "active" | "inactive" | "all";
+    status: string;
+    like: string;
+  }>({
+    company_id: "all",
+    category_id: "all",
+    status: "all",
+    like: "",
+  });
+
   useEffect(() => {
     const token = getTokenFromCookie();
     if (token) {
@@ -113,23 +125,28 @@ const Content = () => {
       onApprove(selectedId.toString());
     }
   };
+
+  // filters
+  const handleFilterChange = (key: string, value: any) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value as "pending" | "approved" | "rejected";
     newStatus;
-    setStatusFilter(newStatus);
-    setSelectedAction("status");
+    handleFilterChange("status", newStatus);
   };
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newProvider = e.target.value as "all" | string;
     newProvider;
-    setProviderFilter(newProvider);
-    setSelectedAction("provider");
+    handleFilterChange("company_id", newProvider);
   };
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newCategory = e.target.value as "all" | string;
     newCategory;
-    setCategoryFilter(newCategory);
-    setSelectedAction("category");
+    handleFilterChange("category_id", newCategory);
   };
 
   const onApprove = async (id: string) => {
@@ -151,7 +168,7 @@ const Content = () => {
         // }
         rejects({ message: "No se pudo aprobar el producto" });
       } finally {
-        getData();
+        fetchFilteredData();
         setStatusModal(false);
       }
     });
@@ -177,7 +194,7 @@ const Content = () => {
         // }
         reject({ message: "No se pudo eliminar el producto" });
       } finally {
-        getData();
+        fetchFilteredData();
         setStatusModal(false);
       }
     });
@@ -189,26 +206,26 @@ const Content = () => {
     });
   };
 
-  const getData = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        apiUrls.product.pagination(pageIndex, pageSize),
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setData(response.data.data);
-      setPageCount(response.data.last_page);
-      setTotal(response.data.total);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const getData = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await axios.get(
+  //       apiUrls.product.pagination(pageIndex, pageSize),
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+  //     setData(response.data.data);
+  //     setPageCount(response.data.last_page);
+  //     setTotal(response.data.total);
+  //   } catch (error) {
+  //     console.error(error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const getProviders = async () => {
     try {
       const response = await axios.get(apiUrls.company.getAll, {
@@ -240,6 +257,43 @@ const Content = () => {
     } catch (error) {
       toast.error("Error al obtener categorías");
       console.error(error);
+    }
+  };
+
+  const fetchFilteredData = async () => {
+    setLoading(true);
+    try {
+      const params: Record<string, any> = {
+        per_page: pageSize,
+        page: pageIndex,
+      };
+
+      if (filters.company_id !== "all") params.company_id = filters.company_id;
+      if (filters.status !== "all") params.status = filters.status;
+      if (filters.category_id !== "all") {
+        params.category_id = filters.category_id;
+      }
+      if (filters.like) {
+        params.like = filters.like;
+      }
+      const response = await axios.get(apiUrls.product.getAll, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params,
+      });
+      setData(response.data.data);
+      setPageCount(response.data.last_page);
+      setTotal(response.data.total);
+      // toast.success("Se obtuvo los datos correctamente");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data.message);
+      } else {
+        toast.error("Error al filtrar los datos");
+      }
+    } finally {
+      setLoading(false);
     }
   };
   const getProductsBySearch = (query: string) => {
@@ -399,33 +453,37 @@ const Content = () => {
   };
 
   useEffect(() => {
-    setData([]);
-  }, [selectedAction]);
-  useEffect(() => {
-    if (token && selectedAction === "data") {
-      getData();
-    }
-  }, [token, selectedAction, pageIndex, pageSize]);
-  useEffect(() => {
-    if (token && selectedAction === "search") {
-      getProductsBySearch(searchQuery);
-    }
-  }, [token, selectedAction, pageIndex, pageSize]);
-  useEffect(() => {
-    if (token && selectedAction === "status") {
-      getProdByStatus(statusFilter);
-    }
-  }, [token, selectedAction, statusFilter, pageIndex, pageSize]);
-  useEffect(() => {
-    if (token && selectedAction === "provider") {
-      getProductsByProvider(providerFilter);
-    }
-  }, [token, selectedAction, providerFilter, pageIndex, pageSize]);
-  useEffect(() => {
-    if (token && selectedAction === "category") {
-      getProductsByCategory(categoryFilter);
-    }
-  }, [token, selectedAction, categoryFilter, pageIndex, pageSize]);
+    if (token) fetchFilteredData();
+  }, [token, filters, pageIndex, pageSize]);
+
+  // useEffect(() => {
+  //   setData([]);
+  // }, [selectedAction]);
+  // useEffect(() => {
+  //   if (token && selectedAction === "data") {
+  //     getData();
+  //   }
+  // }, [token, selectedAction, pageIndex, pageSize]);
+  // useEffect(() => {
+  //   if (token && selectedAction === "search") {
+  //     getProductsBySearch(searchQuery);
+  //   }
+  // }, [token, selectedAction, pageIndex, pageSize]);
+  // useEffect(() => {
+  //   if (token && selectedAction === "status") {
+  //     getProdByStatus(statusFilter);
+  //   }
+  // }, [token, selectedAction, statusFilter, pageIndex, pageSize]);
+  // useEffect(() => {
+  //   if (token && selectedAction === "provider") {
+  //     getProductsByProvider(providerFilter);
+  //   }
+  // }, [token, selectedAction, providerFilter, pageIndex, pageSize]);
+  // useEffect(() => {
+  //   if (token && selectedAction === "category") {
+  //     getProductsByCategory(categoryFilter);
+  //   }
+  // }, [token, selectedAction, categoryFilter, pageIndex, pageSize]);
   return (
     <>
       <SafeAreaContainer isTable>
@@ -528,7 +586,7 @@ const Content = () => {
             type={selectedType}
             id={selectedId}
             token={token}
-            getData={getData}
+            getData={fetchFilteredData}
           />
         </FormModal>
       )}
@@ -558,7 +616,7 @@ const Content = () => {
             type="product"
             id={selectedId}
             token={token}
-            getData={getData}
+            getData={fetchFilteredData}
           />
         </FormModal>
       )}

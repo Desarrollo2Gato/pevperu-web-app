@@ -63,7 +63,7 @@ const SubsForm: React.FC<SubsFormProps> = ({
   }, [type, id]);
 
   useEffect(() => {
-    if (data) {
+    if (data && plansData.length > 0 && userData.length > 0) {
       reset({
         companyId: data.company ? data.company.id.toString() : "",
         plan: data.plan ? data.plan.id.toString() : "",
@@ -76,7 +76,7 @@ const SubsForm: React.FC<SubsFormProps> = ({
         status: data.is_active ? "true" : "false",
       });
     }
-  }, [data]);
+  }, [data, userData, plansData]);
 
   const getDataById = async (id: string) => {
     setLoading(true);
