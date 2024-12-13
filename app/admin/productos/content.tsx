@@ -360,7 +360,7 @@ const Content = () => {
         setTotal(res.data.total);
       } catch (error) {
         if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
+          // console.log(error.response?.data);
           reject({ message: error.response?.data.message });
         } else {
           reject({ message: "Error al filtrar productos por estado" });
@@ -436,7 +436,7 @@ const Content = () => {
         setTotal(res.data.total);
       } catch (error) {
         if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
+          // console.log(error.response?.data);
           reject({ message: error.response?.data.message });
         } else {
           reject({ message: "Error al filtrar productos por categoría" });

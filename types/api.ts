@@ -82,6 +82,7 @@ export interface IBranchData {
   name: string;
   phone: string;
   email: string;
+  rol:string
 }
 
 export interface ICompany {

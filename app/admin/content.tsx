@@ -59,6 +59,7 @@ const ContentAdmin = () => {
     formState: { errors },
     reset,
     watch,
+    setValue,
   } = useForm({
     resolver: zodResolver(CompanyUpdateSchema),
     defaultValues: {
@@ -105,15 +106,15 @@ const ContentAdmin = () => {
       if (dataUser?.company?.logo) {
         setImgLogo(imgUrl(dataUser.company.logo));
       }
-      const branches = dataUser.company.branches_info || [];
-      branches.forEach(async (branch, index) => {
-        if (branch.department) {
-          getProvinces(branch.department, index);
-        }
-        if (branch.province) {
-          getDistricts(branch.province, index);
-        }
-      });
+      // const branches = dataUser.company.branches_info || [];
+      // branches.forEach(async (branch, index) => {
+      //   if (branch.department) {
+      //     getProvinces(branch.department, index);
+      //   }
+      //   if (branch.province) {
+      //     getDistricts(branch.province, index);
+      //   }
+      // });
       reset({
         fullName: dataUser.full_name || "",
         company: dataUser.company?.name || "",
@@ -125,21 +126,59 @@ const ContentAdmin = () => {
         logo: null,
         businessHours: dataUser.company.business_hours || "",
         businessFieldId: dataUser.company.business_field_id || "",
-        branchesInfo: dataUser.company.branches_info || [
-          {
-            department: "",
-            province: "",
-            district: "",
-            address: "",
-            name: "",
-            phone: "",
-            email: "",
-            rol: "",
-          },
-        ],
+        // branchesInfo: dataUser.company.branches_info || [
+        //   {
+        //     department: "",
+        //     province: "",
+        //     district: "",
+        //     address: "",
+        //     name: "",
+        //     phone: "",
+        //     email: "",
+        //     rol: "",
+        //   },
+        // ],
       });
     }
   }, [dataUser]);
+  useEffect(() => {
+    const fetchDataBranch = async () => {
+      if (dataUser && departmentsData.length > 0) {
+        const branches = dataUser.company.branches_info || [];
+        for (let index = 0; index < branches.length; index++) {
+          const branch = branches[index];
+          if (branch.department) {
+            await getProvinces(branch.department, index);
+          }
+          if (branch.province) {
+            await getDistricts(branch.province, index);
+          }
+        }
+        setValue(
+          "branchesInfo",
+          branches.length
+            ? branches
+            : [
+                {
+                  department: "",
+                  province: "",
+                  district: "",
+                  address: "",
+                  name: "",
+                  phone: "",
+                  email: "",
+                  rol: "",
+                },
+              ]
+        );
+      }
+    };
+    fetchDataBranch();
+  }, [dataUser, departmentsData]);
+
+  useEffect(() => {
+    
+  })
 
   const getData = async () => {
     setLoading(true);

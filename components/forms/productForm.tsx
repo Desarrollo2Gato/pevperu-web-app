@@ -269,7 +269,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   }, [product, categoriesData]);
 
   useEffect(() => {
-    if (selectedCategory) {
+    if (selectedCategory && Object.keys(selectedCategory).length > 0) {
       setFilterOptionData([]);
       // setSelectedLabels([]);
 
@@ -280,7 +280,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   }, [selectedCategory]);
 
   useEffect(() => {
-    if (selectedCategory) {
+    if (selectedCategory && Object.keys(selectedCategory).length > 0) {
       const name = selectedCategory.name?.toLowerCase();
       const result =
         name.includes("agroquimico") || name.includes("agroquímico")
@@ -336,9 +336,10 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   // get labels
   const getLabels = () => {
     // setSelectedLabels([]);
-    setLabelsData([]);
-    // setValue("labels", []);
-    return setLabelsData(selectedCategory?.labels || []);
+    if (selectedCategory && Object.keys(selectedCategory).length > 0) {
+      setLabelsData([]);
+      setLabelsData(selectedCategory.labels || []);
+    }
   };
 
   const getFiles = () => {
@@ -519,7 +520,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           toast.success("Empresa actualizada exitosamente");
         } catch (error) {
           if (axios.isAxiosError(error)) {
-            console.log(error.response?.data);
+            // console.log(error.response?.data);
           }
           toast.error("No se pudo actualizar la empresa");
         }
@@ -612,10 +613,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
 
     // files
     if (files && files.length > 0) {
-      console.log("si hay archivos");
       files.forEach((file: any) => {
-        console.log("tipo de archivo", file.file_type);
-        console.log("archivo", file.file);
         if (file.file) {
           dataSend.append(`${file.file_type}`, file.file);
         }
@@ -632,7 +630,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
             },
           });
           resolve({ message: "Producto creado exitosamente" });
-          console.log(res.data);
         }
         if (type === "edit") {
           if (id) {
@@ -654,7 +651,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
         closeModal();
       } catch (error) {
         if (axios.isAxiosError(error)) {
-          console.log(error.response?.data);
+          // console.log(error.response?.data);
           reject({ message: error.response?.data.message });
         }
       } finally {
@@ -751,11 +748,11 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   // useEffect(() => {
   //   console.log("ingredientes", watch("active_ingts"));
   // }, [watch("active_ingts")]);
-  useEffect(() => {
-    console.log("errores", errors);
-    console.log(watch("company_id"), "id");
-    console.log("user", user);
-  }, [errors]);
+  // useEffect(() => {
+  //   console.log("errores", errors);
+  //   console.log(watch("company_id"), "id");
+  //   console.log("user", user);
+  // }, [errors]);
 
   return (
     <>
