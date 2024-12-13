@@ -228,8 +228,7 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
           product.ingredients.length > 0
             ? product.ingredients
             : [{ ingredient: "", percentage: "" }],
-        labels:
-          product.labels.length > 0 ? product.labels[0].id.toString() : "",
+
         img1: null,
         img2: null,
         // img3: null,
@@ -251,6 +250,13 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
       });
     }
   }, [product]);
+  useEffect(() => {
+    if (product && labelsData.length > 0)
+      setValue(
+        "labels",
+        product.labels.length > 0 ? product.labels[0].id.toString() : ""
+      );
+  }, [product, labelsData]);
 
   useEffect(() => {
     const companyId = product?.companies[0].id.toString();
@@ -271,7 +277,6 @@ const ProductForm: React.FC<ProdcutFormProps> = ({
   useEffect(() => {
     if (selectedCategory && Object.keys(selectedCategory).length > 0) {
       setFilterOptionData([]);
-      // setSelectedLabels([]);
 
       getFiles();
       getLabels();
